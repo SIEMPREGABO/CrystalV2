@@ -5,6 +5,7 @@ import Chat from "./Chat";
 import Configuracion from "./Config.js"
 import Calendario from "./Calendario.jsx";
 import AsignarTarea from "./AsignarTarea.jsx";
+import VideoChat from "./VideoChat.jsx";
 import Dashboard from "./Inicio.jsx";
 import Entregas from "./Entregas.js";
 import Kanban from "./Kanban.jsx"
@@ -85,11 +86,13 @@ export const Proyecto = () => {
                             {isAdmin && <Route path="Entregas" element={<Entregas />} />}
                             {isAdmin && <Route path="Configuracion" element={<Configuracion />} />}
                             {isAdmin && <Route path="Kanban" element={<Kanban />} />}
+                            {isAdmin && <Route path="VideoChat" element={<VideoChat />} />}
 
                             {!isAdmin && <Route path="" element={<Dashboard />} />}
                             {!isAdmin && <Route path="Asignartarea" element={<AsignarTarea />} />}
                             {!isAdmin && <Route path="Calendario" element={<Calendario />} />}
                             {!isAdmin && <Route path="Chat" element={<Chat />} />}
+                            {!isAdmin && <Route path="VideoChat" element={<VideoChat />} />}
                         </Routes>
                     </div>
                 </div>
