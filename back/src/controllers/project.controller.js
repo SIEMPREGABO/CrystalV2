@@ -123,32 +123,44 @@ export const getFechasProject = async (req,res) => {
 export const getFechasEntregas = async (req,res) =>{
     const {ID_PROYECTO} = req.body;
     try {
+        let ENTREGA_ACTUAL = "";
+        let ITERACION_ACTUAL = "";
         const FECHAS_ENTREGAS =  await obtenerFechasID("ENTREGAS",ID_PROYECTO);
-        //console.log(FECHAS_ENTREGAS);
+
         const FECHAS_ITERACIONES = await Promise.all(FECHAS_ENTREGAS.map(async (ENTREGA)=>{
-            //console.log(ENTREGA.ID);
-            const FECHAS_ITERACION = await obtenerFechasID("ITERACIONES",ENTREGA.ID)
+            const FECHAS_ITERACION = await obtenerFechasID("ITERACIONES",ENTREGA.ID);
             return(FECHAS_ITERACION);
         }))
-        /*FECHAS_ITERACIONES.map((ITERACIONPORENTREGA)=>{
-            ITERACIONPORENTREGA.map((ITERACION)=>{
-                console.log(ITERACION.ID);
+
+        FECHAS_ENTREGAS.map((ENTREGA)=>{
+            if(ENTREGA.ESTADO === 'En desarrollo'){
+                ENTREGA_ACTUAL = ENTREGA;
+            }
+        });
+
+        FECHAS_ITERACIONES.map((ITERACIONESPORENTREGA)=>{
+            ITERACIONESPORENTREGA.map((ITERACION)=>{
+                if(ITERACION.ESTADO === 'En desarrollo'){
+                    ITERACION_ACTUAL = ITERACION;
+                }
             })
-        })*/
-        
+        });
+
         const data = {
             fechasEntregas: FECHAS_ENTREGAS,
-            fechasIteraciones: FECHAS_ITERACIONES
+            fechasIteraciones: FECHAS_ITERACIONES,
+            entregaActual: ENTREGA_ACTUAL,
+            iteracionActual: ITERACION_ACTUAL
         };
-        const fechasenviadas = data.fechasIteraciones;
+        //const fechasenviadas = data.fechasIteraciones;
         //console.log(data.fechasIteraciones);
-        fechasenviadas.map((ITERACIONPORENTREGA)=>{
-            ITERACIONPORENTREGA.map((ITERACION)=>{
-                console.log(ITERACION.ID);
-            })
-        })
+        //fechasenviadas.map((ITERACIONPORENTREGA)=>{
+        //    ITERACIONPORENTREGA.map((ITERACION)=>{
+                //console.log(ITERACION.ID);
+        //    })
+        //})
 
-        //return res.json(data);
+        return res.json(data);
     } catch (error) {
         return res.status(500).json({message:["Error inesperado, intentalo de nuevo"]})
     }

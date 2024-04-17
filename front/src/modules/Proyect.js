@@ -28,7 +28,7 @@ export const Proyecto = () => {
 
 
     useEffect(() => {
-        console.log(id);
+        //console.log(id);
         //if (!isAdmin && !isProgramador) {
             // Si el usuario no es ni administrador ni programador, redirigir al dashboard.
         //    navigate("/panel");

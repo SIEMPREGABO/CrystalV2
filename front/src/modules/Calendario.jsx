@@ -10,10 +10,9 @@ const Calendario = () => {
   const { id } = useParams();
   const {
     fechasproject,
-    fechasEntregas,
-    fechasIteraciones,
+    fechasentregas,
+    fechasiteraciones,
     getFechasEntregas,
-    getFechasIteraciones,
     getFechasProyecto
   } = useProject();
 
@@ -23,6 +22,7 @@ const Calendario = () => {
     }
     getFechasProyecto(data);
     getFechasEntregas(data);
+    console.log(fechasiteraciones);
     //getFechasIteraciones();
   }, []);
 
@@ -41,6 +41,36 @@ const Calendario = () => {
           ))}
         </div>
       )}
+
+      {fechasentregas && (
+        <div>
+          {fechasentregas.map((entrega, index) => (
+            <div key={index}>
+              <p>Número de entrega: {index + 1}</p>
+              <p>Fecha entrega inicio: {entrega.FECHA_INICIO}</p>
+              <p>Fecha entrega fin: {entrega.FECHA_TERMINO}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {fechasiteraciones && (
+        <div>
+          {fechasiteraciones.map((iteracionporentrega, index) => (
+            <div key={index}>
+              {iteracionporentrega.map((iteracion, subIndex) => (
+                <div key={subIndex}>
+                  <p>Número de iteración: {subIndex + 1}</p>
+                  <p>Fecha de inicio: {iteracion.FECHA_INICIO}</p>
+                  <p>Fecha de fin: {iteracion.FECHA_TERMINO}</p>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+
+
       {/*<div>
         <p>Fecha Proyecto inicio: {fechasproject.FECHA_INICIO}</p>
         <p>Fecha Proyecto final: {fechasproject.FECHA_TERMINO}</p>

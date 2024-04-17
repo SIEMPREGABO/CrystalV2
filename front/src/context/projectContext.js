@@ -24,6 +24,9 @@ export const ProjectProvider = ({ children }) => {
   const [participants, setParticipants] = useState([]);
   const [fechasproject, setFechasproject] = useState([]);
   const [fechasentregas, setFechasentregas] = useState([]);
+  const [fechasiteraciones, setFechasiteraciones] = useState([]);
+  const [entregaactual, setEntregaactual] = useState([]);
+  const [iteracionactual, setIteracionactual] = useState([]);
 
   //const [IsLoading, setLoading] = useState(true);
 
@@ -137,7 +140,11 @@ export const ProjectProvider = ({ children }) => {
     try {
       const res = await requestFechasEntregas(project);
       //console.log(res.data);
-      setFechasentregas(res.data);
+      setFechasentregas(res.data.fechasEntregas);
+      setFechasiteraciones(res.data.fechasIteraciones);
+      //console.log(res.data.fechasIteraciones);
+      setEntregaactual(res.data.entregaActual);
+      setIteracionactual(res.data.iteracionActual);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
         setFechaserrors(error.response.data.message);
@@ -161,6 +168,9 @@ export const ProjectProvider = ({ children }) => {
         fechaserrors,
         fechasproject,
         fechasentregas,
+        fechasiteraciones,
+        entregaactual,
+        iteracionactual,
         create,
         getProjects,
         joinProject,

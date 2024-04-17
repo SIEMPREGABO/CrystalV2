@@ -198,7 +198,7 @@ export function obtenerFechasID(tabla,ID) {
             }else if(tabla === "ENTREGAS"){
                 query =  `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO, CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, ESTADO FROM ${tabla} WHERE ID_PROYECTO = ?`
             }else if(tabla === "ITERACIONES"){
-                query =  `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO, CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, ESTADO FROM ${tabla} WHERE ID_ENTREGA = ?`
+                query =  `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO, CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, ESTADO, ID_ENTREGA FROM ${tabla} WHERE ID_ENTREGA = ?`
             }
             //const query = `SELECT ID, FECHA_INICIO, FECHA_TERMINO, ESTADO FROM ${tabla} WHERE ID = ?`;
             connection.query(query,[ID], (err, results) => {
@@ -282,7 +282,7 @@ export function ActualizarEstado(ESTADO, TABLA, ID) {
                 console.log("Entrega: ",ID," se escuentra en: ", ESTADO);
             }else if(TABLA === 2){
                 query = 'UPDATE ITERACIONES SET ESTADO = ? WHERE ID = ?';
-                console.log("Ieracion: ",ID," se escuentra en: ", ESTADO);
+                console.log("Iteracion: ",ID," se escuentra en: ", ESTADO);
             }
             connection.query(query, [ESTADO, ID], (err, results)=>{
                 if(err){
