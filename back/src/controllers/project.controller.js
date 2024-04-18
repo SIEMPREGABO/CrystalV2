@@ -66,7 +66,7 @@ export const getProjects = async (req, res) => {
                 projectCookies[`Proyecto${project.ID}`] = projectToken;
             }));
             Object.entries(projectCookies).forEach(([name, value]) => {
-                res.cookie(name, value, { httpOnly: true });
+                res.cookie(name, value);
             });
         }
         res.json(projects);

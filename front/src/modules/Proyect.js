@@ -17,10 +17,10 @@ import { useStateContext } from '../context/Provider.js';
 export const Proyecto = () => {
     const { id } = useParams();
     const [isAdmin, setIsAdmin] = useState(true);
-
+    const idint = parseInt(id, 10).toString();
     const { activeMenu, themeSettings, setthemeSettings, currentColor, currentMode } = useStateContext();
 
-    const { getProject, project } = useProject();
+    const { getProject, project, getPermissions } = useProject();
 
     const navigate = useNavigate();
 
@@ -28,6 +28,7 @@ export const Proyecto = () => {
 
 
     useEffect(() => {
+        getPermissions(idint);
         //console.log(id);
         //if (!isAdmin && !isProgramador) {
             // Si el usuario no es ni administrador ni programador, redirigir al dashboard.

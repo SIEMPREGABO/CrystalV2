@@ -154,6 +154,13 @@ export const ProjectProvider = ({ children }) => {
     }
   }
 
+  const getPermissions = async (id) => {
+    const cookieName = `Proyecto${id}`;
+    const cookieValue = Cookies.get();
+    
+    console.log(cookieValue);
+  }
+
   return (
     <ProjectContext.Provider
       value={{
@@ -176,7 +183,8 @@ export const ProjectProvider = ({ children }) => {
         joinProject,
         getParticipants,
         getFechasProyecto,
-        getFechasEntregas
+        getFechasEntregas,
+        getPermissions
       }}
     >
       {children}
