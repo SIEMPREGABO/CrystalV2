@@ -1,14 +1,15 @@
-import Footer from "./Footer";
 import ear from "../images/Ear.jpg"
 import human from "../images/Man.jpg"
 import team from "../images/Team.jpg"
 import shield from "../images/Escudo.jpg"
 import cycles from "../images/Entregas.jpg"
 import users from "../images/Users.jpg"
+import Header  from "./Header"
 
 export const Home = () => {
     return (
         <div>
+             <Header />
             <main>
                 <div className="position-relative overflow-hidden p-3 p-md-5 m-md-3 text-center bg-body-tertiary">
                     <div className="col-md-6 p-lg-5 mx-auto my-5">

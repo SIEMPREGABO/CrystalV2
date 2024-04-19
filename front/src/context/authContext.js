@@ -124,7 +124,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () =>{
     const res = await requestLogout();
-    console.log(res);
+    //console.log(res);
     setIsAuthenticated(false);
     setUser(null);
   }

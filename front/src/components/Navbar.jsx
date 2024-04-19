@@ -10,6 +10,7 @@ import Notificacion from './Notificacion';
 import {Cart,Chat, PerfilUsuario} from ".";
 import { useStateContext } from '../context/Provider'; 
 import { HandWrittenSignatureSettings } from '@syncfusion/ej2/pdfviewer';
+import { useAuth } from '../context/authContext';
 
 const NavButton = ({title, customFunc, icon, color, dotColor}) => (
     <TooltipComponent content={title} position='BottomCenter'>
@@ -21,6 +22,7 @@ const NavButton = ({title, customFunc, icon, color, dotColor}) => (
 )
 
 const Navbar = () => {
+  const { user } = useAuth();
   const {activeMenu,setActiveMenu, isClicked, setIsClicked, handleClick, screenSize, setScreenSize, currentColor} = useStateContext();
 
   useEffect(() => {
@@ -47,11 +49,10 @@ const Navbar = () => {
             <NavButton title="Chat" customFunc={() => handleClick('chat')} color= {currentColor} icon= {<BsChatLeft/>} />  
             <NavButton title="Notificaciones" customFunc={() => handleClick("notificacion")} color= {currentColor} icon= {<RiNotification3Line/>} />
             <TooltipComponent content= "Profile" position='BottomCenter'>
-              <div className='flex items-center gap-2 cursor-pointer p-1 hover:bg-light-gray rounded-lg' onClick={() => handleClick('perfilUsuario')}>
-                  <img  className='rounded-full w-8 h-8' src = {avatar} />
+              <div className='flex items-center gap-2 cursor-pointer p-1 mt-2 hover:bg-light-gray rounded-lg' onClick={() => handleClick('perfilUsuario')}>
                   <p>
                     <span className='text-gray-400  text-14'> Hola, </span>
-                    <span className='text-gray-400 font-bold ml-1 text-14'> Alan</span>
+                    <span className='text-gray-400 font-bold ml-1 text-14'> {user.NOMBRE_PILA}</span>
                   </p>
                   <MdKeyboardArrowDown className='text-gray-400  text-14'/>
 

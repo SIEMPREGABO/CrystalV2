@@ -130,6 +130,12 @@ export const ProjectProvider = ({ children }) => {
 
   const getPermissions = async (id) => {
     try {
+      const nombreCookie = `Proyecto${id.ID}`;
+      const Cookie = Cookies.get(nombreCookie);
+      if (!Cookie) {
+        setIsParticipant(false);
+        return;
+      }
       const Permission = await requestPermissions(id);
       if (!Permission.data) setIsParticipant(false);
       else {
@@ -169,6 +175,7 @@ export const ProjectProvider = ({ children }) => {
         iteracionactual,
         userRole,
         IsParticipant,
+        setIsParticipant,
         create,
         getProjects,
         joinProject,

@@ -5,32 +5,27 @@ import { Button } from '.';
 import { userProfileData } from '../data/dummy';
 import { useStateContext } from '../context/Provider';
 import avatar from '../data/avatar.jpg';
+import { useAuth } from '../context/authContext';
+import { useProject } from '../context/projectContext';
 
 const PerfilUsuario = () => {
+  const { user } = useAuth();
+  const { userRol} = useProject();
   const { currentColor } = useStateContext();
+  let rol = "Participante";
+  if(userRol){
+    rol = "Administrador"
+  }
 
   return (
     <div className="nav-item absolute right-1 top-16 bg-white dark:bg-[#42464D] p-8 rounded-lg w-96">
-      <div className="flex justify-between items-center">
-        <p className="font-semibold text-lg dark:text-gray-200">Perfil de Usuario</p>
-        <Button
-          icon={<MdOutlineCancel />}
-          color="rgb(153, 171, 180)"
-          bgHoverColor="light-gray"
-          size="2xl"
-          borderRadius="50%"
-        />
-      </div>
-      <div className="flex gap-5 items-center mt-6 border-color border-b-1 pb-6">
-        <img
-          className="rounded-full h-24 w-24"
-          src={avatar}
-          alt="user-profile"
-        />
+      
+      <div className="flex gap-5 items-center mt-2 border-color border-b-1 pb-6">
+        
         <div>
-          <p className="font-semibold text-xl dark:text-gray-200"> Alan Tenorio </p>
-          <p className="text-gray-500 text-sm dark:text-gray-400">  Administrador   </p>
-          <p className="text-gray-500 text-sm font-semibold dark:text-gray-400"> info@shop.com </p>
+          <p className="font-semibold text-xl dark:text-gray-200"> {user.NOMBRE_PILA} {user.APELLIDO_PATERNO} </p>
+          <p className="text-gray-500 text-sm dark:text-gray-400">  {rol}  </p>
+          <p className="text-gray-500 text-sm font-semibold dark:text-gray-400"> {user.CORREO} </p>
         </div>
       </div>
       <div>

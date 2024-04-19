@@ -61,12 +61,6 @@ const Calendario = () => {
         </div>
       )}
 
-
-      {/*<div>
-        <p>Fecha Proyecto inicio: {fechasproject.FECHA_INICIO}</p>
-        <p>Fecha Proyecto final: {fechasproject.FECHA_TERMINO}</p>
-
-    </div>*/}
       <Header title="Calendario" />
 
       <ScheduleComponent height="650px" eventSettings={{ dataSource: scheduleData }}>

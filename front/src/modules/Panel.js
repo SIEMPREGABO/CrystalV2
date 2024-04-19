@@ -12,7 +12,9 @@ import {
     Filter, Page, ExcelExport, PdfExport, Edit, Inject
 } from '@syncfusion/ej2-react-grids';
 import { ordersData, contextMenuItems, ordersGrid } from '../data/dummy';
-import { Header } from '../components';
+import HeaderPanel from "./Header";
+import { Header } from "../components";
+
 
 export const Panel = () => {
     const { user } = useAuth();
@@ -53,6 +55,7 @@ export const Panel = () => {
 
     return (
         <div>
+            <HeaderPanel />
             <div className="container-fluid position-relative p-4">
                 {joinerrors && <div className=" bg-danger mt-2 me-2 text-white shadow">{joinerrors}</div>}
                 {message && <div className=" bg-success mt-2 me-2 text-white shadow">{message}</div>}
