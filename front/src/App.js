@@ -10,7 +10,7 @@ import './/css/App.css';
 import { AuthProvider } from './context/authContext.js';
 import ProtectedRoute from './ProtectedRoute';
 import Footer from "./modules/Footer.js";
-import Proyecto from "./modules/Proyect.js"
+import Proyecto from "./modules/Proyect.jsx"
 import FormProyect from './modules/FormProyect.js';
 import ConfigProfile from './modules/ConfigProfile.js';
 import { ProjectProvider } from './context/projectContext.js';
@@ -21,25 +21,20 @@ function App() {
     <AuthProvider>
       <ProjectProvider>
       <ContextProvider>
-        <Header />
+        <Header/>
         <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/" element={<Home />} />
-          <Route path="/register" element={<Register />} />
-          <Route path='/reset' element={<Reset />} />
-          <Route path='/resetpass/:token' element={<ResetPass />} />
-          <Route element={<ProtectedRoute />}>
-
-            <Route path="/panel" element={<Panel />} />
-            <Route path="/configurar-proyecto" element={<FormProyect />} />
-            <Route path="/configurar-perfil" element={<ConfigProfile />} />
-            <Route path="/Proyecto/:id/*" element={<Proyecto />}>
-              <Route index element={<Proyecto />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/reset" element={<Reset />} />
+            <Route path="/resetpass/:token" element={<ResetPass />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/panel" element={<Panel />} />
+              <Route path="/configurar-proyecto" element={<FormProyect />} />
+              <Route path="/configurar-perfil" element={<ConfigProfile />} />
+              <Route path="/proyecto/:id/*" element={<Proyecto />} />
             </Route>
-
-          </Route>
-        </Routes>
-        <Footer />
+          </Routes>
         </ContextProvider>
       </ProjectProvider>
     </AuthProvider>

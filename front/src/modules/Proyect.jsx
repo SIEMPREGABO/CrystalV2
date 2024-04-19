@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Route, Routes, useNavigate, useParams } from "react-router-dom";
-import Participantes from "./Usuario";
-import Chat from "./Chat";
+import { BrowserRouter,Route, Routes, useNavigate, useParams } from "react-router-dom";
+import Usuario from "./Usuarios.jsx";
+import Chat from "./Chat.js";
 import Configuracion from "./Config.js"
 import Calendario from "./Calendario.jsx";
 import AsignarTarea from "./AsignarTarea.jsx";
 import Dashboard from "./Inicio.jsx";
 import Entregas from "./Entregas.js";
+import {Proyectos} from "./Proyecto.jsx"
 import Kanban from "./Kanban.jsx"
 import { FiSettings } from 'react-icons/fi';
 import { TooltipComponent } from '@syncfusion/ej2-react-popups';
-import { Sidebar, ThemeSettings, Navbar } from "../components";
+import { Sidebar, ThemeSettings, Navbar } from "../components/index.jsx";
 import { useProject } from "../context/projectContext.js";
 import { useStateContext } from '../context/Provider.js';
 
@@ -23,18 +24,6 @@ export const Proyecto = () => {
     const { getProject, project } = useProject();
 
     const navigate = useNavigate();
-
-
-
-
-    useEffect(() => {
-        console.log(id);
-        //if (!isAdmin && !isProgramador) {
-            // Si el usuario no es ni administrador ni programador, redirigir al dashboard.
-        //    navigate("/panel");
-        //}
-    }, [])
-
 
     return (
         <div className={currentMode === 'Dark' ? 'dark' : ''}>
@@ -74,26 +63,28 @@ export const Proyecto = () => {
                     </div>
 
                     <div>
+                    {themeSettings && <ThemeSettings />}
                         <Routes>
-                            {themeSettings && <ThemeSettings />}
                             {/* Proteger las rutas autorizadas */}
                             {isAdmin && <Route path="" element={<Dashboard />} />}
-                            {isAdmin && <Route path="Participantes" element={<Participantes />} />}
-                            {isAdmin && <Route path="Asignartarea" element={<AsignarTarea />} />}
-                            {isAdmin && <Route path="Calendario" element={<Calendario />} />}
-                            {isAdmin && <Route path="Chat" element={<Chat />} />}
-                            {isAdmin && <Route path="Entregas" element={<Entregas />} />}
-                            {isAdmin && <Route path="Configuracion" element={<Configuracion />} />}
-                            {isAdmin && <Route path="Kanban" element={<Kanban />} />}
+                            {isAdmin && <Route path="participantes" element={<Usuario />} />}
+                            {isAdmin && <Route path="asignar-tarea" element={<AsignarTarea />} />}
+                            {isAdmin && <Route path="proyecto" element={<Proyecto />} />}
+                            {isAdmin && <Route path="calendario" element={<Calendario />} />}
+                            {isAdmin && <Route path="chat" element={<Chat />} />}
+                            {isAdmin && <Route path="entregas" element={<Entregas />} />}
+                            {isAdmin && <Route path="configuracion" element={<Configuracion />} />}
+                            {isAdmin && <Route path="kanban" element={<Kanban />} />}
 
                             {!isAdmin && <Route path="" element={<Dashboard />} />}
-                            {!isAdmin && <Route path="Asignartarea" element={<AsignarTarea />} />}
-                            {!isAdmin && <Route path="Calendario" element={<Calendario />} />}
-                            {!isAdmin && <Route path="Chat" element={<Chat />} />}
+                            {!isAdmin && <Route path="asignartarea" element={<AsignarTarea />} />}
+                            {!isAdmin && <Route path="calendario" element={<Calendario />} />}
+                            {!isAdmin && <Route path="chat" element={<Chat />} />}
                         </Routes>
                     </div>
                 </div>
             </div>
+
         </div>
     );
 }

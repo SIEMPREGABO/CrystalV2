@@ -482,28 +482,32 @@ export const links = [
       {
         name: 'Inicio',
         icon: <IoHome />,
+        isAdmin: true,
       },
     ],
   },
-
   {
     title: 'Paginas',
     links: [
       {
         name: 'Proyecto',
         icon: <AiOutlineShoppingCart />,
+        isAdmin: true,
       },
       {
-        name: 'asignar-tarea',
+        name: 'Asignar-tarea',
         icon: <IoMdContacts />,
+        isAdmin: true,
       },
       {
         name: 'Entregas',
-        icon: <GoFileSubmodule /> ,
+        icon: <GoFileSubmodule />,
+        isAdmin: true,
       },
       {
-        name: 'Usuarios',
+        name: 'Participantes',
         icon: <RiContactsLine />,
+        isAdmin: true,
       },
     ],
   },
@@ -512,27 +516,28 @@ export const links = [
     links: [
       {
         name: 'Calendario',
-        icon: <FaCalendarAlt  />,
+        icon: <FaCalendarAlt />,
+        isAdmin: false,
       },
       {
         name: 'Kanban',
         icon: <BsKanban />,
+        isAdmin: false,
       },
       {
         name: 'Chat',
         icon: <FiEdit />,
+        isAdmin: false,
       },
       {
         name: 'VideoChat',
         icon: <MdVideoChat />,
-      },
-      {
-        name: 'Temas',
-        icon: <BiColorFill />,
+        isAdmin: false,
       },
       {
         name: 'Configuracion',
         icon: <GrConfigure />,
+        isAdmin: true,
       },
     ],
   },
