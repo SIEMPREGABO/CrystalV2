@@ -4,6 +4,7 @@ import { useAuth } from "../context/authContext";
 import { zodResolver } from '@hookform/resolvers/zod';
 import {  updateSchema } from "../schemas/auth";
 import { useForm } from 'react-hook-form';
+import Header from "./Header";
 
 export const ConfigProfile = () => {
     const { user, updateUser, messageupdate, updateerrors } = useAuth();
@@ -22,6 +23,7 @@ export const ConfigProfile = () => {
 
     return (
         <div>
+            <Header/>
             <div className="container-fluid  p-4 text-center">
                 {messageupdate && <div className=" bg-success mt-2 me-2 text-white shadow">{messageupdate}</div>}
                 {updateerrors && <div className=" bg-danger mt-2 me-2 text-white shadow">{updateerrors}</div>}

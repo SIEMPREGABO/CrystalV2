@@ -2,8 +2,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { loginSchema } from '../schemas/auth.js';
-import { useAuth } from '../context/authContext';
-import Header from './Header';
+import { useAuth } from '../context/authContext.js';
+import Header from './Header.jsx';
 import { useEffect } from 'react';
 import styles from '../css/login.module.css';
 

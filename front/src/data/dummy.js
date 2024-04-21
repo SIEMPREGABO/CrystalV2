@@ -829,21 +829,23 @@ export const themeColors = [
 export const userProfileData = [
   {
     icon: <BsCurrencyDollar />,
-    title: 'My Profile',
-    desc: 'Account Settings',
+    title: 'Mi Perfil',
+    desc: 'Configuración de la cuenta',
     iconColor: '#03C9D7',
     iconBg: '#E5FAFB',
+    link: '/configurar-perfil'
   },
   {
     icon: <BsShield />,
-    title: 'My Inbox',
-    desc: 'Messages & Emails',
+    title: 'Mi Chat',
+    desc: 'Mensajes de la iteración',
     iconColor: 'rgb(0, 194, 146)',
     iconBg: 'rgb(235, 250, 242)',
+    link: '/'
   },
   {
     icon: <FiCreditCard />,
-    title: 'My Tasks',
+    title: 'Mis Tareas',
     desc: 'To-do and Daily Tasks',
     iconColor: 'rgb(255, 244, 229)',
     iconBg: 'rgb(254, 201, 15)',

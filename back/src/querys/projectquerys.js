@@ -96,7 +96,7 @@ export function projectsUsuario(ID) {
     return new Promise(async (resolve, reject) => {
         const connection = await getConnection();
         const usuarioQuery = 'SELECT ID_PROYECTO, ES_CREADOR FROM U_SEUNE_P WHERE ID_USUARIO = ?';
-        const projectQuery = 'SELECT NOMBRE, ID FROM PROYECTOS WHERE ID = ?';
+        const projectQuery = `SELECT NOMBRE, ID, ESTADO, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO, CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO FROM PROYECTOS WHERE ID = ?`;
         connection.query(usuarioQuery, [ID], (err, results) => {
             if (err) {
                 reject(err);
@@ -110,11 +110,11 @@ export function projectsUsuario(ID) {
                                 if (err) {
                                     reject(err);
                                 } else {
-                                    resolve({ NOMBRE: projectResults[0].NOMBRE, ID: projectResults[0].ID });
+                                    resolve({ NOMBRE: projectResults[0].NOMBRE, ID: projectResults[0].ID, ESTADO: projectResults[0].ESTADO, FECHA_INICIO: projectResults[0].FECHA_INICIO, FECHA_TERMINO: projectResults[0].FECHA_TERMINO });
                                 }
                             });
                         });
-                        return { admin: ES_CREADOR, NOMBRE: projectData.NOMBRE, ID: projectData.ID };
+                        return { admin: ES_CREADOR, NOMBRE: projectData.NOMBRE, ID: projectData.ID, ESTADO: projectData.ESTADO, FECHA_INICIO: projectData.FECHA_INICIO, FECHA_TERMINO: projectData.FECHA_TERMINO };
                     });
                     Promise.all(projectsPromises)
                         .then((projects) => {

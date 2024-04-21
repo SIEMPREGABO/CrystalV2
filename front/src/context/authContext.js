@@ -82,7 +82,6 @@ export const AuthProvider = ({ children }) => {
       console.log(res.data);
       //console.log(error.response.data.message);
     } catch (error) {
-      console.log(error.response);
       setLoginerrors(error.response.data.message);
     }
   };
@@ -91,7 +90,6 @@ export const AuthProvider = ({ children }) => {
     try {
       const res = await requestRegister(user);
       //setUser(res.data);
-      console.log(res.data);
       setMessage(["Usuario registrado correctamente"]);
     } catch (error) {
       //console.log(error.response.data.message);

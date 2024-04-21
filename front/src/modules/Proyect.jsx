@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Route, Routes, useNavigate, useParams } from "react-router-dom";
-import Participantes from "./Usuario";
-import Chat from "./Chat";
+import Participantes from "./Usuario.jsx";
+import Chat from "./Chat.js";
 import Configuracion from "./Config.js"
 import Calendario from "./Calendario.jsx";
 import AsignarTarea from "./AsignarTarea.jsx";
@@ -11,17 +11,17 @@ import Kanban from "./Kanban.jsx";
 import Videollamada from "./VideoChat.jsx";
 import { FiSettings } from 'react-icons/fi';
 import { TooltipComponent } from '@syncfusion/ej2-react-popups';
-import { Sidebar, ThemeSettings, Navbar } from "../components";
+import { Sidebar, ThemeSettings, Navbar } from "../components/index.jsx";
 import { useProject } from "../context/projectContext.js";
 import { useStateContext } from '../context/Provider.js';
-import ProtectProject from './ProtectProject';
+import ProtectProject from './ProtectProject.jsx';
 
 export const Proyecto = () => {
     const { id } = useParams();
     const idint = parseInt(id, 10).toString();
     const { activeMenu, themeSettings, setthemeSettings, currentColor, currentMode } = useStateContext();
 
-    const { getPermissions, userRole, IsParticipant } = useProject();
+    const { getPermissions, userRole } = useProject();
 
     const navigate = useNavigate();
 

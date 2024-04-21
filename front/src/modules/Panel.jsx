@@ -12,14 +12,14 @@ import {
     Filter, Page, ExcelExport, PdfExport, Edit, Inject
 } from '@syncfusion/ej2-react-grids';
 import { ordersData, contextMenuItems, ordersGrid } from '../data/dummy';
-import HeaderPanel from "./Header";
+import HeaderPanel from "./Header.jsx";
 import { Header } from "../components";
 
 
 export const Panel = () => {
     const { user } = useAuth();
     const fecha = moment.utc(user.FECHA_CREACION).format('DD-MM-YYYY');
-    const { getProjects, projects, joinerrors, joinProject, message, IsJoined } = useProject();
+    const { getProjects, projects, joinerrors, joinProject, message } = useProject();
     const {
         register,
         handleSubmit,
@@ -78,9 +78,9 @@ export const Panel = () => {
                             {projects &&
                                 <div>
                                     {projects.map((project) => (
-                                        <Link className="list-group-item text-start" to={`/Proyecto/${(project.ID).toString().padStart(5, '0')}`} key={project.ID}>
+                                        <Link className="list-group-item text-start" to={`/Proyecto/${(project.ID).toString().padStart(5, '0')}/`} key={project.ID}>
                                             Nombre del proyecto: {project.NOMBRE} <strong className="fw-light" style={{ fontSize: '10px' }}>ID del proyecto: {(project.ID).toString().padStart(5, '0')}</strong>
-
+                                            Estado: {project.ESTADO} fecha i: {project.FECHA_INICIO} fecha t: {project.FECHA_TERMINO}
                                         </Link>
                                     ))}
                                 </div>}

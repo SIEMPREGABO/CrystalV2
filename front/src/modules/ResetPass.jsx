@@ -5,6 +5,7 @@ import { resetpassSchema } from '../schemas/auth.js';
 import { useAuth } from '../context/authContext.js';
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect } from 'react';
+import Header from './Header.jsx';
 
 export const ResetPass = () => {
     const {
@@ -33,6 +34,7 @@ export const ResetPass = () => {
 
     return (
         <div>
+            <Header/>
             <div className="container-fluid position-relative p-4 text-center">
                 {messagepass && <div className=" bg-success mt-2 me-2 text-white shadow">{messagepass}</div>}
                 {resetpasserrors && <div className=" bg-danger mt-2 me-2 text-white shadow">{resetpasserrors}</div>}

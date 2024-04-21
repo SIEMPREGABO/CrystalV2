@@ -50,7 +50,7 @@ const Sidebar = () => {
             <p className='text-gray-400 m-3 mt-4 uppercase'>
               DASHBOARD
             </p>
-            <NavLink to={`/Proyecto/${id}`}
+            <NavLink to={`/Proyecto/${id}/`}
               onClick={handleCloseSideBar}
               style={({ isActive }) => ({ backgroundColor: isActive ? currentColor : '' })}
               className={({ isActive }) => isActive ? activeLink : normalLink}>

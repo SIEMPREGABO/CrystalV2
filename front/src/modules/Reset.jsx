@@ -1,10 +1,10 @@
 import {  useNavigate } from 'react-router-dom';
-import Footer from "./Footer.js";
 import { useForm } from 'react-hook-form'
 import { resetSchema } from '../schemas/auth.js';
 import { useAuth } from '../context/authContext.js';
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect } from 'react';
+import Header from './Header.jsx';
 
 export const Reset = () => {
     const {
@@ -30,6 +30,7 @@ export const Reset = () => {
 
     return (
         <div>
+            <Header/>
             <div className="container-fluid position-relative p-4 text-center">
             {message && <div className=" bg-success mt-2 me-2 text-white shadow">{message}</div>}
             {reseterrors && <div className=" bg-danger mt-2 me-2 text-white shadow">{reseterrors}</div>}

@@ -4,7 +4,7 @@ import team from "../images/Team.jpg"
 import shield from "../images/Escudo.jpg"
 import cycles from "../images/Entregas.jpg"
 import users from "../images/Users.jpg"
-import Header  from "./Header"
+import Header  from "./Header.jsx"
 
 export const Home = () => {
     return (

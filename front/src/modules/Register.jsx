@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import styles from "../css/register.module.css"
-import Header from './Header';
+import Header from './Header.jsx';
 
 export const Register = () => {
     const {

@@ -49,7 +49,7 @@ const Navbar = () => {
             <NavButton title="Chat" customFunc={() => handleClick('chat')} color= {currentColor} icon= {<BsChatLeft/>} />  
             <NavButton title="Notificaciones" customFunc={() => handleClick("notificacion")} color= {currentColor} icon= {<RiNotification3Line/>} />
             <TooltipComponent content= "Profile" position='BottomCenter'>
-              <div className='flex items-center gap-2 cursor-pointer p-1 mt-2 hover:bg-light-gray rounded-lg' onClick={() => handleClick('perfilUsuario')}>
+              <div className='flex items-center gap-2 cursor-pointer p-2 mt-2 hover:bg-light-gray rounded-lg' onClick={() => handleClick('perfilUsuario')}>
                   <p>
                     <span className='text-gray-400  text-14'> Hola, </span>
                     <span className='text-gray-400 font-bold ml-1 text-14'> {user.NOMBRE_PILA}</span>

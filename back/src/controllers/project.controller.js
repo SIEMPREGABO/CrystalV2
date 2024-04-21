@@ -71,21 +71,6 @@ export const getProjects = async (req, res) => {
     })
 }
 
-/*
-export const getParticipants = async (req,res) => {
-    const {ID_PROYECTO} = req.body;
-    //console.log(req.cookies);
-    try {
-        //if(!ID_PROYECTO) return res.status(500).json({message:["Error en el servidor"]});
-        const participants = await getParticipantsQuery(ID_PROYECTO);
-
-    
-        res.json(participants);
-    } catch (error) {
-        res.status(500).json({message:["Error en el servidor"]})
-    }
-}
-*/
 
 export const joinProject = async (req, res) => {
     const FECHA_ACTUAL = moment().tz(zonaHoraria);
@@ -164,65 +149,7 @@ export const getProject = async (req, res) => {
     }
 }
 
-/*
-export const getFechasProject = async (req,res) => {
-    const {ID_PROYECTO} = req.body;
-    try {
-        const FECHAS_PROYECTO = await obtenerFechasID("PROYECTOS",ID_PROYECTO);
-        return res.json(FECHAS_PROYECTO);
 
-    } catch (error) {
-        return res.status(500).json({messsage:["Error inesperado, intentanlo de nuevo"]})
-    }
-}
-
-
-export const getFechasEntregas = async (req,res) =>{
-    const {ID_PROYECTO} = req.body;
-    try {
-        let ENTREGA_ACTUAL = "";
-        let ITERACION_ACTUAL = "";
-        const FECHAS_ENTREGAS =  await obtenerFechasID("ENTREGAS",ID_PROYECTO);
-
-        const FECHAS_ITERACIONES = await Promise.all(FECHAS_ENTREGAS.map(async (ENTREGA)=>{
-            const FECHAS_ITERACION = await obtenerFechasID("ITERACIONES",ENTREGA.ID);
-            return(FECHAS_ITERACION);
-        }))
-
-        FECHAS_ENTREGAS.map((ENTREGA)=>{
-            if(ENTREGA.ESTADO === 'En desarrollo'){
-                ENTREGA_ACTUAL = ENTREGA;
-            }
-        });
-
-        FECHAS_ITERACIONES.map((ITERACIONESPORENTREGA)=>{
-            ITERACIONESPORENTREGA.map((ITERACION)=>{
-                if(ITERACION.ESTADO === 'En desarrollo'){
-                    ITERACION_ACTUAL = ITERACION;
-                }
-            })
-        });
-
-        const data = {
-            fechasEntregas: FECHAS_ENTREGAS,
-            fechasIteraciones: FECHAS_ITERACIONES,
-            entregaActual: ENTREGA_ACTUAL,
-            iteracionActual: ITERACION_ACTUAL
-        };
-        //const fechasenviadas = data.fechasIteraciones;
-        //console.log(data.fechasIteraciones);
-        //fechasenviadas.map((ITERACIONPORENTREGA)=>{
-        //    ITERACIONPORENTREGA.map((ITERACION)=>{
-                //console.log(ITERACION.ID);
-        //    })
-        //})
-
-        return res.json(data);
-    } catch (error) {
-        return res.status(500).json({message:["Error inesperado, intentalo de nuevo"]})
-    }
-}
-*/
 export const getTasks = async (req, res) => {
     try {
         const tasks = await getTasks();

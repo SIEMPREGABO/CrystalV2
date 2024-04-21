@@ -1,5 +1,4 @@
 import React from "react";
-import Footer from "./Footer";
 import { useState, useEffect } from "react";
 
 export const Chat = () => {
