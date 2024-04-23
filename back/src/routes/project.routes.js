@@ -16,7 +16,7 @@ router.post('/getPermissions', getPermissions);
 router.post('/getProject', getProject);
 router.get('/mensajes', obtenerMensajes);
 router.get('/tasks', validarToken ,getTasks);
-router.post('/tasks',validateSchema(taskSchema), validarToken ,createTask)
+router.post('/createTask',validateSchema(taskSchema),createTask);
 //router.get('/tasks/:id', validarToken ,getTask)
 //router.delete('/tasks/:id', validarToken ,deleteTask)
 //router.put('/tasks/:id', validarToken ,updateTask)

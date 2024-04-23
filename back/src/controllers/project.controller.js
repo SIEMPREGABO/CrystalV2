@@ -164,16 +164,23 @@ export const getTasks = async (req, res) => {
 }
 
 export const createTask = async (req, res) => {
-    const { titulo, descripcion, fecha } = req.body
-
-    const newTask = new Task({
-        titulo,
-        descripcion,
-        fecha
-    })
-
-    const saveTask = await newTask.save();
-    res.json(saveTask);
+    //Agregar a la tarea la tarea dependiente y el requerimiento que cumple y rol, a quien se asigna
+    const { NOMBRE, DESCRIPCION, FECHA_INICIO, FECHA_TERMINO, FECHA_MAX_TERMINO, ITERACION, ID_USUARIO, REQUERIMIENTO, ROL, ID_TAREA_DEPENDIENTE} = req.body
+    const FECHA_ACTUAL = moment().tz(zonaHoraria);
+    try {
+        const FECHA_INICIO_TAREA = moment(FECHA_INICIO);const FECHA_TERMINO_TAREA = moment(FECHA_TERMINO);const FECHA_MAX_TERMINO_TAREA = moment(FECHA_MAX_TERMINO);const FECHA_INICIO_ITERACION = moment(ITERACION.FECHA_INICIO);const FECHA_TERMINO_ITERACION = moment(ITERACION.FECHA_TERMINO);
+        if(FECHA_INICIO_TAREA.isBefore(FECHA_INICIO_ITERACION)) return res.status(400).json({ message: ["La fecha debe correponder a la iteracion actual"] });
+        if(FECHA_MAX_TERMINO_TAREA.isAfter(FECHA_TERMINO_ITERACION)) return res.status(400).json({ message: ["La fecha max debe correponder a la iteracion actual"] });
+        if (FECHA_INICIO_TAREA.isBefore(FECHA_ACTUAL)) return res.status(400).json({ message: ["Fecha inicial incorrecta"] });
+        if (FECHA_TERMINO_TAREA.isBefore(FECHA_INICIO_TAREA)) return res.status(400).json({ message: ["Fecha final incorrecta"] });
+        if (FECHA_MAX_TERMINO_TAREA.isBefore(FECHA_TERMINO_TAREA)) return res.status(400).json({ message: ["Fecha final maxima incorrecta"] });
+        const MINUTOS_DIFERENCIA = FECHA_TERMINO_TAREA.diff(FECHA_INICIO_TAREA, 'minutes');
+        if (MINUTOS_DIFERENCIA < 120) return res.status(400).json({ message: ["Diferencia minimo de 2 horas"] });
+        const MINUTOS_DIFERENCIA_MAX = FECHA_MAX_TERMINO_TAREA.diff(FECHA_TERMINO_TAREA, 'minutes');
+        if (MINUTOS_DIFERENCIA_MAX < 120) return res.status(400).json({ message: ["Diferencia minimo de 2 horas en la hora maxima"] });
+    } catch (error) {
+        res.status(500).json({ mensaje: ["Error inesperado, intentalo nuevamente"] });
+    }
 }
 
 export const getTask = async (req, res) => {

@@ -8,7 +8,7 @@ import AsignarTarea from "./AsignarTarea.jsx";
 import Dashboard from "./Inicio.jsx";
 import Entregas from "./Entregas.js";
 import Kanban from "./Kanban.jsx";
-import Videollamada from "./VideoChat.jsx";
+import VideoChat from "./VideoChat.jsx";
 import { FiSettings } from 'react-icons/fi';
 import { TooltipComponent } from '@syncfusion/ej2-react-popups';
 import { Sidebar, ThemeSettings, Navbar } from "../components/index.jsx";
@@ -32,16 +32,6 @@ export const Proyecto = () => {
         getPermissions(data);
     }, []);
 
-    /*
-    useEffect(() => {
-        console.log(IsParticipant);
-        if (!IsParticipant) {
-            navigate("/panel");
-      0  }
-        console.log(IsParticipant);
-
-    }, [IsParticipant]);
-    */
     return (
         <div className={currentMode === 'Dark' ? 'dark' : ''}>
             <div className="flex relative dark:bg-main-dark-bg">
@@ -92,16 +82,14 @@ export const Proyecto = () => {
                                 {userRole && <Route path="Entregas" element={<Entregas />} />}
                                 {userRole && <Route path="Configuracion" element={<Configuracion />} />}
                                 {userRole && <Route path="Kanban" element={<Kanban />} />}
-                                {userRole && <Route path="Videollamada" element={<Videollamada />} />}
+                                {userRole && <Route path="VideoChat" element={<VideoChat />} />}
 
 
                                 {!userRole && <Route path="" element={<Dashboard />} />}
                                 {!userRole && <Route path="Calendario" element={<Calendario />} />}
                                 {!userRole && <Route path="Chat" element={<Chat />} />}
                                 {!userRole && <Route path="Kanban" element={<Kanban />} />}
-                                {!userRole && <Route path="Videollamada" element={<Videollamada />} />}
-
-
+                                {!userRole && <Route path="VideoChat" element={<VideoChat />} />}
                             </Route>
                         </Routes>
                     </div>

@@ -35,3 +35,25 @@ export const joinSchema = z.object({
         new RegExp(/^[A-Z0-9]{5}$/), {message: "Código inválido"}
     )
 })
+
+export const taskSchema = z.object({
+    NOMBRE: z.string().nonempty({
+        required_error: 'El nombre es requerido'
+    }).regex(
+        new RegExp(/^[A-Za-zÑñÁáÉéÍíÓóÚúÜü\s]+$/), { message: "Descripción invalida" }
+    ),
+    DESCRIPCION: z.string().nonempty({
+        required_error: 'El descripcion del proyecto es requerido'
+    }).regex(
+        new RegExp(/^[A-Za-zÑñÁáÉéÍíÓóÚúÜü\s]+$/), { message: "Descripción invalida" }
+    ),
+    FECHA_INICIO: z.string().nonempty({
+        required_error: 'La fecha de inicio es requerida'
+    }),
+    FECHA_TERMINO: z.string().nonempty({
+        required_error: 'La fecha de inicio es requerida'
+    }),
+    FECHA_MAX_TERMINO:z.string().nonempty({
+        required_error: 'La fecha de inicio es requerida'
+    })
+})

@@ -65,7 +65,18 @@ export const ProjectProvider = ({ children }) => {
 
   }, [IsCreated, projecterrors, message, joinerrors, IsJoined]);
 
-
+  const createTask = async (Task) => {
+    try {
+      const res = await createTask(Task);
+      console.log(res.data);
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.message) {
+        setProjecterrors(error.response.data.message);
+      } else {
+        setProjecterrors("Error del servidor");
+      }
+    }
+  }
 
   const create = async (project) => {
     try {
@@ -147,7 +158,7 @@ export const ProjectProvider = ({ children }) => {
       }
     } catch (error) {
       if (error.response && error.response.status === 401) {
-        setIsParticipant(false); 
+        setIsParticipant(false);
       } else {
         setIsParticipant(false);
         if (error.response && error.response.data && error.response.data.message) {
