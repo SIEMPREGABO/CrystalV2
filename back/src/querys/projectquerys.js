@@ -300,3 +300,41 @@ export function ActualizarEstado(ESTADO, TABLA, ID) {
         }
     })
 }
+
+export function AgregarRequerimiento(OBJETIVO, REQUERIMIENTO, ID_TIPO_REQUERIMIENTO, ID_ENTREGA){
+    return new Promise(async (resolve, reject) => {
+        const connection = await getConnection();
+        const requirementsquery = "INSERT INTO REQUERIMIENTOS (OBJETIVO, DESCRIPCION, ID_TIPO_REQUERIMIENTO, ID_ENTREGA) VALUES (?,?,?,?);";
+        let idtipo;
+
+        if((typeof ID_TIPO_REQUERIMIENTO) == "number"){
+            console.log("la variable es un numero");
+            idtipo = ID_TIPO_REQUERIMIENTO;
+        }else if((typeof ID_TIPO_REQUERIMIENTO) == "string"){
+            console.log("la variable es una cadena");
+            if(ID_TIPO_REQUERIMIENTO == "Cambio"){
+                idtipo = 6;
+            }else if(ID_TIPO_REQUERIMIENTO == "Requerimiento"){
+                idtipo = 1;
+            }else{
+                idtipo = ID_TIPO_REQUERIMIENTO;
+            }
+        }
+        /*if(ID_TIPO_REQUERIMIENTO === 'cambio'){
+            idtipo = 6;  
+            console.log(typeof idtipo);
+        }else{
+            idtipo= 1;
+            console.log(typeof idtipo);
+        }*/
+        connection.query(requirementsquery, [OBJETIVO, REQUERIMIENTO, idtipo, ID_ENTREGA], (error, results)=>{
+            if(error){
+                reject(error);
+            }else if(results.affectedRows > 0 ){
+                resolve({success: true});
+            }else{
+                resolve({ success: false });
+            }
+        } );
+    })
+}

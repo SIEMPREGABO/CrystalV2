@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { createContext, useContext, useState } from "react";
-import { requestCreate, requestJoin, requestProjects, requestParticipants, requestFechasProject, requestFechasEntregas } from "../requests/projectReq.js";
+import { requestCreate, requestJoin, requestProjects, requestParticipants, requestFechasProject, requestFechasEntregas, requestAddRequirement } from "../requests/projectReq.js";
 import Cookies from "js-cookie";
 
 const ProjectContext = createContext();
@@ -24,7 +24,9 @@ export const ProjectProvider = ({ children }) => {
   const [participants, setParticipants] = useState([]);
   const [fechasproject, setFechasproject] = useState([]);
   const [fechasentregas, setFechasentregas] = useState([]);
-
+  const [requirementerrors, setRequirementErrors] = useState([]);
+  const [entregaactual, setEntregaactual] = useState([]);
+  //const [requerimientos, setRequerimientos] = useState([])
   //const [IsLoading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -75,6 +77,20 @@ export const ProjectProvider = ({ children }) => {
       }
     }
   };
+
+  const createRequirements = async (project) => {
+    try {
+      const res = await requestAddRequirement(project);
+      console.log(res.data);
+      setMessage("Requerimiento creado con éxito");
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.message) {
+        setProjecterrors(error.response.data.message);
+      } else {
+        setProjecterrors("Error del servidor");
+      }
+    }
+  }
 
   const getProjects = async () => {
     try {
@@ -161,12 +177,14 @@ export const ProjectProvider = ({ children }) => {
         fechaserrors,
         fechasproject,
         fechasentregas,
+        requirementerrors,
         create,
         getProjects,
         joinProject,
         getParticipants,
         getFechasProyecto,
-        getFechasEntregas
+        getFechasEntregas,
+        createRequirements
       }}
     >
       {children}

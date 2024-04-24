@@ -25,7 +25,7 @@ export const FormProyect = () => {
     const onSubmit = handleSubmit(async (values) => {
         const data = {
             NOMBRE_PROYECTO: values.NOMBRE_PROYECTO,
-            OBJETIVO: values.OBJETIVO,
+            OBJETIVO: values.OBJETIVO,  
             DESCRIPCION_GNRL: values.DESCRIPCION_GNRL,
             FECHA_INICIO: values.FECHA_INICIO,
             FECHA_TERMINO: values.FECHA_TERMINO,

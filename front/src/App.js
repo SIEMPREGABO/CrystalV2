@@ -12,10 +12,11 @@ import ProtectedRoute from './ProtectedRoute';
 import Footer from "./modules/Footer.js";
 import Proyecto from "./modules/Proyect.js"
 import FormProyect from './modules/FormProyect.js';
+import RequerimientoVoz from './modules/RequerimientosVoz.js';
 import ConfigProfile from './modules/ConfigProfile.js';
 import { ProjectProvider } from './context/projectContext.js';
 import { ContextProvider } from "./context/Provider";
-
+import Requerimientos from './modules/Requerimientos.js';
 function App() {
   return (
     <AuthProvider>
@@ -35,7 +36,8 @@ function App() {
             <Route path="/Proyecto/:id/*" element={<Proyecto />}>
               <Route index element={<Proyecto />} />
             </Route>
-
+            <Route path="/requerimientos-x-voz" element={<RequerimientoVoz />}></Route>
+            <Route path="/requerimientos" element={<Requerimientos />}></Route>
           </Route>
         </Routes>
         <Footer />
