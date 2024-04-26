@@ -198,7 +198,7 @@ export function obtenerFechasID(tabla,ID) {
             }else if(tabla === "ENTREGAS"){
                 query =  `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO, CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, ESTADO FROM ${tabla} WHERE ID_PROYECTO = ?`
             }else if(tabla === "ITERACIONES"){
-                query =  `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO, CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, ESTADO FROM ${tabla} WHERE ID_ENTREGA = ?`
+                query =  `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO, CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, ESTADO, ID_ENTREGA FROM ${tabla} WHERE ID_ENTREGA = ?`
             }
             //const query = `SELECT ID, FECHA_INICIO, FECHA_TERMINO, ESTADO FROM ${tabla} WHERE ID = ?`;
             connection.query(query,[ID], (err, results) => {
@@ -214,25 +214,24 @@ export function obtenerFechasID(tabla,ID) {
     });
 }
 
-/*
-export function obtenerFechasIDEntregas(tabla,ID) {
-    return new Promise(async (resolve, reject) => {
+export function getRequerimientosEntrega(ID_ENTREGA){
+    return new Promise(async (resolve, reject)=>{
         try {
             const connection = await getConnection();
-            const query =  `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO, CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, ESTADO FROM ${tabla} WHERE ID_PROYECTO = ?`
-            connection.query(query,[ID], (err, results) => {
-                if (err) {
+            const query = 'SELECT ID, OBJETIVO, DESCRIPCION, ID_TIPO_REQUERIMIENTO, ID_ENTREGA FROM REQUERIMIENTOS WHERE ID_ENTREGA = ?';
+            connection.query(query, [ID_ENTREGA], async (err, results)=>{
+                if(err){
                     reject(err);
-                } else {
+                }else{
                     resolve(results);
                 }
-            });
+            })
         } catch (error) {
             reject(error);
         }
-    });
+    })
 }
-*/
+
 export function getParticipantsQuery(ID_PROYECTO) {
     return new Promise(async (resolve, reject) => {
         try {
@@ -282,7 +281,7 @@ export function ActualizarEstado(ESTADO, TABLA, ID) {
                 console.log("Entrega: ",ID," se escuentra en: ", ESTADO);
             }else if(TABLA === 2){
                 query = 'UPDATE ITERACIONES SET ESTADO = ? WHERE ID = ?';
-                console.log("Ieracion: ",ID," se escuentra en: ", ESTADO);
+                console.log("Iteracion: ",ID," se escuentra en: ", ESTADO);
             }
             connection.query(query, [ESTADO, ID], (err, results)=>{
                 if(err){
@@ -298,5 +297,43 @@ export function ActualizarEstado(ESTADO, TABLA, ID) {
         } catch (error) {
             reject(error);
         }
+    })
+}
+
+export function AgregarRequerimiento(OBJETIVO, REQUERIMIENTO, ID_TIPO_REQUERIMIENTO, ID_ENTREGA){
+    return new Promise(async (resolve, reject) => {
+        const connection = await getConnection();
+        const requirementsquery = "INSERT INTO REQUERIMIENTOS (OBJETIVO, DESCRIPCION, ID_TIPO_REQUERIMIENTO, ID_ENTREGA) VALUES (?,?,?,?);";
+        let idtipo;
+
+        if((typeof ID_TIPO_REQUERIMIENTO) == "number"){
+            console.log("la variable es un numero");
+            idtipo = ID_TIPO_REQUERIMIENTO;
+        }else if((typeof ID_TIPO_REQUERIMIENTO) == "string"){
+            console.log("la variable es una cadena");
+            if(ID_TIPO_REQUERIMIENTO == "Cambio"){
+                idtipo = 6;
+            }else if(ID_TIPO_REQUERIMIENTO == "Requerimiento"){
+                idtipo = 1;
+            }else{
+                idtipo = ID_TIPO_REQUERIMIENTO;
+            }
+        }
+        /*if(ID_TIPO_REQUERIMIENTO === 'cambio'){
+            idtipo = 6;  
+            console.log(typeof idtipo);
+        }else{
+            idtipo= 1;
+            console.log(typeof idtipo);
+        }*/
+        connection.query(requirementsquery, [OBJETIVO, REQUERIMIENTO, idtipo, ID_ENTREGA], (error, results)=>{
+            if(error){
+                reject(error);
+            }else if(results.affectedRows > 0 ){
+                resolve({success: true});
+            }else{
+                resolve({ success: false });
+            }
+        } );
     })
 }
