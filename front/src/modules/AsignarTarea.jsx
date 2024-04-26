@@ -65,6 +65,7 @@ function AsignarTarea() {
                   className="block w-full px-2 py-2 mt-2 text-indigo-400 bg-white border rounded-md focus:border-indigo-400 focus:ring-indigo-300 focus:outline-none focus:ring focus:ring-opacity-40"
                 />
               </div>
+
               <div>
                 <label htmlFor="finalFecha" className="block text-sm font-semibold text-gray-800">
                   Fecha Maxima de Entrega
@@ -77,8 +78,22 @@ function AsignarTarea() {
                   className="block w-full px-2 py-2 mt-2 text-indigo-400 bg-white border rounded-md focus:border-indigo-400 focus:ring-indigo-300 focus:outline-none focus:ring focus:ring-opacity-40"
                 />
               </div>
+              
             </div>
           </div>
+
+          <div className="mb-2">
+                <label htmlFor="horaEntrega" className="block text-sm font-semibold text-gray-800">
+                  Hora de entrega
+                </label>
+                <input
+                  type="time"
+                  id="horaEntrega"
+                  name="horaEntrega"
+                  required
+                  className="block w-full px-2 py-2 mt-2 text-indigo-400 bg-white border rounded-md focus:border-indigo-400 focus:ring-indigo-300 focus:outline-none focus:ring focus:ring-opacity-40"
+                />
+              </div>
 
           {/* Tarea Dependiente */}
           <div className="mb-2">
@@ -91,7 +106,7 @@ function AsignarTarea() {
               className="block w-full px-4 py-2 mt-2 text-indigo-400 bg-white border rounded-md focus:border-indigo-400 focus:ring-indigo-300 focus:outline-none focus:ring focus:ring-opacity-40"
             >
               <option value="">Selecciona una tarea dependiente</option>
-              {/* Aquí irían las opciones dinámicas */}
+
             </select>
           </div>
 
@@ -110,7 +125,7 @@ function AsignarTarea() {
             />
           </div>
 
-          {/* Rol del Participante */}
+
           <div className="mb-2">
             <label htmlFor="rolParticipante" className="block text-sm font-semibold text-gray-800">
               Rol del Participante
@@ -121,7 +136,6 @@ function AsignarTarea() {
               className="block w-full px-4 py-2 mt-2 text-indigo-400 bg-white border rounded-md focus:border-indigo-400 focus:ring-indigo-300 focus:outline-none focus:ring focus:ring-opacity-40"
             >
               <option value="">Selecciona un rol</option>
-              {/* Aquí irían las opciones dinámicas */}
             </select>
           </div>
 
@@ -136,11 +150,10 @@ function AsignarTarea() {
               className="block w-full px-4 py-2 mt-2 text-indigo-400 bg-white border rounded-md focus:border-indigo-400 focus:ring-indigo-300 focus:outline-none focus:ring focus:ring-opacity-40"
             >
               <option value="">Asigna un participante</option>
-              {/* Aquí irían las opciones dinámicas */}
+
             </select>
           </div>
 
-          {/* Botón de envío */}
           <div className="mt-6">
             <button type="submit" className="w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-indigo-700 rounded-md hover:bg-indigo-600 focus:outline-none focus:bg-indigo-600">
               Crear

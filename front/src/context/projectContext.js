@@ -24,6 +24,11 @@ export const ProjectProvider = ({ children }) => {
   const [participants, setParticipants] = useState([]);
   const [fechasproject, setFechasproject] = useState([]);
   const [fechasentregas, setFechasentregas] = useState([]);
+  
+  const [entregaactual, setEntregaactual] = useState([]);
+  const [iteracionactual, setIteracionactual] = useState([]);
+  const [requerimientos, setRequerimientos] = useState([]);
+
 
   //const [IsLoading, setLoading] = useState(true);
 
@@ -60,7 +65,18 @@ export const ProjectProvider = ({ children }) => {
 
   }, [IsCreated, projecterrors, message, joinerrors, IsJoined, getParticipantserrors, fechaserrors]);
 
-
+ const createTask = async (Task) => {
+    try {
+      const res = await createTask(Task);
+      console.log(res.data);
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.message) {
+        setProjecterrors(error.response.data.message);
+      } else {
+        setProjecterrors("Error del servidor");
+      }
+    }
+  }
 
   const create = async (project) => {
     try {
@@ -90,6 +106,8 @@ export const ProjectProvider = ({ children }) => {
       }
     }
   };
+
+  
 
   const getParticipants = async (project) => {
     try {
