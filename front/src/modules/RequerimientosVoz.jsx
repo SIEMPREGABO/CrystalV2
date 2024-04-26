@@ -38,7 +38,7 @@ export const RequerimientoVoz = () => {
         resolver: zodResolver(requerimientoSchema)
     });
 
-    const { createRequirements, requirementerrors, projecterrors, entregaactual, message } = useProject();
+    const { createRequirements, projecterrors, entregaactual, message } = useProject();
 
     const onSubmit = handleSubmit(async (values) => {
         const data = {

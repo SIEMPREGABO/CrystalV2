@@ -8,8 +8,8 @@ import AsignarTarea from "./AsignarTarea.jsx";
 import Dashboard from "./Inicio.jsx";
 import Entregas from "./Entregas.js";
 import Kanban from "./Kanban.jsx";
-//import RequerimientoVoz from "./RequerimientosVoz.jsx";
-//import Requerimientos from "./Requerimientos.jsx";
+import RequerimientoVoz from "./RequerimientosVoz.jsx";
+import Requerimientos from "./Requerimientos.jsx";
 import VideoChat from "./VideoChat.jsx";
 import { FiSettings } from 'react-icons/fi';
 import { TooltipComponent } from '@syncfusion/ej2-react-popups';
@@ -85,8 +85,8 @@ export const Proyecto = () => {
                                 {userRole && <Route path="Configuracion" element={<Configuracion />} />}
                                 {userRole && <Route path="Kanban" element={<Kanban />} />}
                                 {userRole && <Route path="VideoChat" element={<VideoChat />} />}
-                                {/*userRole && <Route path="/Requerimientos-x-voz" element={<RequerimientoVoz />}/>*/}
-                                {/*userRole && <Route path="/Requerimientos" element={<Requerimientos />}/>*/}
+                                {userRole && <Route path="/Requerimientos-x-voz" element={<RequerimientoVoz />}/>}
+                                {userRole && <Route path="/Requerimientos" element={<Requerimientos />}/>}
 
 
                                 {!userRole && <Route path="" element={<Dashboard />} />}

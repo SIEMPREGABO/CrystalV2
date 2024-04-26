@@ -20,7 +20,7 @@ import { links } from '../data/dummy';
 const Sidebar = () => {
   const { activeMenu, setActiveMenu, screenSize, currentColor } = useStateContext();
   const { id } = useParams();
-  const { userRole, isAdmin } = useProject();
+  const { userRole } = useProject();
 
 
   const handleCloseSideBar = () => {
@@ -51,7 +51,7 @@ const Sidebar = () => {
               <div key={item.title}>
                 <p className='text-gray-400 m-3 mt-4 uppercase'>{item.title}</p>
                 {item.links.map((link) => (
-                  link.isAdmin === isAdmin || !link.isAdmin ? (
+                  link.isAdmin === userRole || !link.isAdmin ? (
                     <NavLink
                       to={`/Proyecto/${id}/${link.url}`}
                       key={link.name}

@@ -14,10 +14,26 @@ function AsignarTarea() {
   });
   // la funcion creatTask
   //Agregar a la tarea la tarea dependiente y el requerimiento que cumple y rol, a quien se asigna
-  const { fechasproject, entregaactual, iteracionactual, createTask, participants, requerimientos } = useProject();
+  const { fechasproject, iteracionactual, createTask, participants, requerimientos } = useProject();
   const onSubmit = handleSubmit(async (values) => {
-    console.log(values);
-  })
+    const data = {
+      NOMBRE: values.NOMBRE,
+      DESCRIPCION: values.DESCRIPCION,
+      FECHA_INICIO: values.FECHA_INICIO,
+      FECHA_TERMINO: values.FECHA_TERMINO,
+      FECHA_MAX_TERMINO: values.FECHA_MAX_TERMINO,
+      ID_REQUERIMIENTO: values.ID_REQUERIMIENTO,
+      ROLPARTICIPANTE: values.ROLPARTICIPANTE,
+      ID_USUARIO: values.ID_USUARIO,
+      ID_TAREA_DEPENDIENTE: values.ID_TAREA_DEPENDIENTE,
+      iteracionactual: iteracionactual
+    }
+    createTask(data);
+  });
+
+  useEffect(()=>{
+    //console.log(fechasproject);
+  },[])
 
 
 
@@ -26,7 +42,7 @@ function AsignarTarea() {
     <div className="relative flex flex-col justify-center min-h-screen overflow-hidden">
       {fechasproject[0].ESTADO === "En espera" &&
         <div>
-          {entregaactual === "" &&
+          {iteracionactual === "" &&
             <div className="w-full p-6 m-auto bg-white rounded-md  ring-indigo-600 lg:max-w-xl">
               no puedes asignar tareas aun
             </div>}
@@ -34,7 +50,7 @@ function AsignarTarea() {
 
       {fechasproject[0].ESTADO === "En desarrollo" &&
         <div>
-          {entregaactual !== "" &&
+          {iteracionactual !== "" &&
             <div className="w-full p-6 m-auto bg-white rounded-md shadow-xl ring-indigo-600 lg:max-w-xl">
               <h1 className="text-3xl font-semibold text-center text-indigo-700 underline uppercase">
                 Asigna una tarea

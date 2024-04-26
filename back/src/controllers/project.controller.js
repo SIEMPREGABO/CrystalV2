@@ -169,7 +169,8 @@ export const getTasks = async (req, res) => {
 
 export const createTask = async (req, res) => {
     //Agregar a la tarea la tarea dependiente y el requerimiento que cumple y rol, a quien se asigna
-    const { NOMBRE, DESCRIPCION, FECHA_INICIO, FECHA_TERMINO, FECHA_MAX_TERMINO, ITERACION, ID_USUARIO, REQUERIMIENTO, ROL, ID_TAREA_DEPENDIENTE} = req.body
+    const { NOMBRE, DESCRIPCION, FECHA_INICIO, FECHA_TERMINO, FECHA_MAX_TERMINO, iteracionactual, ID_USUARIO, ID_REQUERIMIENTO, ROLPARTICIPANTE, ID_TAREA_DEPENDIENTE} = req.body
+    console.log(req.body);
     const FECHA_ACTUAL = moment().tz(zonaHoraria);
     try {
         const FECHA_INICIO_TAREA = moment(FECHA_INICIO);const FECHA_TERMINO_TAREA = moment(FECHA_TERMINO);const FECHA_MAX_TERMINO_TAREA = moment(FECHA_MAX_TERMINO);const FECHA_INICIO_ITERACION = moment(ITERACION.FECHA_INICIO);const FECHA_TERMINO_ITERACION = moment(ITERACION.FECHA_TERMINO);
@@ -182,6 +183,11 @@ export const createTask = async (req, res) => {
         if (MINUTOS_DIFERENCIA < 120) return res.status(400).json({ message: ["Diferencia minimo de 2 horas"] });
         const MINUTOS_DIFERENCIA_MAX = FECHA_MAX_TERMINO_TAREA.diff(FECHA_TERMINO_TAREA, 'minutes');
         if (MINUTOS_DIFERENCIA_MAX < 120) return res.status(400).json({ message: ["Diferencia minimo de 2 horas en la hora maxima"] });
+
+        const FECHA_INICIO_ITE = moment(iteracionactual.FECHA_INICIO);const FECHA_TERMINO_ITE = moment(iteracionactual.FECHA_TERMINO);
+        if(FECHA_INICIO_TAREA.isBefore(FECHA_INICIO_ITE)) return res.status(400).json({message:["La fecha de inicio no correponde al de la iteracion"]})
+        if(FECHA_MAX_TERMINO_TAREA.isAfter(FECHA_TERMINO_ITE)) return res.status(400).json({message: ["La fecha max de termino no corresponde a la iteracion"]})
+        
     } catch (error) {
         res.status(500).json({ mensaje: ["Error inesperado, intentalo nuevamente"] });
     }

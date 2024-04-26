@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { createContext, useContext, useState } from "react";
-import { requestCreate, requestJoin, requestProjects, requestPermissions, requestgetProject, requestAddRequirement } from "../requests/projectReq.js";
+import { requestCreate, requestJoin, requestProjects, requestPermissions, requestgetProject, requestAddRequirement, requestCreateTask } from "../requests/projectReq.js";
 import Cookies from "js-cookie";
 
 const ProjectContext = createContext();
@@ -68,7 +68,7 @@ export const ProjectProvider = ({ children }) => {
 
   const createTask = async (Task) => {
     try {
-      const res = await createTask(Task);
+      const res = await requestCreateTask(Task);
       console.log(res.data);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
@@ -146,6 +146,7 @@ export const ProjectProvider = ({ children }) => {
       setEntregaactual(res.data.entregaActual);
       setIteracionactual(res.data.iteracionActual);
       setRequerimientos(res.data.requerimientos);
+      //console.log(res.data.fechasProyecto);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
         setProjecterrors(error.response.data.message);
@@ -208,7 +209,8 @@ export const ProjectProvider = ({ children }) => {
         joinProject,
         getProject,
         getPermissions,
-        createRequirements
+        createRequirements,
+        createTask
       }}
     >
       {children}
