@@ -54,83 +54,68 @@ export const Panel = () => {
 
     return (
         <div>
-            <Header/>
+            <Header />
             <div className="container-fluid position-relative p-4">
                 {joinerrors && <div className=" bg-danger mt-2 me-2 text-white shadow">{joinerrors}</div>}
                 {message && <div className=" bg-success mt-2 me-2 text-white shadow">{message}</div>}
                 <div className="container-sm">
                     <div className="row justify-content-evenly d-md-flex flex-md-equal w-100 my-md-3 p-md-3 mx-auto">
                         <div className="text-bg-dark overflow-hidden col">
-                        
-                        <h1 class="mb-4 text-3xl font-extrabold text-gray-900 dark:text-white md:text-5xl lg:text-6xl"><span class="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">Bienvenido </span>{user.NOMBRE_USUARIO}.</h1>
-                        <p class="text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400">ID: {user.ID.toString().padStart(5, '0')}</p>
-                        <p class="text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400">Formando parte desde: {fecha}</p>
+
+                            <h1 class="mb-4 text-3xl font-extrabold text-gray-900 dark:text-white md:text-5xl lg:text-6xl"><span class="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">Bienvenido </span>{user.NOMBRE_USUARIO}.</h1>
+                            <p class="text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400">ID: {user.ID.toString().padStart(5, '0')}</p>
+                            <p class="text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400">Formando parte desde: {fecha}</p>
                         </div>
                     </div>
                     <div className="card rounded-lg shadow-sm bg-white ">
                         <div className="card-heade bg:gray-800 font-bold py-1 px-4 flex justify-between items-center text-center">
                             <h2 className="text-center  mb-4 text-3xl font-extrabold leading-none tracking-tight text-gray-700 md:text-4xl dark:text-white">
-                            <div className=" absolute top-0 right-0 h-16 w-auto pe-5 pt-2">
-                                <Link className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-3 py-2.5 me-2 mb-0" to="/configurar-proyecto">Crear Proyecto</Link>
-                            </div>   Tus Proyectos Activos</h2>
+                                <div className=" absolute top-0 right-0 h-16 w-auto pe-5 pt-2">
+                                    <Link className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-3 py-2.5 me-2 mb-0" to="/configurar-proyecto">Crear Proyecto</Link>
+                                </div>   Tus Proyectos Activos</h2>
                         </div>
-                        
-                        {/* <ul className="list-group list-group-flush text-start">
-                            {projects &&
-                                <div>
-                                    {projects.map((project) => (
-                                        <Link className="list-group-item text-start" to={`/Proyecto/${(project.ID).toString().padStart(5, '0')}`} key={project.ID}>
-                                            Nombre del proyecto: {project.NOMBRE} <strong className="fw-light" style={{ fontSize: '10px' }}>ID del proyecto: {(project.ID).toString().padStart(5, '0')}</strong>
-
-                                        </Link>
-                                    ))}
-                                </div>}
-                            {!projects &&
-                                <p className="list-group-item text-start">No tienes proyectos</p>
-                            }
-                            <div>
-                            </div>
-                        </ul> */}
-
-
-                            
-
-                            {projects &&
+                        {projects &&
                             <div className='m-2 md:m-10 p-2 md:p-10 bg-white rounded-3xl'>
                                 <GridComponent dataSource={projects} allowPaging allowSorting>
                                     <ColumnsDirective>
-                                    <ColumnDirective field='ID' headerText='ID del proyecto' width='120' textAlign='Center' />
-                                    <ColumnDirective field='NOMBRE' headerText='Nombre del proyecto' width='150' textAlign='Center' />
-                                    <ColumnDirective field='FECHA_INI' headerText='Fecha de Termino' width='150' textAlign='Center' template={(props) => {
+                                        <ColumnDirective field='ID' headerText='ID del proyecto' width='120' textAlign='Center' />
+                                        <ColumnDirective field='NOMBRE' headerText='Nombre del proyecto' width='150' textAlign='Center' />
+                                        <ColumnDirective field='FECHA_INI' headerText='Fecha de Termino' width='150' textAlign='Center' template={(props) => {
                                             const fechaConsulta = props.FECHA_INICIO; // Fecha recibida desde la consulta
                                             const fecha = new Date(fechaConsulta); // Crear un objeto Date con la fecha de la consulta\
                                             const año = fecha.getFullYear();
                                             const mes = fecha.getMonth() + 1; // Los meses van de 0 a 11, por lo que sumamos 1
                                             const dia = fecha.getDate();
                                             const fechaFormateada = `${dia}/${mes}/${año}`;
-                                            return <span>{fechaFormateada}</span>;}}/>
+                                            return <span>{fechaFormateada}</span>;
+                                        }} />
 
-                                    <ColumnDirective field='FECHA_TERMINO' headerText='Fecha de Termino' width='150' textAlign='Center' template={(props) => {
-                                            const fechaConsulta = props.FECHA_TERMINO; 
-                                            const fecha = new Date(fechaConsulta); 
+                                        <ColumnDirective field='FECHA_TERMINO' headerText='Fecha de Termino' width='150' textAlign='Center' template={(props) => {
+                                            const fechaConsulta = props.FECHA_TERMINO;
+                                            const fecha = new Date(fechaConsulta);
                                             const año = fecha.getFullYear();
-                                            const mes = fecha.getMonth() + 1; 
+                                            const mes = fecha.getMonth() + 1;
                                             const dia = fecha.getDate();
                                             const fechaFormateada = `${dia}/${mes}/${año}`;
-                                            return <span>{fechaFormateada}</span>;}}/>
-                                    <ColumnDirective field='ESTADO' headerText='Estatus del proyecto' width='150' textAlign='Center' />
-                                    <ColumnDirective headerText='Proyecto' field='UNIRSE' width='120' textAlign='Center' template={(props) => 
-                                        ( <Link className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-2 rounded-full" to={`/Proyecto/${(props.ID).toString().padStart(5, '0')}`}>
-                                        Ir al proyecto </Link>)}/>
+
+                                            return <span>{fechaFormateada}</span>;
+                                        }} />
+                                        <ColumnDirective field='ESTADO' headerText='Estatus del proyecto' width='150' textAlign='Center' />
+                                        <ColumnDirective headerText='Proyecto' field='UNIRSE' width='120' textAlign='Center' template={(props) => (
+                                            <Link 
+                                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-2 rounded-full" 
+                                            to={`/Proyecto/${(props.ID).toString().padStart(5, '0')}`}>
+                                                Ir al proyecto </Link>)} 
+                                            />
                                     </ColumnsDirective>
-                                    
+
                                     <Inject services={[Resize, Sort, ContextMenu, Filter, Page, ExcelExport, Edit, PdfExport]} />
                                 </GridComponent>
                             </div>}
-                            {!projects &&
-                                <p className="list-group-item text-start">No tienes proyectos</p>
-                            }  
-                            <div className="card-body row justify-content-evenly">
+                        {!projects &&
+                            <p className="list-group-item text-start">No tienes proyectos</p>
+                        }
+                        <div className="card-body row justify-content-evenly">
                             <div className="col">
                                 <form className="" onSubmit={handleSubmit(onSubmit)}>
                                     <div className="p-2 px-2 row justify-content-evenly">
@@ -148,7 +133,7 @@ export const Panel = () => {
                                 </form>
                                 {errors.CODIGO_UNIRSE && <div class="flex items-center  p-1 mb-1  text-red-800 rounded-lg bg-red-100 dark:bg-gray-800 dark:text-red-600 " role="alert">{errors.CODIGO_UNIRSE.message}</div>}
                             </div>
-           
+
                         </div>
                     </div>
                 </div>

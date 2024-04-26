@@ -15,11 +15,12 @@ import { BsKanban } from 'react-icons/bs';
 import { IoMdContacts } from 'react-icons/io';
 import { RiContactsLine } from 'react-icons/ri';
 import { useProject } from '../context/projectContext';
+import { links } from '../data/dummy';
 
 const Sidebar = () => {
   const { activeMenu, setActiveMenu, screenSize, currentColor } = useStateContext();
   const { id } = useParams();
-  const {  userRole } = useProject();
+  const { userRole, isAdmin } = useProject();
 
 
   const handleCloseSideBar = () => {
@@ -45,7 +46,29 @@ const Sidebar = () => {
             </button>
           </TooltipComponent>
         </div>
-        {userRole &&
+        <div className='mt-10'>
+            {links.map((item) => (
+              <div key={item.title}>
+                <p className='text-gray-400 m-3 mt-4 uppercase'>{item.title}</p>
+                {item.links.map((link) => (
+                  link.isAdmin === isAdmin || !link.isAdmin ? (
+                    <NavLink
+                      to={`/Proyecto/${id}/${link.url}`}
+                      key={link.name}
+                      onClick={handleCloseSideBar}
+                      style={({ isActive }) => ({ backgroundColor: isActive ? currentColor : '' })}
+                      className={({ isActive }) => isActive ? activeLink : normalLink}>
+                      {link.icon}
+                      <span className='capitalize'>{link.name}</span>
+                    </NavLink>
+                  ) : null
+                ))}
+              </div>
+            ))}
+          </div>
+
+
+        {/*userRole &&
           <div className='mt-10'>
             <p className='text-gray-400 m-3 mt-4 uppercase'>
               DASHBOARD
@@ -149,8 +172,8 @@ const Sidebar = () => {
               </span>
             </NavLink>
           </div>
-        }
-        {!userRole &&
+        </div>*/}
+        {/*!userRole &&
           <div className='mt-10'>
             <p className='text-gray-400 m-3 mt-4 uppercase'>
               DASHBOARD
@@ -211,7 +234,7 @@ const Sidebar = () => {
 
 
           </div>
-        }
+      */}
       </>)}
 
     </div>

@@ -1,7 +1,7 @@
 import moment from 'moment-timezone';
 import { SECRET_TOKEN, SECRETPASS_TOKEN } from '../config.js';
 import { generarCodigo, generarEntregas } from '../libs/makerProject.js';
-import { agregarUsuario, crearProyecto, projectsUsuario, verificarCodigo, verificarUnion, obtenerFechas, getParticipantsQuery, ActualizarEstado, obtenerFechasID } from '../querys/projectquerys.js';
+import { agregarUsuario, crearProyecto, projectsUsuario, verificarCodigo, verificarUnion, obtenerFechas, getParticipantsQuery, ActualizarEstado, obtenerFechasID, getRequerimientosEntrega, AgregarRequerimiento } from '../querys/projectquerys.js';
 import jwt from 'jsonwebtoken'
 import { zonaHoraria } from '../config.js';
 import { createProjectToken } from '../libs/jwt.js';
@@ -135,13 +135,17 @@ export const getProject = async (req, res) => {
                 }
             })
         });
+
+        const requerimientos = await getRequerimientosEntrega(ENTREGA_ACTUAL.ID);
+        //console.log(requerimientos);
         const data = {
             fechasProyecto: FECHAS_PROYECTO,
             fechasEntregas: FECHAS_ENTREGAS,
             fechasIteraciones: FECHAS_ITERACIONES,
             entregaActual: ENTREGA_ACTUAL,
             iteracionActual: ITERACION_ACTUAL,
-            participants: participants
+            participants: participants,
+            requerimientos: requerimientos
         };
         return res.json(data);
     } catch (error) {
@@ -245,4 +249,16 @@ export const activarTareasInactivas = async (req, res) => {
     }));
     console.log("Im alive");
     setTimeout(activarTareasInactivas, 10 * 60 * 1000);
+}
+
+export const agregarRequerimiento = async (req, res) =>{
+    try{
+        const {OBJETIVO, DESCRIPCION, TIPO, ID_ENTREGA} = req.body;
+        const agregar_requerimiento = await AgregarRequerimiento(OBJETIVO, DESCRIPCION, TIPO, ID_ENTREGA);
+
+        if(!agregar_requerimiento.success) res.status(500).json({ mensaje: ["Error al agregar el requerimiento"] });
+        return res.status(200).json({ messsage: ["Requerimiento creado con éxito"] });
+    }catch(error){
+        res.status(500).json({ message: [error.message] });
+    }
 }

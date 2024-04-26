@@ -7,6 +7,7 @@ export const requestProjects = async () => axios.get(`/getProjects`);
 export const requestPermissions = async id => axios.post(`/getPermissions`, id);
 export const requestgetProject = async id => axios.post(`/getProject`, id);
 export const requestCreateTask = async task => axios.post(`/createTask`,task);
+export const requestAddRequirement = async project => axios.post('/addRequirement', project);
 
 
 

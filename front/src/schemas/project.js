@@ -57,3 +57,19 @@ export const taskSchema = z.object({
         required_error: 'La fecha de inicio es requerida'
     })
 })
+
+export const requerimientoSchema = z.object({
+    OBJETIVO: z.string().nonempty({
+        required_error: 'El objetivo es requerido'
+    }).regex(
+        new RegExp(/^[A-Za-zÑñÁáÉéÍíÓóÚúÜü\s]+$/), { message: "Descripción invalida" }
+    ),
+    DESCRIPCION: z.string().nonempty({
+        required_error: 'La descripcion es requerida'
+    }).regex(
+        new RegExp(/^[A-Za-zÑñÁáÉéÍíÓóÚúÜü\s]+$/), { message: "Descripción invalida" }
+    ),
+    TIPO_REQ: z.string().nonempty({
+        required_error: 'El tipo es requerido'
+    })
+})

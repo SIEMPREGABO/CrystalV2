@@ -8,6 +8,8 @@ import AsignarTarea from "./AsignarTarea.jsx";
 import Dashboard from "./Inicio.jsx";
 import Entregas from "./Entregas.js";
 import Kanban from "./Kanban.jsx";
+//import RequerimientoVoz from "./RequerimientosVoz.jsx";
+//import Requerimientos from "./Requerimientos.jsx";
 import VideoChat from "./VideoChat.jsx";
 import { FiSettings } from 'react-icons/fi';
 import { TooltipComponent } from '@syncfusion/ej2-react-popups';
@@ -76,13 +78,15 @@ export const Proyecto = () => {
                                 {/* Proteger las rutas autorizadas */}
                                 {userRole && <Route path="" element={<Dashboard />} />}
                                 {userRole && <Route path="Participantes" element={<Participantes />} />}
-                                {userRole && <Route path="Asignartarea" element={<AsignarTarea />} />}
+                                {userRole && <Route path="Asignar-tarea" element={<AsignarTarea />} />}
                                 {userRole && <Route path="Calendario" element={<Calendario />} />}
                                 {userRole && <Route path="Chat" element={<Chat />} />}
                                 {userRole && <Route path="Entregas" element={<Entregas />} />}
                                 {userRole && <Route path="Configuracion" element={<Configuracion />} />}
                                 {userRole && <Route path="Kanban" element={<Kanban />} />}
                                 {userRole && <Route path="VideoChat" element={<VideoChat />} />}
+                                {/*userRole && <Route path="/Requerimientos-x-voz" element={<RequerimientoVoz />}/>*/}
+                                {/*userRole && <Route path="/Requerimientos" element={<Requerimientos />}/>*/}
 
 
                                 {!userRole && <Route path="" element={<Dashboard />} />}

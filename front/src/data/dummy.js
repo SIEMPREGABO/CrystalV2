@@ -475,7 +475,82 @@ export const employeesGrid = [
   
 ];
 
+
 export const links = [
+  {
+    title: 'Páginas',
+    links: [
+      {
+        name: 'Dashboard',
+        url: '',
+        icon: <IoHome />,
+        isAdmin: false,
+      },
+      {
+        name: 'Asignar tarea',
+        url:'Asignar-tarea',
+        icon: <IoMdContacts />,
+        isAdmin: true,
+      },
+      {
+        name: 'Entregas',
+        url: 'Entregas',
+        icon: <GoFileSubmodule />,
+        isAdmin: true,
+      },
+      {
+        name: 'Participantes',
+        url: 'Participantes',
+        icon: <RiContactsLine />,
+        isAdmin: true,
+      },
+      {
+        name: 'Requerimientos',
+        url: 'Requerimientos',
+        icon: <RiContactsLine />,
+        isAdmin: true,
+      },
+      {
+        name: 'Requerimientos por voz',
+        url: 'Requerimientos-x-voz',
+        icon: <RiContactsLine />,
+        isAdmin: true,
+      },
+      {
+        name: 'Calendario',
+        url: 'Calendario',
+        icon: <FaCalendarAlt />,
+        isAdmin: false,
+      },
+      {
+        name: 'Kanban',
+        url: 'Kanban',
+        icon: <BsKanban />,
+        isAdmin: false,
+      },
+      {
+        name: 'Chat',
+        url: 'Chat',
+        icon: <FiEdit />,
+        isAdmin: false,
+      },
+      {
+        name: 'VideoChat',
+        url: 'VideoChat',
+        icon: <MdVideoChat />,
+        isAdmin: false,
+      },
+      {
+        name: 'Configuracion',
+        url: 'Configuracion',
+        icon: <GrConfigure />,
+        isAdmin: true,
+      }
+    ],
+  },  
+];
+
+export const links2 = [
   {
     title: 'Dashboard',
     links: [

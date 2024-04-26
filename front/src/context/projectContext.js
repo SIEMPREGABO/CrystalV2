@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { createContext, useContext, useState } from "react";
-import { requestCreate, requestJoin, requestProjects, requestPermissions, requestgetProject } from "../requests/projectReq.js";
+import { requestCreate, requestJoin, requestProjects, requestPermissions, requestgetProject, requestAddRequirement } from "../requests/projectReq.js";
 import Cookies from "js-cookie";
 
 const ProjectContext = createContext();
@@ -32,6 +32,7 @@ export const ProjectProvider = ({ children }) => {
 
   const [entregaactual, setEntregaactual] = useState([]);
   const [iteracionactual, setIteracionactual] = useState([]);
+  const [requerimientos, setRequerimientos] = useState([]);
 
 
   useEffect(() => {
@@ -121,6 +122,20 @@ export const ProjectProvider = ({ children }) => {
     }
   }
 
+  const createRequirements = async (project) => {
+    try {
+      const res = await requestAddRequirement(project);
+      console.log(res.data);
+      setMessage("Requerimiento creado con éxito");
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.message) {
+        setProjecterrors(error.response.data.message);
+      } else {
+        setProjecterrors("Error del servidor");
+      }
+    }
+  }
+
   const getProject = async (project) => {
     try {
       const res = await requestgetProject(project);
@@ -130,6 +145,7 @@ export const ProjectProvider = ({ children }) => {
       setFechasiteraciones(res.data.fechasIteraciones);
       setEntregaactual(res.data.entregaActual);
       setIteracionactual(res.data.iteracionActual);
+      setRequerimientos(res.data.requerimientos);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
         setProjecterrors(error.response.data.message);
@@ -185,13 +201,14 @@ export const ProjectProvider = ({ children }) => {
         entregaactual,
         iteracionactual,
         userRole,
-        IsParticipant,
+        IsParticipant,requerimientos,
         setIsParticipant,
         create,
         getProjects,
         joinProject,
         getProject,
-        getPermissions
+        getPermissions,
+        createRequirements
       }}
     >
       {children}
