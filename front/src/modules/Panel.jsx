@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from '../context/authContext';
 import moment from "moment";
 import { useEffect } from "react";
@@ -11,13 +11,12 @@ import {
     GridComponent, ColumnsDirective, ColumnDirective, Resize, Sort, ContextMenu,
     Filter, Page, ExcelExport, PdfExport, Edit, Inject
 } from '@syncfusion/ej2-react-grids';
-import { ordersData, contextMenuItems, ordersGrid } from '../data/dummy';
 import { Header } from './Header';
 
 export const Panel = () => {
     const { user } = useAuth();
     const fecha = moment.utc(user.FECHA_CREACION).format('DD-MM-YYYY');
-    const { getProjects, projects, joinerrors, joinProject, message, IsJoined } = useProject();
+    const { getProjects, projects, joinerrors, joinProject, message } = useProject();
     const {
         register,
         handleSubmit,
@@ -32,8 +31,6 @@ export const Panel = () => {
             CODIGO_UNIRSE: values.CODIGO_UNIRSE
         }
         joinProject(data);
-        //navigate("/panel");
-
     })
 
     useEffect(() => {

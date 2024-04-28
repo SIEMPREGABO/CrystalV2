@@ -92,6 +92,54 @@ export function verificarUnion(ID_PROYECTO, ID_USUARIO) {
     });
 }
 
+export function verificarUnionCorreo(ID_PROYECTO, CORREO) {
+    return new Promise(async (resolve, reject) => {
+        const connection = await getConnection();
+        const query = 'SELECT * FROM U_SEUNE_P WHERE ID_PROYECTO = ? AND ID_USUARIO = ? ';
+        const queryUser = 'SELECT ID FROM USUARIO WHERE CORREO = ?';
+        connection.query(queryUser, [CORREO], (err, results) => {
+            if (err) {
+                reject(err);
+            } else {
+                if (results.length > 0) {
+                    const ID_USUARIO =  results[0].ID;
+                    connection.query(query, [ID_PROYECTO, ID_USUARIO], (err, results) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            if (results.length > 0) {
+                                resolve({ success: true});
+                            } else {
+                                resolve({ success: false,ID_USUARIO: ID_USUARIO  });
+                            }
+                        }
+                    })
+                } else {
+                    resolve({ success: false });
+                }
+            }
+        });
+    });
+}
+
+export function verificarNumeroParticipantes(ID_PROYECTO) {
+    return new Promise(async (resolve, reject) => {
+        const connection = await getConnection();
+        const query = 'SELECT * FROM U_SEUNE_P WHERE ID_PROYECTO = ? ';
+        connection.query(query, [ID_PROYECTO], (err, results) => {
+            if (err) {
+                reject(err);
+            } else {
+                if (results.length < 20) {
+                    resolve({ success: true });
+                } else {
+                    resolve({ success: false });
+                }
+            }
+        });
+    });
+}
+
 export function projectsUsuario(ID) {
     return new Promise(async (resolve, reject) => {
         const connection = await getConnection();
@@ -188,6 +236,25 @@ export function obtenerFechas(tabla) {
     });
 }
 
+export function obtenerFechasTareas(tabla) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const connection = await getConnection();
+            const query = `SELECT ID, FECHA_INICIO, FECHA_MAX_TERMINO, ESTADO_DESARROLLO FROM ${tabla}`;
+            connection.query(query, (err, results) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(results);
+                }
+            });
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
+
 export function obtenerFechasID(tabla, ID) {
     return new Promise(async (resolve, reject) => {
         try {
@@ -224,6 +291,46 @@ export function getRequerimientosEntrega(ID_ENTREGA) {
                     reject(err);
                 } else {
                     resolve(results);
+                }
+            })
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+export function getTareas(ID_ITERACION) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const connection = await getConnection();
+            const query = 'SELECT ID_ITERACION ,ID_USUARIO, ID_TAREA_REALIZADA WHERE ID_ITERACION = ?';
+            const querytask = 'SELECT * FROM TAREAS WHERE ID = ?';
+            connection.query(query, [ID_ITERACION], async (err, results) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    if(results.length > 0){
+                        const taskspromises = results.map(async (result)=>{
+                            const ID_TAREA = result.ID_TAREA_REALIZADA;
+                            const taskData = await new Promise((resolve, reject) => {
+                                connection.query(querytask, [ID_TAREA], (err, taskResults) => {
+                                    if (err) {
+                                        reject(err);
+                                    } else {
+                                        resolve({ NOMBRE: taskResults[0].NOMBRE, ID: taskResults[0].ID, ESTADO_DESARROLLO: taskResults[0].ESTADO_DESARROLLO, FECHA_INICIO: taskResults[0].FECHA_INICIO, FECHA_TERMINO: taskResults[0].FECHA_TERMINO, FECHA_MAX_TERMINO: taskResults[0].FECHA_MAX_TERMINO, ID_REQUERIMIENTO: taskResults[0].ID_REQUERIMIENTO });
+                                    }
+                                });
+                            });
+                            return { NOMBRE: taskData.NOMBRE, ID: taskData.ID, ESTADO_DESARROLLO: taskData.ESTADO_DESARROLLO, FECHA_INICIO: taskData.FECHA_INICIO, FECHA_TERMINO: taskData.FECHA_TERMINO, FECHA_MAX_TERMINO: taskData.FECHA_MAX_TERMINO, ID_REQUERIMIENTO: taskData.ID_REQUERIMIENTO};
+                        })
+                        Promise.all(taskspromises)
+                        .then((task) => {
+                            resolve(task);
+                        })
+                        .catch((err) => {
+                            reject(err);
+                        });  
+                    }
                 }
             })
         } catch (error) {
@@ -300,6 +407,28 @@ export function ActualizarEstado(ESTADO, TABLA, ID) {
     })
 }
 
+export function ActualizarEstadoTareas(ESTADO, ID) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const connection = await getConnection();
+            const query = 'UPDATE TAREAS SET ESTADO_DESARROLLO = ? WHERE ID = ?';
+            connection.query(query, [ESTADO, ID], (err, results) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    if (results.affectedRows > 0) {
+                        resolve(true);
+                    } else {
+                        resolve(false);
+                    }
+                }
+            })
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
 export function AgregarRequerimiento(OBJETIVO, REQUERIMIENTO, ID_TIPO_REQUERIMIENTO, ID_ENTREGA) {
     return new Promise(async (resolve, reject) => {
         const connection = await getConnection();
@@ -352,33 +481,33 @@ export function CrearTarea(NOMBRE, DESCRIPCION, FECHA_INICIO, FECHA_TERMINO, FEC
                 } else {
                     if (results.affectedRows > 0) {
                         const id_tarea_creada = results.insertId;
-                        connection.query(queryColab,[ID_USUARIO,ID_iteracion,results.insertId,ROLPARTICIPANTE],(err,results)=>{
-                            if(err){
+                        connection.query(queryColab, [ID_USUARIO, ID_iteracion, id_tarea_creada, ROLPARTICIPANTE], (err, results) => {
+                            if (err) {
                                 reject(err)
-                            }else{
-                                if(results.affectedRows > 0){
-                                    if(ID_TAREA_DEPENDIENTE != ""){
-                                        connection.query(queryDependencia,[ID_TAREA_DEPENDIENTE,id_tarea_creada],(err,results)=>{
-                                            if(err){
-                                                reject(err)
-                                            }else{
-                                                if(results.affectedRows > 0){
-                                                    resolve({success:true})
-                                                }else{
-                                                    resolve({success:false})
+                            } else {
+                                if (results.affectedRows > 0) {
+                                    if (ID_TAREA_DEPENDIENTE != "") {
+                                        connection.query(queryDependencia, [ID_TAREA_DEPENDIENTE, id_tarea_creada], (err, results) => {
+                                            if (err) {
+                                                reject(err);
+                                            } else {
+                                                if (results.affectedRows > 0) {
+                                                    resolve({ success: true })
+                                                } else {
+                                                    resolve({ success: false })
                                                 }
                                             }
                                         })
-                                    }else{
-                                        resolve({success:true})
+                                    } else {
+                                        resolve({ success: true })
                                     }
-                                }else{
-                                    resolve({success:false})
+                                } else {
+                                    resolve({ success: false })
                                 }
                             }
                         })
                     } else {
-                        resolve({success:false})
+                        resolve({ success: false })
                     }
                 }
             })

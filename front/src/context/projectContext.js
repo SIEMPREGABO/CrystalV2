@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { createContext, useContext, useState } from "react";
-import { requestCreate, requestJoin, requestProjects, requestPermissions, requestgetProject, requestAddRequirement, requestCreateTask } from "../requests/projectReq.js";
+import { requestCreate, requestJoin, requestProjects, requestPermissions, requestgetProject, requestAddRequirement, requestCreateTask, requestAdd } from "../requests/projectReq.js";
 import Cookies from "js-cookie";
 
 const ProjectContext = createContext();
@@ -29,6 +29,7 @@ export const ProjectProvider = ({ children }) => {
   const [fechasproject, setFechasproject] = useState([]);
   const [fechasentregas, setFechasentregas] = useState([]);
   const [fechasiteraciones, setFechasiteraciones] = useState([]);
+  const [tareas, setTareas] = useState([]);
 
   const [entregaactual, setEntregaactual] = useState([]);
   const [iteracionactual, setIteracionactual] = useState([]);
@@ -122,6 +123,19 @@ export const ProjectProvider = ({ children }) => {
     }
   }
 
+  const addParticipant = async (participant) => {
+    try {
+      const res = await requestAdd(participant);
+      setMessage(res.data.message);
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.message) {
+        setJoinerrors(error.response.data.message);
+      } else {
+        setJoinerrors("Error del servidor");
+      }
+    }
+  }
+
   const createRequirements = async (project) => {
     try {
       const res = await requestAddRequirement(project);
@@ -146,6 +160,7 @@ export const ProjectProvider = ({ children }) => {
       setEntregaactual(res.data.entregaActual);
       setIteracionactual(res.data.iteracionActual);
       setRequerimientos(res.data.requerimientos);
+      setTareas(res.data.tasks)
       //console.log(res.data.fechasProyecto);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
@@ -202,7 +217,7 @@ export const ProjectProvider = ({ children }) => {
         entregaactual,
         iteracionactual,
         userRole,
-        IsParticipant,requerimientos,
+        IsParticipant,requerimientos,tareas,
         setIsParticipant,
         create,
         getProjects,
@@ -210,7 +225,8 @@ export const ProjectProvider = ({ children }) => {
         getProject,
         getPermissions,
         createRequirements,
-        createTask
+        createTask,
+        addParticipant
       }}
     >
       {children}

@@ -3,6 +3,7 @@ import axios from './axios.js';
 
 export const requestCreate = async project => axios.post(`/createProject`,project);
 export const requestJoin = async joinable => axios.post(`/joinProject`,joinable);
+export const requestAdd = async participant => axios.post(`/addParticipant`, participant);
 export const requestProjects = async () => axios.get(`/getProjects`);
 export const requestPermissions = async id => axios.post(`/getPermissions`, id);
 export const requestgetProject = async id => axios.post(`/getProject`, id);

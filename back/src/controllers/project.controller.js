@@ -1,7 +1,7 @@
 import moment from 'moment-timezone';
 import { SECRET_TOKEN, SECRETPASS_TOKEN } from '../config.js';
 import { generarCodigo, generarEntregas } from '../libs/makerProject.js';
-import { agregarUsuario, crearProyecto, projectsUsuario, verificarCodigo, verificarUnion, obtenerFechas, getParticipantsQuery, ActualizarEstado, obtenerFechasID, getRequerimientosEntrega, AgregarRequerimiento } from '../querys/projectquerys.js';
+import { agregarUsuario, crearProyecto, projectsUsuario, verificarCodigo, verificarUnion, obtenerFechas, getParticipantsQuery, ActualizarEstado, obtenerFechasID, getRequerimientosEntrega, AgregarRequerimiento, verificarUnionCorreo, verificarNumeroParticipantes, CrearTarea, getTareas, obtenerFechasTareas, ActualizarEstadoTareas } from '../querys/projectquerys.js';
 import jwt from 'jsonwebtoken'
 import { zonaHoraria } from '../config.js';
 import { createProjectToken } from '../libs/jwt.js';
@@ -80,6 +80,8 @@ export const joinProject = async (req, res) => {
         const ES_CREADOR = false;
         let REGISTRO_ACTUAL = moment(FECHA_ACTUAL).format('YYYY-MM-DD HH:mm:ss');
         if (!proyecto) return res.status(404).json({ message: ["Projecto no existente"] });
+        const numeroParticipantes = await verificarNumeroParticipantes(proyecto.project[0].ID);
+        if(numeroParticipantes.success) return res.status(400).json({message : ["Numero maximo de participantes alcanzado"]});
         const registrado = await verificarUnion(proyecto.project[0].ID, ID_USUARIO);
         if (registrado.success) return res.status(400).json({ message: ["Ya estas participando en el proyecto"] })
         const union = await agregarUsuario(REGISTRO_ACTUAL, ES_CREADOR, proyecto.project[0].ID, ID_USUARIO);
@@ -137,6 +139,8 @@ export const getProject = async (req, res) => {
         });
 
         const requerimientos = await getRequerimientosEntrega(ENTREGA_ACTUAL.ID);
+        const tasks = await getTareas(ITERACION_ACTUAL.ID);
+
         //console.log(requerimientos);
         const data = {
             fechasProyecto: FECHAS_PROYECTO,
@@ -145,7 +149,8 @@ export const getProject = async (req, res) => {
             entregaActual: ENTREGA_ACTUAL,
             iteracionActual: ITERACION_ACTUAL,
             participants: participants,
-            requerimientos: requerimientos
+            requerimientos: requerimientos,
+            tasks: tasks
         };
         return res.json(data);
     } catch (error) {
@@ -155,13 +160,10 @@ export const getProject = async (req, res) => {
 
 
 export const getTasks = async (req, res) => {
+    const {ID_ITERACION} = req.body;
     try {
-        const tasks = await getTasks();
-        if (!tasks.success) res.status(500).json({ mensaje: ["Error en la base de datos"] });
-        if (tasks.vacio) res.status(200).json({ mensaje: ["No hay mensajes por mostrar"] });
-        res.status(200).json({
-            tasks: tasks.results
-        });
+        const tasks = await getTareas(ID_ITERACION);
+        res.json(tasks);
     } catch (error) {
         res.status(500).json({ mensaje: ["Error inesperado, intentalo nuevamente"] });
     }
@@ -173,7 +175,9 @@ export const createTask = async (req, res) => {
     console.log(req.body);
     const FECHA_ACTUAL = moment().tz(zonaHoraria);
     try {
-        const FECHA_INICIO_TAREA = moment(FECHA_INICIO);const FECHA_TERMINO_TAREA = moment(FECHA_TERMINO);const FECHA_MAX_TERMINO_TAREA = moment(FECHA_MAX_TERMINO);const FECHA_INICIO_ITERACION = moment(ITERACION.FECHA_INICIO);const FECHA_TERMINO_ITERACION = moment(ITERACION.FECHA_TERMINO);
+        const FECHA_INICIO_TAREA = moment(FECHA_INICIO).tz(zonaHoraria);const FECHA_TERMINO_TAREA = moment(FECHA_TERMINO).tz(zonaHoraria);const FECHA_MAX_TERMINO_TAREA = moment(FECHA_MAX_TERMINO).tz(zonaHoraria);
+        const FECHA_INICIO_ITERACION = moment(iteracionactual.FECHA_INICIO).tz(zonaHoraria);const FECHA_TERMINO_ITERACION = moment(iteracionactual.FECHA_TERMINO).tz(zonaHoraria);
+        
         if(FECHA_INICIO_TAREA.isBefore(FECHA_INICIO_ITERACION)) return res.status(400).json({ message: ["La fecha debe correponder a la iteracion actual"] });
         if(FECHA_MAX_TERMINO_TAREA.isAfter(FECHA_TERMINO_ITERACION)) return res.status(400).json({ message: ["La fecha max debe correponder a la iteracion actual"] });
         if (FECHA_INICIO_TAREA.isBefore(FECHA_ACTUAL)) return res.status(400).json({ message: ["Fecha inicial incorrecta"] });
@@ -188,6 +192,9 @@ export const createTask = async (req, res) => {
         if(FECHA_INICIO_TAREA.isBefore(FECHA_INICIO_ITE)) return res.status(400).json({message:["La fecha de inicio no correponde al de la iteracion"]})
         if(FECHA_MAX_TERMINO_TAREA.isAfter(FECHA_TERMINO_ITE)) return res.status(400).json({message: ["La fecha max de termino no corresponde a la iteracion"]})
         
+        const tareacreada = await CrearTarea(NOMBRE, DESCRIPCION, FECHA_INICIO_TAREA, FECHA_TERMINO_TAREA, FECHA_MAX_TERMINO_TAREA, iteracionactual.ID, ID_USUARIO, ID_REQUERIMIENTO, ROLPARTICIPANTE, ID_TAREA_DEPENDIENTE); 
+        if(!tareacreada.success) return res.status(400).json("Error al crear la tarea");
+        return res.status(200).json({message: ["Tarea creada con exito"]});
     } catch (error) {
         res.status(500).json({ mensaje: ["Error inesperado, intentalo nuevamente"] });
     }
@@ -232,12 +239,31 @@ export const obtenerMensajes = async (req, res) => {
     }
 }
 
+export const addParticipant = async (req,res) => {
+    const {CORREO,ID_PROYECTO } = req.body;
+    try {
+        const FECHA_ACTUAL = moment().tz(zonaHoraria);
+        let REGISTRO_ACTUAL = moment(FECHA_ACTUAL).format('YYYY-MM-DD HH:mm:ss');
+        const ES_CREADOR = false;
+        const registrado = await verificarUnionCorreo(ID_PROYECTO, CORREO);
+        if (registrado.success) return res.status(400).json({ message: ["Ya esta participando en el proyecto"] })
+        const numeroParticipantes = await verificarNumeroParticipantes(ID_PROYECTO);
+        if(numeroParticipantes.success) return res.status(400).json({message : ["Numero maximo de participantes alcanzado"]});
+        const union = await agregarUsuario(REGISTRO_ACTUAL, ES_CREADOR, ID_PROYECTO, registrado.ID_USUARIO);
+        if (!union.success) return res.status(500).json({ message: ["Usuario no agregado con exito"] });
+        return res.status(200).json({ message: ["Enlazado a proyecto correctamente"] });
+    } catch (error) {
+        res.status(500).json({ mensaje: ["Error inesperado, intentalo nuevamente"] });
+    }
+}
+
 export const activarTareasInactivas = async (req, res) => {
     const ESTADO = ["En espera", "En desarrollo", "Finalizado"];
     const FECHA_ACTUAL = moment().tz(zonaHoraria);
     const FECHAS_PROYECTO = await obtenerFechas("PROYECTOS");
     const FECHAS_ENTREGAS = await obtenerFechas("ENTREGAS");
     const FECHAS_ITERACIONES = await obtenerFechas("ITERACIONES");
+    const FECHAS_TAREAS = await obtenerFechasTareas("TAREAS");
     const tiposDeFecha = [FECHAS_PROYECTO, FECHAS_ENTREGAS, FECHAS_ITERACIONES];
 
     await Promise.all(tiposDeFecha.map(async (fechas, index) => {
@@ -253,7 +279,19 @@ export const activarTareasInactivas = async (req, res) => {
             }
         }));
     }));
-    console.log("Im alive");
+
+    await Promise.all(FECHAS_TAREAS.map(async (fecha) => {
+        let fechaInicial = moment(fecha.FECHA_INICIO).tz(zonaHoraria);
+        let fechaFinal = moment(fecha.FECHA_MAX_TERMINO).tz(zonaHoraria);
+        if (FECHA_ACTUAL.isAfter(fechaInicial) && (fecha.ESTADO_DESARROLLO) === "En espera") {
+            const actualizar = await ActualizarEstadoTareas(ESTADO[1], fecha.ID);
+        }
+        if (FECHA_ACTUAL.isAfter(fechaFinal) && (fecha.ESTADO_DESARROLLO) === "En desarrollo") {
+            const actualizar = await ActualizarEstadoTareas(ESTADO[2], fecha.ID);
+        }
+    }));
+
+
     setTimeout(activarTareasInactivas, 10 * 60 * 1000);
 }
 
