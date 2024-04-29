@@ -240,7 +240,7 @@ export function obtenerFechasTareas(tabla) {
     return new Promise(async (resolve, reject) => {
         try {
             const connection = await getConnection();
-            const query = `SELECT ID, FECHA_INICIO, FECHA_MAX_TERMINO, ESTADO_DESARROLLO FROM ${tabla}`;
+            const query = `SELECT ID, FECHA_INICIO,FECHA_TERMINO, FECHA_MAX_TERMINO, ESTADO_DESARROLLO FROM ${tabla}`;
             connection.query(query, (err, results) => {
                 if (err) {
                     reject(err);
@@ -304,7 +304,7 @@ export function getTareas(ID_ITERACION) {
         try {
             const connection = await getConnection();
             const query = 'SELECT ID_ITERACION ,ID_USUARIO, ID_TAREA_REALIZADA, ROL_REALIZADO FROM COLABORACIONES WHERE ID_ITERACION = ?';
-            const querytask = 'SELECT * FROM TAREAS WHERE ID = ?';
+            const querytask = `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO,CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, CONVERT_TZ(FECHA_MAX_TERMINO, '+00:00', '-06:00') AS FECHA_MAX_TERMINO,NOMBRE,DESCRIPCION,ESTADO_DESARROLLO,ID_REQUERIMIENTO,DESCRIPCION FROM TAREAS WHERE ID = ?`;
             connection.query(query, [ID_ITERACION], async (err, results) => {
                 if (err) {
                     reject(err);
@@ -318,12 +318,13 @@ export function getTareas(ID_ITERACION) {
                                         reject(err);
                                     } else {
                                         resolve({ NOMBRE: taskResults[0].NOMBRE, 
-                                            ID: taskResults[0].ID, ESTADO_DESARROLLO: 
-                                            taskResults[0].ESTADO_DESARROLLO, 
+                                            ID: taskResults[0].ID, 
+                                            ESTADO_DESARROLLO: taskResults[0].ESTADO_DESARROLLO, 
                                             FECHA_INICIO: taskResults[0].FECHA_INICIO, 
                                             FECHA_TERMINO: taskResults[0].FECHA_TERMINO, 
                                             FECHA_MAX_TERMINO: taskResults[0].FECHA_MAX_TERMINO, 
-                                            ID_REQUERIMIENTO: taskResults[0].ID_REQUERIMIENTO });
+                                            ID_REQUERIMIENTO: taskResults[0].ID_REQUERIMIENTO,
+                                            DESCRIPCION: taskResults[0].DESCRIPCION });
                                     }
                                 });
                             });
@@ -331,10 +332,11 @@ export function getTareas(ID_ITERACION) {
                                 NOMBRE: taskData.NOMBRE,
                                 ID: taskData.ID,
                                 ESTADO_DESARROLLO: taskData.ESTADO_DESARROLLO,
-                                ECHA_INICIO: taskData.FECHA_INICIO,
+                                FECHA_INICIO: taskData.FECHA_INICIO,
                                 FECHA_TERMINO: taskData.FECHA_TERMINO,
                                 FECHA_MAX_TERMINO: taskData.FECHA_MAX_TERMINO,
-                                ID_REQUERIMIENTO: taskData.ID_REQUERIMIENTO
+                                ID_REQUERIMIENTO: taskData.ID_REQUERIMIENTO,
+                                DESCRIPCION: taskData.DESCRIPCION
                             };
                         })
                         Promise.all(taskspromises)
@@ -434,6 +436,7 @@ export function ActualizarEstadoTareas(ESTADO, ID) {
                 } else {
                     if (results.affectedRows > 0) {
                         resolve(true);
+                        console.log("Tarea id: ", ID, " se escuentra en: ", ESTADO);
                     } else {
                         resolve(false);
                     }

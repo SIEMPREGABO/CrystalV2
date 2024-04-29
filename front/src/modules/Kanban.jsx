@@ -1,9 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Header } from '../components'; // Asegúrate de que este import sea correcto
 import { KanbanComponent, ColumnsDirective, ColumnDirective } from '@syncfusion/ej2-react-kanban';
 import '@syncfusion/ej2-base/styles/material.css'; // Asegúrate de importar los estilos necesarios
+import { useProject } from '../context/projectContext';
 
 const Kanban = () => {
+  const {tareas} = useProject();
+
+  useEffect(()=>{
+    console.log(tareas);
+  },[tareas]);
+
   let data = [
     { Id: 1, Status: 'Open', Summary: 'Analyze the new requirements gathered from the customer.', Type: 'Story', Priority: 'Low', Tags: 'Analyze,Customer', Estimate: 3.5, Assignee: 'Nancy Davloio', RankId: 1 },
     { Id: 2, Status: 'InProgress', Summary: 'Fix the issues reported in the IE browser.', Type: 'Bug', Priority: 'Release Breaker', Tags: 'IE', Estimate: 2.5, Assignee: 'Janet Leverling', RankId: 2  },
@@ -52,6 +59,22 @@ const Kanban = () => {
 
   return (
     <div className="m-2 md:m-10 mt-24 p-2 md:p-10 bg-white rounded-3xl e-kanbantooltiptemp">
+      {tareas && (
+        <div>
+          {tareas.map((tarea) => (
+            <div>
+              <p>Nombre: {tarea.NOMBRE}</p>
+              <p>Desc: {tarea.DESCRIPCION}</p>
+              <p>Fecha inicio: {tarea.FECHA_INICIO}</p>
+              <p>Fecha max final: {tarea.FECHA_MAX_TERMINO}</p>
+              <p>Fecha final: {tarea.FECHA_TERMINO}</p>
+              <p>Id: {tarea.ID}</p>
+              <p>Estado: {tarea.ESTADO_DESARROLLO}</p>
+              <p>Requerimiento id: {tarea.ID_REQUERIMIENTO}</p>
+            </div>
+          ))}
+        </div>
+      )}
       <Header category="App" title="Kanban"/>
       <KanbanComponent
         id="kanban"

@@ -278,6 +278,7 @@ export const addParticipant = async (req,res) => {
 
 export const activarTareasInactivas = async (req, res) => {
     const ESTADO = ["En espera", "En desarrollo", "Finalizado"];
+    const ESTADOTAREA = ["En espera","En desarrollo","Atrasada","Cerrada"];
     const FECHA_ACTUAL = moment().tz(zonaHoraria);
     const FECHAS_PROYECTO = await obtenerFechas("PROYECTOS");
     const FECHAS_ENTREGAS = await obtenerFechas("ENTREGAS");
@@ -301,13 +302,23 @@ export const activarTareasInactivas = async (req, res) => {
 
     await Promise.all(FECHAS_TAREAS.map(async (fecha) => {
         let fechaInicial = moment(fecha.FECHA_INICIO).tz(zonaHoraria);
-        let fechaFinal = moment(fecha.FECHA_MAX_TERMINO).tz(zonaHoraria);
+        let fechaFinal = moment(fecha.FECHA_TERMINO).tz(zonaHoraria);
+        let fechaFinalMaxima = moment(fecha.FECHA_MAX_TERMINO).tz(zonaHoraria);
+
+        //console.log(fechaInicial,fechaFinal,fechaFinalMaxima);
+        
         if (FECHA_ACTUAL.isAfter(fechaInicial) && (fecha.ESTADO_DESARROLLO) === "En espera") {
-            const actualizar = await ActualizarEstadoTareas(ESTADO[1], fecha.ID);
+            const actualizar = await ActualizarEstadoTareas(ESTADOTAREA[1], fecha.ID);
         }
+
         if (FECHA_ACTUAL.isAfter(fechaFinal) && (fecha.ESTADO_DESARROLLO) === "En desarrollo") {
-            const actualizar = await ActualizarEstadoTareas(ESTADO[2], fecha.ID);
+            const actualizar = await ActualizarEstadoTareas(ESTADOTAREA[2], fecha.ID);
         }
+
+        if(FECHA_ACTUAL.isAfter(fechaFinalMaxima) && (fecha.ESTADO_DESARROLLO) === "Atrasada"){
+            const actualizar = await ActualizarEstadoTareas(ESTADOTAREA[3], fecha.ID);
+        }
+        
     }));
 
     console.log("Im alive");
