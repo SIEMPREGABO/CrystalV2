@@ -120,10 +120,12 @@ export const getProject = async (req, res) => {
         let ENTREGA_ACTUAL = "";
         let ITERACION_ACTUAL = "";
         const FECHAS_ENTREGAS = await obtenerFechasID("ENTREGAS", ID_PROYECTO);
+
         const FECHAS_ITERACIONES = await Promise.all(FECHAS_ENTREGAS.map(async (ENTREGA) => {
             const FECHAS_ITERACION = await obtenerFechasID("ITERACIONES", ENTREGA.ID);
             return (FECHAS_ITERACION);
         }));
+
         const participants = await getParticipantsQuery(ID_PROYECTO);
         FECHAS_ENTREGAS.map((ENTREGA) => {
             if (ENTREGA.ESTADO === 'En desarrollo') {
@@ -154,7 +156,7 @@ export const getProject = async (req, res) => {
         };
         return res.json(data);
     } catch (error) {
-        return res.status(500).json({ messsage: ["Error inesperado, intentanlo de nuevo"] })
+        return res.status(500).json({ messsage: error })
     }
 }
 
@@ -170,31 +172,48 @@ export const getTasks = async (req, res) => {
 }
 
 export const createTask = async (req, res) => {
-    //Agregar a la tarea la tarea dependiente y el requerimiento que cumple y rol, a quien se asigna
-    const { NOMBRE, DESCRIPCION, FECHA_INICIO, FECHA_TERMINO, FECHA_MAX_TERMINO, iteracionactual, ID_USUARIO, ID_REQUERIMIENTO, ROLPARTICIPANTE, ID_TAREA_DEPENDIENTE} = req.body
-    console.log(req.body);
-    const FECHA_ACTUAL = moment().tz(zonaHoraria);
+    const { NOMBRE, DESCRIPCION, FECHA_INICIO,HORAINICIO,HORAENTREGA,HORAMAXIMA, FECHA_TERMINO, FECHA_MAX_TERMINO, iteracionactual, ID_USUARIO, ID_REQUERIMIENTO, ROLPARTICIPANTE, ID_TAREA_DEPENDIENTE} = req.body
+    //console.log(req.body);
+    const FECHA_ACTUAL_SIS = moment().format('YYYY-MM-DD HH:mm:ss');
+    const FECHA_ACTUAL = moment.utc(FECHA_ACTUAL_SIS);
     try {
-        const FECHA_INICIO_TAREA = moment(FECHA_INICIO).tz(zonaHoraria);const FECHA_TERMINO_TAREA = moment(FECHA_TERMINO).tz(zonaHoraria);const FECHA_MAX_TERMINO_TAREA = moment(FECHA_MAX_TERMINO).tz(zonaHoraria);
-        const FECHA_INICIO_ITERACION = moment(iteracionactual.FECHA_INICIO).tz(zonaHoraria);const FECHA_TERMINO_ITERACION = moment(iteracionactual.FECHA_TERMINO).tz(zonaHoraria);
-        
-        if(FECHA_INICIO_TAREA.isBefore(FECHA_INICIO_ITERACION)) return res.status(400).json({ message: ["La fecha debe correponder a la iteracion actual"] });
-        if(FECHA_MAX_TERMINO_TAREA.isAfter(FECHA_TERMINO_ITERACION)) return res.status(400).json({ message: ["La fecha max debe correponder a la iteracion actual"] });
-        if (FECHA_INICIO_TAREA.isBefore(FECHA_ACTUAL)) return res.status(400).json({ message: ["Fecha inicial incorrecta"] });
-        if (FECHA_TERMINO_TAREA.isBefore(FECHA_INICIO_TAREA)) return res.status(400).json({ message: ["Fecha final incorrecta"] });
-        if (FECHA_MAX_TERMINO_TAREA.isBefore(FECHA_TERMINO_TAREA)) return res.status(400).json({ message: ["Fecha final maxima incorrecta"] });
-        const MINUTOS_DIFERENCIA = FECHA_TERMINO_TAREA.diff(FECHA_INICIO_TAREA, 'minutes');
-        if (MINUTOS_DIFERENCIA < 120) return res.status(400).json({ message: ["Diferencia minimo de 2 horas"] });
-        const MINUTOS_DIFERENCIA_MAX = FECHA_MAX_TERMINO_TAREA.diff(FECHA_TERMINO_TAREA, 'minutes');
-        if (MINUTOS_DIFERENCIA_MAX < 120) return res.status(400).json({ message: ["Diferencia minimo de 2 horas en la hora maxima"] });
+        const HORAINICIO_TAREA = moment(HORAINICIO, 'HH:mm:ss');const HORAENTREGA_TAREA = moment(HORAENTREGA, 'HH:mm:ss');const HORAMAXIMA_TAREA = moment(HORAMAXIMA, 'HH:mm:ss');
 
-        const FECHA_INICIO_ITE = moment(iteracionactual.FECHA_INICIO);const FECHA_TERMINO_ITE = moment(iteracionactual.FECHA_TERMINO);
-        if(FECHA_INICIO_TAREA.isBefore(FECHA_INICIO_ITE)) return res.status(400).json({message:["La fecha de inicio no correponde al de la iteracion"]})
-        if(FECHA_MAX_TERMINO_TAREA.isAfter(FECHA_TERMINO_ITE)) return res.status(400).json({message: ["La fecha max de termino no corresponde a la iteracion"]})
+        const FECHA_INICIO_TAREA = moment.utc(FECHA_INICIO);const FECHA_TERMINO_TAREA = moment.utc(FECHA_TERMINO);const FECHA_MAX_TERMINO_TAREA = moment.utc(FECHA_MAX_TERMINO);
+        //console.log(iteracionactual.FECHA_INICIO, iteracionactual.FECHA_TERMINO)
+        const FECHA_INICIO_ITERACION = moment.utc(iteracionactual.FECHA_INICIO);const FECHA_TERMINO_ITERACION =  moment.utc(iteracionactual.FECHA_TERMINO);
         
-        const tareacreada = await CrearTarea(NOMBRE, DESCRIPCION, FECHA_INICIO_TAREA, FECHA_TERMINO_TAREA, FECHA_MAX_TERMINO_TAREA, iteracionactual.ID, ID_USUARIO, ID_REQUERIMIENTO, ROLPARTICIPANTE, ID_TAREA_DEPENDIENTE); 
+        const FECHA_INICIO_COMPLETA = FECHA_INICIO_TAREA.clone().hours(HORAINICIO_TAREA.hours()).minutes(HORAINICIO_TAREA.minutes()).seconds(HORAINICIO_TAREA.seconds());
+        
+        const FECHA_ENTREGA_COMPLETA = FECHA_TERMINO_TAREA.clone().hours(HORAENTREGA_TAREA.hours()).minutes(HORAENTREGA_TAREA.minutes()).seconds(HORAENTREGA_TAREA.seconds());
+        
+        const FECHA_MAXIMA_COMPLETA = FECHA_MAX_TERMINO_TAREA.clone().hours(HORAMAXIMA_TAREA.hours()).minutes(HORAMAXIMA_TAREA.minutes()).seconds(HORAMAXIMA_TAREA.seconds());
+
+        //ITERACION VERIFICAR
+        if(FECHA_INICIO_COMPLETA.isBefore(FECHA_INICIO_ITERACION)) return res.status(400).json({ message: ["La fecha inicial debe correponder a la iteracion actual"] });
+        if(FECHA_MAXIMA_COMPLETA.isAfter(FECHA_TERMINO_ITERACION)) return res.status(400).json({ message: ["La fecha max debe correponder a la iteracion actual"] });
+        
+        //FECHAS VERIFICAR
+        if (FECHA_INICIO_COMPLETA.isBefore(FECHA_ACTUAL)) return res.status(400).json({ message: ["Fecha inicial incorrecta"] });
+        if (FECHA_ENTREGA_COMPLETA.isBefore(FECHA_INICIO_COMPLETA)) return res.status(400).json({ message: ["Fecha final incorrecta"] });
+        if (FECHA_MAXIMA_COMPLETA.isBefore(FECHA_ENTREGA_COMPLETA)) return res.status(400).json({ message: ["Fecha final maxima incorrecta"] });
+        
+        
+        const MINUTOS_DIFERENCIA = FECHA_ENTREGA_COMPLETA.diff(FECHA_INICIO_COMPLETA, 'minutes');
+        if (MINUTOS_DIFERENCIA < 120) return res.status(400).json({ message: ["Diferencia minimo de 2 horas entre el inicio y la entrega"] });
+        const MINUTOS_DIFERENCIA_MAX = FECHA_MAXIMA_COMPLETA.diff(FECHA_ENTREGA_COMPLETA, 'minutes');
+        if (MINUTOS_DIFERENCIA_MAX < 120) return res.status(400).json({ message: ["Diferencia minimo de 2 horas en la hora maxima"] });
+        
+        const REGISTRO_INICIO = moment(FECHA_INICIO_COMPLETA).format('YYYY-MM-DD HH:mm:ss');
+        const REGISTRO_ENTREGA = moment(FECHA_ENTREGA_COMPLETA).format('YYYY-MM-DD HH:mm:ss');
+        const REGISTRO_MAX = moment(FECHA_MAXIMA_COMPLETA).format('YYYY-MM-DD HH:mm:ss');
+
+        
+        
+        const tareacreada = await CrearTarea(NOMBRE, DESCRIPCION, REGISTRO_INICIO, REGISTRO_ENTREGA, REGISTRO_MAX, iteracionactual.ID, ID_USUARIO, ID_REQUERIMIENTO, ROLPARTICIPANTE, ID_TAREA_DEPENDIENTE); 
         if(!tareacreada.success) return res.status(400).json("Error al crear la tarea");
         return res.status(200).json({message: ["Tarea creada con exito"]});
+        
     } catch (error) {
         res.status(500).json({ mensaje: ["Error inesperado, intentalo nuevamente"] });
     }
@@ -291,7 +310,7 @@ export const activarTareasInactivas = async (req, res) => {
         }
     }));
 
-
+    console.log("Im alive");
     setTimeout(activarTareasInactivas, 10 * 60 * 1000);
 }
 

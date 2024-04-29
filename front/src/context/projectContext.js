@@ -70,7 +70,7 @@ export const ProjectProvider = ({ children }) => {
   const createTask = async (Task) => {
     try {
       const res = await requestCreateTask(Task);
-      console.log(res.data);
+      console.log(res.data.message);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
         setProjecterrors(error.response.data.message);

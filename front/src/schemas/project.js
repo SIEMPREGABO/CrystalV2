@@ -56,6 +56,15 @@ export const taskSchema = z.object({
     FECHA_MAX_TERMINO:z.string().nonempty({
         required_error: 'La fecha max es requerida'
     }),
+    HORAINICIO:z.string().nonempty({
+        required_error: 'La hora inicio es requerida'
+    }),
+    HORAENTREGA:z.string().nonempty({
+        required_error: 'La hora de entrega es requerida'
+    }),
+    HORAMAXIMA:z.string().nonempty({
+        required_error: 'La hora max es requerida'
+    }),
     ID_REQUERIMIENTO:z.string().nonempty({
         required_error: 'El requerimiento es requerido'
     }),
@@ -64,7 +73,7 @@ export const taskSchema = z.object({
     }),
     ID_USUARIO:z.string().nonempty({
         required_error: 'El id de usuario es requerido'
-    })
+    }),ID_TAREA_DEPENDIENTE: z.string().optional()
 
 })
 

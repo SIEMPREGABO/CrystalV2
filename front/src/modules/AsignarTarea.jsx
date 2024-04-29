@@ -14,7 +14,7 @@ function AsignarTarea() {
   });
   // la funcion creatTask
   //Agregar a la tarea la tarea dependiente y el requerimiento que cumple y rol, a quien se asigna
-  const { fechasproject, iteracionactual, createTask, participants, requerimientos } = useProject();
+  const { fechasproject, iteracionactual, createTask, participants, requerimientos,projecterrors } = useProject();
   const onSubmit = handleSubmit(async (values) => {
     const data = {
       NOMBRE: values.NOMBRE,
@@ -22,6 +22,9 @@ function AsignarTarea() {
       FECHA_INICIO: values.FECHA_INICIO,
       FECHA_TERMINO: values.FECHA_TERMINO,
       FECHA_MAX_TERMINO: values.FECHA_MAX_TERMINO,
+      HORAINICIO: values.HORAINICIO,
+      HORAENTREGA: values.HORAENTREGA,
+      HORAMAXIMA: values.HORAMAXIMA,
       ID_REQUERIMIENTO: values.ID_REQUERIMIENTO,
       ROLPARTICIPANTE: values.ROLPARTICIPANTE,
       ID_USUARIO: values.ID_USUARIO,
@@ -31,15 +34,17 @@ function AsignarTarea() {
     createTask(data);
   });
 
-  useEffect(()=>{
+  useEffect(() => {
     //console.log(fechasproject);
-  },[])
+  }, [])
 
 
 
   return (
 
     <div className="relative flex flex-col justify-center min-h-screen overflow-hidden">
+       {projecterrors && <div className=" bg-danger mt-2 me-2 text-white shadow">{projecterrors}</div>}
+
       {fechasproject[0].ESTADO === "En espera" &&
         <div>
           {iteracionactual === "" &&
@@ -122,6 +127,56 @@ function AsignarTarea() {
                         {...register("FECHA_MAX_TERMINO", { required: true, message: "campo requerido" })}
                       />
                     </div>
+                  </div>
+                </div>
+
+                <div className="mb-2">
+                  <div className="flex flex-col md:flex-row justify-center items-center gap-4">
+                    <div>
+
+                      <label htmlFor="HORAINICIO" className="block text-sm font-semibold text-gray-800">
+                        Hora de inicio
+                      </label>
+                      <input
+                        type="time"
+                        id="HORAINICIO"
+                        name="HORAINICIO"
+                        required
+                        className="block w-full px-2 py-2 mt-2 text-indigo-400 bg-white border rounded-md focus:border-indigo-400 focus:ring-indigo-300 focus:outline-none focus:ring focus:ring-opacity-40"
+                        {...register("HORAINICIO", { required: true, message: "campo requerido" })}
+
+                      />
+
+                    </div>
+                    <div>
+
+                      <label htmlFor="HORAENTREGA" className="block text-sm font-semibold text-gray-800">
+                        Hora de termino
+                      </label>
+                      <input
+                        type="time"
+                        id="HORAENTREGA"
+                        name="HORAENTREGA"
+                        required
+                        className="block w-full px-2 py-2 mt-2 text-indigo-400 bg-white border rounded-md focus:border-indigo-400 focus:ring-indigo-300 focus:outline-none focus:ring focus:ring-opacity-40"
+                        {...register("HORAENTREGA", { required: true, message: "campo requerido" })}
+                      />
+                    </div>
+                    <div>
+
+                      <label htmlFor="HORAMAXIMA" className="block text-sm font-semibold text-gray-800">
+                        Hora de maxima
+                      </label>
+                      <input
+                        type="time"
+                        id="HORAMAXIMA"
+                        name="HORAMAXIMA"
+                        required
+                        className="block w-full px-2 py-2 mt-2 text-indigo-400 bg-white border rounded-md focus:border-indigo-400 focus:ring-indigo-300 focus:outline-none focus:ring focus:ring-opacity-40"
+                        {...register("HORAMAXIMA", { required: true, message: "campo requerido" })}
+                      />
+                    </div>
+
                   </div>
                 </div>
 
