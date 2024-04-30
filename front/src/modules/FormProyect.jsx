@@ -44,155 +44,111 @@ export const FormProyect = () => {
     return (
         <div>
             <Header />
-            <div className="container-md "> 
-                <div className="container-fluid position-relative p-4 text-center">
+            <div className="relative flex flex-col justify-center min-h-svh overflow-hidden">
+                <div className="w-full p-3 m-auto bg-white rounded-md shadow-xl ring-indigo-600 lg:max-w-xl">
                     {message && <div className=" bg-success mt-2 me-2 text-white shadow">{message}</div>}
                     {projecterrors && <div className=" bg-danger mt-2 me-2 text-white shadow">{projecterrors}</div>}
-
-                    <div className="p-3 mb-3 text-center">
-                        <h1>Crear proyecto</h1>
-                    </div>
-                    <form className="" onSubmit={handleSubmit(onSubmit)}>
-                        <div className="pt-1 pb-3 row px-3 justify-content-evenly">
-                            <label className="col-4 text-end">Titulo del proyecto: </label>
-                            <div className="col px-2">
-                                <input
-                                    className=" form-control"
-                                    type="text"
-                                    name="NOMBRE_PROYECTO"
-                                    placeholder='Título'
-                                    {...register("NOMBRE_PROYECTO", { required: true, message: "Campo requerido" })}
-                                />
-                            </div>
-
+                    <h1 className="text-3xl font-semibold text-center text-indigo-700 underline uppercase mt-3">
+                        Crea tu Proyecto
+                    </h1>
+                    <form className="mt-6" onSubmit={handleSubmit(onSubmit)}>
+                        <div className="mb-2">
+                            <label className="block text-sm font-semibold text-gray-800">
+                                Titulo del proyecto:
+                            </label>
+                            <input
+                                className="block w-full px-4 py-2 mt-2 text-black-400 bg-white border rounded-md focus:border-indigo-400 focus:ring-indigo-300 focus:outline-none focus:ring focus:ring-opacity-40"
+                                type="text"
+                                name="NOMBRE_PROYECTO"
+                                placeholder='Título'
+                                {...register("NOMBRE_PROYECTO", { required: true, message: "Campo requerido" })}
+                            />
                             {errors.NOMBRE_PROYECTO && <div className=" bg-danger mt-2 me-2 text-white shadow">{errors.NOMBRE_PROYECTO.message}</div>}
-
                         </div>
-
-
-                        <div className="pt-1 pb-3 row px-3 justify-content-evenly">
-                            <label className="col-4 text-end">Descripcion del proyecto: </label>
-                            <div className="col">
-                                <textarea className=" form-control "
-                                    style={{ height: "75px" }}
-                                    placeholder="Descripción del proyecto"
-                                    id="floatingTextarea"
-                                    name="DESCRIPCION_GNRL"
-                                    {...register("DESCRIPCION_GNRL", { required: true, message: "Campo requerido" })}
-                                />
-
-                            </div>
+                        <div className="mb-2">
+                            <label className="block text-sm font-semibold text-gray-800">
+                                Descripcion del proyecto:
+                            </label>
+                            <textarea
+                                className=" block w-full px-4 py-2 mt-2 text-black-400 bg-white border rounded-md focus:border-indigo-400 focus:ring-indigo-300 focus:outline-none focus:ring focus:ring-opacity-40 "
+                                style={{ height: "75px" }}
+                                placeholder="Descripción del proyecto"
+                                name="DESCRIPCION_GNRL"
+                                {...register("DESCRIPCION_GNRL", { required: true, message: "Campo requerido" })}
+                            />
                             {errors.DESCRIPCION_GNRL && <div className=" bg-danger mt-2 me-2 text-white shadow">{errors.DESCRIPCION_GNRL.message}</div>}
-
                         </div>
-                        <div className="pt-1 pb-3 row px-3 justify-content-evenly">
-                            <label className="col-4 text-end">Objetivo del proyecto: </label>
-                            <div className="col">
-                                <textarea className=" form-control "
-                                    style={{ height: "75px" }}
-                                    placeholder="Objetivo del proyecto"
-                                    id="floatingTextarea"
-                                    name="OBJETIVO"
-                                    {...register("OBJETIVO", { required: true, message: "Campo requerido" })}
-                                />
-
-                            </div>
+                        <div className="mb-2">
+                            <label className="block text-sm font-semibold text-gray-800">
+                                Objetivo del proyecto:
+                            </label>
+                            <textarea
+                                className=" block w-full px-4 py-2 mt-2 text-black-400 bg-white border rounded-md focus:border-indigo-400 focus:ring-indigo-300 focus:outline-none focus:ring focus:ring-opacity-40 "
+                                style={{ height: "75px" }}
+                                placeholder="Objetivo del proyecto"
+                                name="OBJETIVO"
+                                {...register("OBJETIVO", { required: true, message: "Campo requerido" })}
+                            />
                             {errors.OBJETIVO && <div className=" bg-danger mt-2 me-2 text-white shadow">{errors.OBJETIVO.message}</div>}
-
                         </div>
 
-                        <div className="row pt-3 pb-3">
-                            <div className="col">
-                                <label className="pe-3">Fecha de Inicio: </label>
-                                <input
-                                    className="btn btn-info"
-                                    type="date"
-                                    name="FECHA_INICIO"
-                                    {...register("FECHA_INICIO", { required: true, message: "Campo requerido" })}
+                        <div className="mb-2 items-center">
+                            <div className="flex flex-row ">
+                                <div className='flex-row mr-2'>
+                                    <label htmlFor="FECHA_INICIO" className="block text-sm font-semibold text-gray-800">
+                                        Fecha de Inicio:
+                                    </label>
+                                    <input
+                                        className="block w-full px-4 py-2 mt-2 text-black-600 bg-white border rounded-md focus:border-indigo-400 focus:ring-indigo-300 focus:outline-none focus:ring focus:ring-opacity-40"
+                                        type="date"
+                                        name="FECHA_INICIO"
+                                        {...register("FECHA_INICIO", { required: true, message: "Campo requerido" })}
 
-                                />
+                                    />
+                                    {errors.FECHA_INICIO && <div className=" bg-danger mt-2 me-2 text-white shadow">{errors.FECHA_INICIO.message}</div>}
+
+                                </div>
+                                <div className="flex-row mr-2">
+                                    <label htmlFor="FECHA_TERMINO" className="block text-sm font-semibold text-gray-800">
+                                        Fecha de finalización:
+                                    </label>
+                                    <input
+                                        className="block w-full px-4 py-2 mt-2 text-black-600 bg-white border rounded-md focus:border-indigo-400 focus:ring-indigo-300 focus:outline-none focus:ring focus:ring-opacity-40"
+                                        type="date"
+                                        name="FECHA_TERMINO"
+                                        {...register("FECHA_TERMINO", { required: true, message: "Campo requerido" })}
+                                    />
+                                    {errors.FECHA_TERMINO && <div className=" bg-danger mt-2 me-2 text-white shadow">{errors.FECHA_TERMINO.message}</div>}
+                                </div>
+                                <div className="flex-row  mr-2">
+                                    <label htmlFor="ENTREGAS" className="block text-sm font-semibold text-gray-800">
+                                        Entregas del proyecto:
+                                    </label>
+                                    <select
+                                        className="block w-full px-3 py-2 mt-2 text-black-600 bg-white border rounded-md focus:border-indigo-400 focus:ring-indigo-300 focus:outline-none focus:ring focus:ring-opacity-40"
+                                        name="ENTREGAS"
+                                        {...register("ENTREGAS", { required: true, message: "Campo requerido" })}
+                                    >
+                                        <option selected>Entregas</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                        <option value="6">6</option>
+                                    </select>
+                                </div>
                             </div>
-                            {errors.FECHA_INICIO && <div className=" bg-danger mt-2 me-2 text-white shadow">{errors.FECHA_INICIO.message}</div>}
-
-                            <div className=" col">
-                                <label className="pe-3" >Fecha de finalización:</label>
-                                <input
-                                    className="btn btn-info"
-                                    type="date"
-                                    name="FECHA_TERMINO"
-                                    {...register("FECHA_TERMINO", { required: true, message: "Campo requerido" })}
-
-                                />
-                            </div>
-                            {errors.FECHA_TERMINO && <div className=" bg-danger mt-2 me-2 text-white shadow">{errors.FECHA_TERMINO.message}</div>}
-
-                        </div>
-
-
-
-                        {/*<div className="row pt-3 pb-3">
-                    <div className="col text-end pt-2 ">
-                        <label>Días para  la constitución del proyecto:</label>
-                    </div>
-                    <div className="col text-start ps-5">
-                        <select className="btn btn-info dropdown-toggle px-3 mb-1" aria-label="Large select example">
-                            <option selected>Días</option>
-                            <option value="1">3</option>
-                            <option value="2">4</option>
-                            <option value="3">5</option>
-                        </select>
-
-                    </div>
-                </div>
-                
-                <div className="row pt-3 pb-3">
-                    <div className="col text-end pt-2">
-                        <label>Iteraciones por entrega:</label>
-                    </div>
-                    <div className="col text-start ps-5">
-                        <select className="btn btn-info btn-xs dropdown-toggle px-3 mb-1" aria-label="Large select example">
-                            <option selected>Iteraciones</option>
-                            <option value="1">3</option>
-                            <option value="2">4</option>
-                            <option value="3">5</option>
-                        </select>
-                    </div>
-                </div>*/}
-
-                        <div className="row pt-3 pb-3">
-                            <div className="col text-end pt-2">
-                                <label>Entregas del proyecto:</label>
-                            </div>
-                            <div className="col text-start ps-5">
-                                <select className="btn btn-info dropdown-toggle px-3 mb-1"
-                                    aria-label="Large select example"
-                                    name="ENTREGAS"
-                                    {...register("ENTREGAS", { required: true, message: "Campo requerido" })}
-                                >
-                                    <option selected>Entregas</option>
-                                    <option value="3">3</option>
-                                    <option value="4">4</option>
-                                    <option value="5">5</option>
-                                    <option value="6">6</option>
-                                </select>
-
-                            </div>
-                            {errors.ENTREGAS && <div className=" bg-danger mt-2 me-2 text-white shadow">{errors.ENTREGAS.message}</div>}
-
-                        </div>
-
-
-
-                        <div className="pt-4 row">
-                            <div className="col text-center">
-                                <input className=" btn btn-dark btn-custom btn-xs " type="submit" value="Crear" />
-                            </div>
-
+                        </div>                       
+                        <div className="mt-6">
+                            <input
+                                type="submit"
+                                className="w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-indigo-700 rounded-md hover:bg-indigo-600 focus:outline-none focus:bg-indigo-600"
+                                value="Crear"
+                            />
                         </div>
                     </form>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
 
