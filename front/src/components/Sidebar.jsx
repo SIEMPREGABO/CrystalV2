@@ -116,7 +116,7 @@ const Sidebar = () => {
               </span>
             </NavLink>
 
-            <NavLink to={`/Proyecto/${id}/Chat`}
+            <NavLink to={`/Proyecto/${id}/ChatIteracion`}
               onClick={handleCloseSideBar}
               style={({ isActive }) => ({ backgroundColor: isActive ? currentColor : '' })}
               className={({ isActive }) => isActive ? activeLink : normalLink}>

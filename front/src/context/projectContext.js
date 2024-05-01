@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { createContext, useContext, useState } from "react";
-import { requestCreate, requestJoin, requestProjects, requestParticipants, requestFechasProject, requestFechasEntregas, requestAddRequirement } from "../requests/projectReq.js";
+import { requestCreate, requestJoin, requestProjects, requestParticipants, requestFechasProject, requestFechasEntregas, requestAddRequirement, requestAddMessage, requestMessages } from "../requests/projectReq.js";
 import Cookies from "js-cookie";
 
 const ProjectContext = createContext();
@@ -26,6 +26,9 @@ export const ProjectProvider = ({ children }) => {
   const [fechasentregas, setFechasentregas] = useState([]);
   const [requirementerrors, setRequirementErrors] = useState([]);
   const [entregaactual, setEntregaactual] = useState([]);
+  const [iteracionactual, setIteracionactual] = useState([]);
+  const [messagesChat, setMessagesChat] = useState([]);
+  const [chaterrors, setChatErrors] = useState([]);
   //const [requerimientos, setRequerimientos] = useState([])
   //const [IsLoading, setLoading] = useState(true);
 
@@ -92,11 +95,41 @@ export const ProjectProvider = ({ children }) => {
     }
   }
 
+  const createMessages = async (message) => {
+    try{
+      const res = await requestAddMessage(message);
+      console.log(res.data); 
+    }catch(error){
+      if(error.response && error.response.data && error.response.data.message){
+        setProjecterrors(error.response.data.message);
+      }else{
+        setProjecterrors("Error del servidor");
+      }
+    }
+  }
+
   const getProjects = async () => {
     try {
       //const cookies = Cookies.get();
       const res = await requestProjects();
       setProjects(res.data);
+      //setIsCreated(true);
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.message) {
+        setProjecterrors(error.response.data.message);
+      } else {
+        setProjecterrors("Error del servidor");
+      }
+    }
+  };
+
+  const getMessages = async (iteracion) => {
+    try {
+      //const cookies = Cookies.get();
+      console.log('iteracion pcontext: ' + iteracion.ID_ITERACION);
+      const res = await requestMessages(iteracion);
+      console.log('pcontext: ' + res);
+      setMessagesChat(res.data);
       //setIsCreated(true);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
@@ -178,13 +211,17 @@ export const ProjectProvider = ({ children }) => {
         fechasproject,
         fechasentregas,
         requirementerrors,
+        chaterrors,
+        messagesChat,
         create,
         getProjects,
         joinProject,
         getParticipants,
         getFechasProyecto,
         getFechasEntregas,
-        createRequirements
+        createRequirements,
+        createMessages,
+        getMessages
       }}
     >
       {children}

@@ -8,6 +8,8 @@ export const requestParticipants = async project => axios.post(`/getParticipants
 export const requestFechasProject = async project => axios.post(`/getFechasProject`, project);
 export const requestFechasEntregas = async project => axios.post(`/getFechasEntregas`, project);
 export const requestAddRequirement = async project => axios.post('/addRequirement', project);
+export const requestAddMessage = async message => axios.post('/addMessage', message);
+export const requestMessages = async iteracion => axios.post('/getMessages', iteracion);
 
 //export const requestLogout = () => axios.post(`/logout`);
 //export const requestReset = async user => axios.post(`/reset`,user); 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 import Participantes from "./Usuario";
-import Chat from "./Chat";
+import ChatIteracion from "./ChatIteracion";
 import Configuracion from "./Config.js"
 import Calendario from "./Calendario.jsx";
 import AsignarTarea from "./AsignarTarea.jsx";
@@ -82,7 +82,7 @@ export const Proyecto = () => {
                             {isAdmin && <Route path="Participantes" element={<Participantes />} />}
                             {isAdmin && <Route path="Asignartarea" element={<AsignarTarea />} />}
                             {isAdmin && <Route path="Calendario" element={<Calendario />} />}
-                            {isAdmin && <Route path="Chat" element={<Chat />} />}
+                            {isAdmin && <Route path="ChatIteracion" element={<ChatIteracion />} />}
                             {isAdmin && <Route path="Entregas" element={<Entregas />} />}
                             {isAdmin && <Route path="Configuracion" element={<Configuracion />} />}
                             {isAdmin && <Route path="Kanban" element={<Kanban />} />}
@@ -91,7 +91,7 @@ export const Proyecto = () => {
                             {!isAdmin && <Route path="" element={<Dashboard />} />}
                             {!isAdmin && <Route path="Asignartarea" element={<AsignarTarea />} />}
                             {!isAdmin && <Route path="Calendario" element={<Calendario />} />}
-                            {!isAdmin && <Route path="Chat" element={<Chat />} />}
+                            {!isAdmin && <Route path="ChatIteracion" element={<ChatIteracion />} />}
                             {!isAdmin && <Route path="VideoChat" element={<VideoChat />} />}
                         </Routes>
                     </div>

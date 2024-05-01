@@ -338,3 +338,42 @@ export function AgregarRequerimiento(OBJETIVO, REQUERIMIENTO, ID_TIPO_REQUERIMIE
         } );
     })
 }
+
+
+export function AgregarMensaje(CONTENIDO, FECHA, HORA, USUARIO, ITERACION){
+    return new Promise(async (resolve, reject) => {
+        const connection = await getConnection();
+        const messagesquery = "INSERT INTO CHATS_ITERACIONES (CONTENIDO, FECHA_ENVIO, HORA_ENVIO, ID_USUARIO_ENVIA, ID_ITERACION) VALUES (?,?,?,?,?);";       
+        console.log("AgregarMensaje pq");
+        connection.query(messagesquery, [CONTENIDO, FECHA, HORA, USUARIO, ITERACION], (error, results)=>{
+            if(error){
+                console.log(error);
+                reject(error);
+            }else if(results.affectedRows > 0 ){
+                resolve({success: true});
+            }else{
+                resolve({ success: false });
+                console.log(error);
+            }
+        } );
+    })
+}
+
+export function GetMessages(ID_iteracion){
+    return new Promise(async (resolve, reject) => {
+        try{
+        const connection = await getConnection();
+        const chatquery = 'SELECT c.*, u.NOMBRE_USUARIO FROM CHATS_ITERACIONES c JOIN  USUARIO u ON c.ID_USUARIO_ENVIA = u.ID WHERE ID_ITERACION = 1 ORDER BY c.HORA_ENVIO;';
+
+        connection.query(chatquery, [ID_iteracion], (error, results) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(results);
+            }
+        });
+        }catch(error){
+            reject(error);
+        }
+    });
+}
