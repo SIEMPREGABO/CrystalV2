@@ -1,7 +1,10 @@
 import moment from 'moment-timezone';
 import { SECRET_TOKEN, SECRETPASS_TOKEN } from '../config.js';
 import { generarCodigo, generarEntregas } from '../libs/makerProject.js';
-import { agregarUsuario, crearProyecto, projectsUsuario, verificarCodigo, verificarUnion, obtenerFechas, getParticipantsQuery, ActualizarEstado, obtenerFechasID, getRequerimientosEntrega, AgregarRequerimiento, verificarUnionCorreo, verificarNumeroParticipantes, CrearTarea, getTareas, obtenerFechasTareas, ActualizarEstadoTareas } from '../querys/projectquerys.js';
+import { agregarUsuario, crearProyecto, projectsUsuario, verificarCodigo, verificarUnion, 
+obtenerFechas, getParticipantsQuery, ActualizarEstado, obtenerFechasID, getRequerimientosEntrega, 
+AgregarRequerimiento, verificarUnionCorreo, verificarNumeroParticipantes, CrearTarea, getTareas, 
+obtenerFechasTareas, ActualizarEstadoTareas, AgregarMensaje, GetMessages } from '../querys/projectquerys.js';
 import jwt from 'jsonwebtoken'
 import { zonaHoraria } from '../config.js';
 import { createProjectToken } from '../libs/jwt.js';
@@ -334,5 +337,29 @@ export const agregarRequerimiento = async (req, res) =>{
         return res.status(200).json({ messsage: ["Requerimiento creado con éxito"] });
     }catch(error){
         res.status(500).json({ message: [error.message] });
+    }
+}
+
+export const agregarMensaje = async (req, res) => {
+    try{
+        const {CONTENIDO, FECHA, HORA, USUARIO, ITERACION} = req.body;
+        const agregar_mensaje = await AgregarMensaje(CONTENIDO, FECHA, HORA, USUARIO, ITERACION);
+        console.log("agregarMensaje pc");
+        if(!agregar_mensaje.success) res.status(500).json({ mensaje: ["Error al enviar mensaje"] });
+        return res.status(200).json({ messsage: ["Mensaje enviado con éxito"] });
+    }catch(error){
+        res.status(500).json({message: [`el error es: ${error.message}`]});
+    }
+}
+
+export const getMessages = async (req, res) => {
+    const {ID_ITERACION} = req.body;
+    //console.log(req.body);
+    try{
+        const messages = await GetMessages(ID_ITERACION);
+
+        res.json(messages);
+    } catch (error) {
+        res.status(500).json({message:["Error en el servidor al intentar obtener mensajes"]})
     }
 }

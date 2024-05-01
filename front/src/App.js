@@ -1,4 +1,3 @@
-import Header from './modules/Header';
 import Home from './modules/Home.jsx';
 import Login from './modules/Login.jsx';
 import Register from './modules/Register.jsx';
@@ -12,7 +11,7 @@ import ProtectedRoute from './ProtectedRoute';
 import Footer from "./modules/Footer.jsx";
 import Proyecto from "./modules/Proyect.jsx";
 import FormProyect from './modules/FormProyect.jsx';
-import ConfigProfile from './modules/ConfigProfile.js';
+import ConfigProfile from './modules/ConfigProfile.jsx';
 import { ProjectProvider } from './context/projectContext.js';
 import { ContextProvider } from "./context/Provider";
 

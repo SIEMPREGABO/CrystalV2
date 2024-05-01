@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { ScheduleComponent, ViewsDirective, ViewDirective, Day, Week, WorkWeek, Month, Agenda, Inject, Resize, DragAndDrop } from '@syncfusion/ej2-react-schedule';
 import { DatePickerComponent } from '@syncfusion/ej2-react-calendars';
-import { scheduleData } from '../data/dummy';
+//import { scheduleData } from '../data/dummy';
 import { Header } from '../components';
 import { useProject } from '../context/projectContext';
 import { useParams } from 'react-router-dom';
@@ -12,55 +12,49 @@ const Calendario = () => {
     fechasentregas,
     fechasiteraciones
   } = useProject();
+  const [scheduleData, setScheduleData] = useState([]);
 
   useEffect(() => {
+    let events = [];
+    fechasproject?.forEach(project => {
+      events.push({
+        Subject: `Inicio del Proyecto: ${project.NOMBRE}`,  
+        StartTime: new Date(project.FECHA_INICIO),
+        EndTime: new Date(project.FECHA_TERMINO),
+        IsAllDay: true
+      });
+    });
 
-  }, []);
+
+    fechasentregas?.forEach((entrega, index) => {
+      events.push({
+        Subject: `Entrega ${index + 1}`,
+        StartTime: new Date(entrega.FECHA_INICIO),
+        EndTime: new Date(entrega.FECHA_TERMINO),
+        IsAllDay: true
+      });
+    });
+
+
+    fechasiteraciones?.forEach((iteracionesPorEntrega, index) => {
+      iteracionesPorEntrega.forEach((iteracion, subIndex) => {
+        events.push({
+          Subject: `Iteración ${subIndex + 1} de Entrega ${index + 1}`,
+          StartTime: new Date(iteracion.FECHA_INICIO),
+          EndTime: new Date(iteracion.FECHA_TERMINO),
+          IsAllDay: true
+        });
+      });
+    });
+
+    setScheduleData(events);
+  }, [fechasproject, fechasentregas, fechasiteraciones]);
+
 
 
 
   return (
     <div className='m-2 md:m-10 mt-24  p-2 md:p-10 bg-white rounded-3xl'>
-
-      {fechasproject && (
-        <div>
-          {fechasproject.map((fechaProject) => (
-            <div>
-              <p>Fecha Proyecto inicio: {fechaProject.FECHA_INICIO}</p>
-              <p>Fecha Proyecto final: {fechaProject.FECHA_TERMINO}</p>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {fechasentregas && (
-        <div>
-          {fechasentregas.map((entrega, index) => (
-            <div key={index}>
-              <p>Número de entrega: {index + 1}</p>
-              <p>Fecha entrega inicio: {entrega.FECHA_INICIO}</p>
-              <p>Fecha entrega fin: {entrega.FECHA_TERMINO}</p>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {fechasiteraciones && (
-        <div>
-          {fechasiteraciones.map((iteracionporentrega, index) => (
-            <div key={index}>
-              {iteracionporentrega.map((iteracion, subIndex) => (
-                <div key={subIndex}>
-                  <p>Número de iteración: {subIndex + 1}</p>
-                  <p>Fecha de inicio: {iteracion.FECHA_INICIO}</p>
-                  <p>Fecha de fin: {iteracion.FECHA_TERMINO}</p>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      )}
-
       <Header title="Calendario" />
 
       <ScheduleComponent height="650px" eventSettings={{ dataSource: scheduleData }}>

@@ -530,7 +530,7 @@ export const links = [
       },
       {
         name: 'Chat',
-        url: 'Chat',
+        url: 'ChatIteracion',
         icon: <FiEdit />,
         isAdmin: false,
       },

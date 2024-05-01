@@ -5,6 +5,8 @@ import authRoutes from './routes/auth.routes.js'
 import cookie_parser from 'cookie-parser'
 import projectRoutes from './routes/project.routes.js'
 import { activarTareasInactivas } from './controllers/project.controller.js';
+import http from 'http';
+import { Server as ServerSocket } from "socket.io";
 
 const app = express();
 
@@ -19,7 +21,7 @@ app.use(cookie_parser());
 //middleware
 
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: ['http://localhost:3000', 'http://localhost:4001'],
     credentials: true
 }));
 
@@ -30,5 +32,39 @@ app.use("/api",authRoutes);
 app.use("/api",projectRoutes);
 
 activarTareasInactivas();
+
+
+const server = http.createServer(app);
+server.listen('4001');
+const io = new ServerSocket(server, {
+
+    cors: {
+        origin: "http://localhost:3000"
+    },
+    transports: ['websocket', 'polling']
+});
+console.log('Ruta de socket.io en el servidor:', io.path());
+const port = io.httpServer.address();
+console.log('El servidor socket.io está escuchando en el puerto:', port);
+console.log('Configuración de socket.io:', io.opts);
+io.on("connection", socket => {
+    //console.log("Cliente conectado");
+    //console.log(socket.id);
+    socket.join(`S1`);
+    //console.log(`S1`);
+    socket.on('message', (data) => {
+        //console.log(data);
+        socket.to(`S1`).emit('message', {
+            data,
+            from: data.from,
+        });
+    });
+});
+
+
+
+io.on('error', (error) => {
+    console.error('Error en el servidor de socket.io:', error);
+});
 
 export default app;

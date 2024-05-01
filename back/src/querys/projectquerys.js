@@ -261,7 +261,7 @@ export function obtenerFechasID(tabla, ID) {
             let query = ""
             const connection = await getConnection();
             if (tabla === "PROYECTOS") {
-                query = `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO, CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, ESTADO FROM ${tabla} WHERE ID = ?`
+                query = `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO, CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, ESTADO, NOMBRE,OBJETIVO,DESCRIPCION_GNRL,CODIGO_UNIRSE, FECHA_CREACION,ID_CATEGORIA_CRYSTAL  FROM ${tabla} WHERE ID = ?`
             } else if (tabla === "ENTREGAS") {
                 query = `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO, CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, ESTADO FROM ${tabla} WHERE ID_PROYECTO = ?`
             } else if (tabla === "ITERACIONES") {
@@ -541,4 +541,42 @@ export function CrearTarea(NOMBRE, DESCRIPCION, FECHA_INICIO, FECHA_TERMINO, FEC
         }
 
     })
+}
+
+export function AgregarMensaje(CONTENIDO, FECHA, HORA, USUARIO, ITERACION){
+    return new Promise(async (resolve, reject) => {
+        const connection = await getConnection();
+        const messagesquery = "INSERT INTO CHATS_ITERACIONES (CONTENIDO, FECHA_ENVIO, HORA_ENVIO, ID_USUARIO_ENVIA, ID_ITERACION) VALUES (?,?,?,?,?);";       
+        console.log("AgregarMensaje pq");
+        connection.query(messagesquery, [CONTENIDO, FECHA, HORA, USUARIO, ITERACION], (error, results)=>{
+            if(error){
+                console.log(error);
+                reject(error);
+            }else if(results.affectedRows > 0 ){
+                resolve({success: true});
+            }else{
+                resolve({ success: false });
+                console.log(error);
+            }
+        } );
+    })
+}
+
+export function GetMessages(ID_iteracion){
+    return new Promise(async (resolve, reject) => {
+        try{
+        const connection = await getConnection();
+        const chatquery = 'SELECT c.*, u.NOMBRE_USUARIO FROM CHATS_ITERACIONES c JOIN  USUARIO u ON c.ID_USUARIO_ENVIA = u.ID WHERE ID_ITERACION = 1 ORDER BY c.HORA_ENVIO;';
+
+        connection.query(chatquery, [ID_iteracion], (error, results) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(results);
+            }
+        });
+        }catch(error){
+            reject(error);
+        }
+    });
 }

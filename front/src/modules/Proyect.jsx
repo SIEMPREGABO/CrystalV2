@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 import Participantes from "./Usuario.jsx";
-import Chat from "./Chat.js";
+import ChatIteracion from "./ChatIteracion";
 import Configuracion from "./Config.js"
 import Calendario from "./Calendario.jsx";
 import AsignarTarea from "./AsignarTarea.jsx";
@@ -80,19 +80,18 @@ export const Proyecto = () => {
                                 {userRole && <Route path="Participantes" element={<Participantes />} />}
                                 {userRole && <Route path="Asignar-tarea" element={<AsignarTarea />} />}
                                 {userRole && <Route path="Calendario" element={<Calendario />} />}
-                                {userRole && <Route path="Chat" element={<Chat />} />}
+                                {userRole && <Route path="ChatIteracion" element={<ChatIteracion />} />}
                                 {userRole && <Route path="Entregas" element={<Entregas />} />}
                                 {userRole && <Route path="Configuracion" element={<Configuracion />} />}
                                 {userRole && <Route path="Kanban" element={<Kanban />} />}
                                 {userRole && <Route path="VideoChat" element={<VideoChat />} />}
-                                {userRole && <Route path="/Requerimientos-x-voz" element={<RequerimientoVoz />}/>}
-                                {userRole && <Route path="/Requerimientos" element={<Requerimientos />}/>}
+                                {userRole && <Route path="Requerimientos-x-voz" element={<RequerimientoVoz />}/>}
+                                {userRole && <Route path="Requerimientos" element={<Requerimientos />}/>}
 
 
                                 {!userRole && <Route path="" element={<Dashboard />} />}
                                 {!userRole && <Route path="Calendario" element={<Calendario />} />}
-                                {!userRole && <Route path="Chat" element={<Chat />} />}
-                                {!userRole && <Route path="Kanban" element={<Kanban />} />}
+                                {!userRole && <Route path="ChatIteracion" element={<ChatIteracion />} />}                                {!userRole && <Route path="Kanban" element={<Kanban />} />}
                                 {!userRole && <Route path="VideoChat" element={<VideoChat />} />}
                             </Route>
                         </Routes>
