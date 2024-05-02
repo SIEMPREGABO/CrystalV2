@@ -17,20 +17,31 @@ export const Reset = () => {
 
 
     const navigate = useNavigate();
-    const { reseterrors, message, resetToken } = useAuth();
+    const { reseterrors, resetToken, setMessage, setAutherrors, autherrors, message } = useAuth();
 
     const onSubmit = handleSubmit(async (values) => {
         resetToken(values);
     });
 
-    /*useEffect(() => {
-        if(IsSended) console.log(IsSended);
-    },[IsSended]);*/
+    useEffect(() => {
+        setMessage([]);
+        setAutherrors([]);
+    }, []);
 
 
     return (
         <div>
             <Header />
+            {message && <div class=" items-center bg-green-100 border-l-4 border-green-500 text-green-700  rounded-lg m-2 md:m-10 p-2 md:p-10 shadow-md" style={{ maxWidth: '600px' }}>
+                <p class="text-lg font-semibold">{message}</p>
+            </div>
+            }
+            {autherrors && <div class=" items-center bg-red-100 border-l-4 border-red-500 text-red-700  rounded-lg m-2 md:m-10 p-2 md:p-10 shadow-md" style={{ maxWidth: '600px' }}>
+                {autherrors}
+            </div>
+            }
+
+
             {/*<div className="container-fluid position-relative p-4 text-center">
                 {message && <div className=" bg-success mt-2 me-2 text-white shadow">{message}</div>}
                 {reseterrors && <div className=" bg-danger mt-2 me-2 text-white shadow">{reseterrors}</div>}

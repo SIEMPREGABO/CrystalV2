@@ -17,7 +17,7 @@ export const Login = () => {
         resolver: zodResolver(loginSchema)
     });
     const navigate = useNavigate();
-    const { signin, IsAuthenticated, loginerrors } = useAuth();
+    const { signin, IsAuthenticated, autherrors, message, setAutherrors, setMessage } = useAuth();
 
 
 
@@ -26,7 +26,8 @@ export const Login = () => {
     })
 
     useEffect(() => {
-
+        setMessage([]);
+        setAutherrors([]);
         if (IsAuthenticated) navigate("/panel");
     }, [IsAuthenticated]);
 
@@ -38,7 +39,14 @@ export const Login = () => {
             <div className={styles.login}>
 
                 <div className={styles.container} id='main'>
-                    {loginerrors && <div className=" bg-danger mt-2 me-2 text-white shadow">{loginerrors}</div>}
+                    {message && <div class=" items-center bg-green-100 border-l-4 border-green-500 text-green-700  rounded-lg m-2 md:m-10 p-2 md:p-10 shadow-md" style={{ maxWidth: '600px' }}>
+                        <p class="text-lg font-semibold">{message}</p>
+                    </div>
+                    }
+                    {autherrors && <div class=" items-center bg-red-100 border-l-4 border-red-500 text-red-700  rounded-lg m-2 md:m-10 p-2 md:p-10 shadow-md" style={{ maxWidth: '600px' }}>
+                        {autherrors}
+                    </div>
+                    }
                     <div className={styles['sign-in']}>
                         <form onSubmit={handleSubmit(onSubmit)} className={styles.forml}>
                             <h1 className={styles.h1l}>Ingresar</h1>

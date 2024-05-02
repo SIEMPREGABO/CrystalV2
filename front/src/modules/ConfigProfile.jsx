@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/authContext";
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import Header from "./Header";
 
 export const ConfigProfile = () => {
-    const { user, updateUser, messageupdate, updateerrors } = useAuth();
+    const { user, updateUser, message, autherrors, setAutherrors, setMessage } = useAuth();
     const {
         register,
         handleSubmit,
@@ -19,14 +19,25 @@ export const ConfigProfile = () => {
 
     const onSubmit = handleSubmit(async (values) => {
         updateUser(values);
-    })
+    });
+
+    useEffect(() => {
+        setAutherrors([]);
+        setMessage([]);
+    }, [])
 
     return (
         <div>
             <Header />
             <div className="relative flex flex-col justify-center min-h-screen overflow-hidden">
-                {messageupdate && <div className=" bg-success mt-2 me-2 text-white shadow">{messageupdate}</div>}
-                {updateerrors && <div className=" bg-danger mt-2 me-2 text-white shadow">{updateerrors}</div>}
+                {message && <div class=" items-center bg-green-100 border-l-4 border-green-500 text-green-700  rounded-lg m-2 md:m-10 p-2 md:p-10 shadow-md" style={{ maxWidth: '600px' }}>
+                    <p class="text-lg font-semibold">{message}</p>
+                </div>
+                }
+                {autherrors && <div class=" items-center bg-red-100 border-l-4 border-red-500 text-red-700  rounded-lg m-2 md:m-10 p-2 md:p-10 shadow-md" style={{ maxWidth: '600px' }}>
+                    {autherrors}
+                </div>
+                }
                 <div className="6">
                     <h1 className="text-3xl font-semibold text-center text-indigo-700 underline uppercase ">
                         Configuración
@@ -172,10 +183,10 @@ export const ConfigProfile = () => {
                             />
                         </div>
                         <div className="mt-6">
-                            <input 
-                            className="w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-indigo-700 rounded-md hover:bg-indigo-600 focus:outline-none focus:bg-indigo-600"
-                            type="submit" 
-                            value="Guardar Cambios" 
+                            <input
+                                className="w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-indigo-700 rounded-md hover:bg-indigo-600 focus:outline-none focus:bg-indigo-600"
+                                type="submit"
+                                value="Guardar Cambios"
                             />
                         </div>
                     </form>

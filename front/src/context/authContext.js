@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { createContext, useContext, useState } from "react";
-import { requestLogin, requestRegister,requestLogout, requestVerify, requestReset, requestPass, requestUpdate} from "../requests/auth.js";
+import { requestLogin, requestRegister, requestLogout, requestVerify, requestReset, requestPass, requestUpdate } from "../requests/auth.js";
 import Cookies from "js-cookie";
 
 const AuthContext = createContext();
@@ -17,19 +17,25 @@ export const AuthProvider = ({ children }) => {
   const [IsAuthenticated, setIsAuthenticated] = useState(false);
   const [IsChanged, setIsChanged] = useState(false);
 
-  const [registererrors, setRegistererrors] = useState ([]);
-  const [reseterrors, setReseterrors] = useState([]);
-  const [resetpasserrors, setResetpasserrors] = useState([]);
-  const [loginerrors, setLoginerrors] = useState([]);
-  const [updateerrors, setUpdateerrors] = useState([]);
+  const [autherrors, setAutherrors] = useState([]);
 
   const [message, setMessage] = useState([]);
-  const [messagepass, setMessagepass] = useState([]);
-  const [messageupdate, setMessageupdate] = useState([]);
 
   const [isLoading, setLoading] = useState(true);
-  
+
   useEffect(() => {
+    if (IsChanged) {
+      const timer = setTimeout(() => {
+        setIsChanged(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+    if (autherrors.length > 0) {
+      const timer = setTimeout(() => {
+        setAutherrors([]);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
     if (message.length > 0) {
       const timer = setTimeout(() => {
         setMessage([]);
@@ -37,52 +43,26 @@ export const AuthProvider = ({ children }) => {
       }, 5000);
       return () => clearTimeout(timer);
     }
-  }, [message]);
 
-  useEffect(() => {
-    if (messagepass.length > 0) {
-      const timer = setTimeout(() => {
-        setMessagepass([]);
-        setIsChanged(true);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-    if (IsChanged) {
-      const timer = setTimeout(() => {
-        setIsChanged(false);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-    if(messageupdate.length > 0){
-      const timer = setTimeout(() => {
-        setMessageupdate([]);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [messagepass, IsChanged, messageupdate]);
+  }, [IsChanged,autherrors,message]);
 
-  useEffect(() => {
-    if (loginerrors.length > 0 || registererrors.length > 0 || reseterrors.length || updateerrors.length > 0) {
-      const timer = setTimeout(() => {
-        setLoginerrors([]);
-        setRegistererrors([]);
-        setReseterrors([]);
-        setUpdateerrors([]);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [loginerrors,registererrors, reseterrors, updateerrors]);
-  
+
+
 
   const signin = async (user) => {
     try {
       const res = await requestLogin(user);
       setUser(res.data);
       setIsAuthenticated(true);
-      console.log(res.data);
+      //console.log(res.data);
       //console.log(error.response.data.message);
     } catch (error) {
-      setLoginerrors(error.response.data.message);
+      //setLoginerrors(error.response.data.message);
+      if (error.response && error.response.data && error.response.data.message) {
+        setAutherrors(error.response.data.message);
+      } else {
+        setAutherrors("Error del servidor");
+      }
     }
   };
 
@@ -90,51 +70,79 @@ export const AuthProvider = ({ children }) => {
     try {
       const res = await requestRegister(user);
       //setUser(res.data);
-      setMessage(["Usuario registrado correctamente"]);
+      setMessage(res.data.message);
     } catch (error) {
       //console.log(error.response.data.message);
-      setRegistererrors(error.response.data.message);
+      //setRegistererrors(error.response.data.message);
+      if (error.response && error.response.data && error.response.data.message) {
+        setAutherrors(error.response.data.message);
+      } else {
+        setAutherrors("Error del servidor");
+      }
     }
   }
 
   const resetToken = async (user) => {
-    try{
+    try {
       const res = await requestReset(user);
-      if(!res.data) return setIsSended(false);
+      if (!res.data) return setIsSended(false);
       setIsSended(true);
-      setMessage([res.data.message]);    
-    }catch(error){
+      setMessage(res.data.message);
+    } catch (error) {
       //console.log(error.response.data.message);
-      setReseterrors(error.response.data.message);
+      //setReseterrors(error.response.data.message);
+      if (error.response && error.response.data && error.response.data.message) {
+        setAutherrors(error.response.data.message);
+      } else {
+        setAutherrors("Error del servidor");
+      }
     }
   }
-  
+
   const resetPass = async (user) => {
     try {
       //console.log(user);
       const res = await requestPass(user);
       console.log(res.data);
-      setMessagepass("Contraseña cambiada con exito");
+      setMessage(res.data.message);
     } catch (error) {
-      setResetpasserrors(error.response.data.message);
+      //setResetpasserrors(error.response.data.message);
+      if (error.response && error.response.data && error.response.data.message) {
+        setAutherrors(error.response.data.message);
+      } else {
+        setAutherrors("Error del servidor");
+      }
     }
   }
 
-  const logout = async () =>{
-    const res = await requestLogout();
-    //console.log(res);
-    setIsAuthenticated(false);
-    setUser(null);
+  const logout = async () => {
+    try {
+      const res = await requestLogout();
+      //console.log(res);
+      setIsAuthenticated(false);
+      setUser(null);
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.message) {
+        setAutherrors(error.response.data.message);
+      } else {
+        setAutherrors("Error del servidor");
+      }
+    }
   }
 
-  const updateUser = async (user) =>{
+  const updateUser = async (user) => {
     try {
       console.log(user);
       const res = await requestUpdate(user);
       setUser(res.data);
-      setMessageupdate("Informacion Actualizada");
+      setMessage("Informacion Actualizada");
     } catch (error) {
-      setUpdateerrors(error.response.data.message);      
+      //setUpdateerrors(error.response.data.message);
+      if (error.response && error.response.data && error.response.data.message) {
+        setAutherrors(error.response.data.message);
+      } else {
+        setAutherrors("Error del servidor");
+      }
     }
   }
 
@@ -160,23 +168,18 @@ export const AuthProvider = ({ children }) => {
     };
     checkLogin();
   }, []);
-  
+
   return (
     <AuthContext.Provider
       value={{
         user,
-        IsAuthenticated,
-        IsSended,
-        loginerrors,
-        registererrors,
-        reseterrors,
-        resetpasserrors,
-        updateerrors,
-        messageupdate,
-        message,
-        isLoading,
-        IsChanged,
-        messagepass,
+        
+        autherrors,message,
+
+        IsAuthenticated,IsSended,isLoading,IsChanged,
+
+        setAutherrors,setMessage,
+        
         signin,
         signup,
         resetToken,

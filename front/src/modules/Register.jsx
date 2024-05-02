@@ -17,7 +17,7 @@ export const Register = () => {
         resolver: zodResolver(registerSchema)
     });
 
-    const { message, signup, IsAuthenticated, registererrors } = useAuth();
+    const { signup, IsAuthenticated, autherrors, setAutherrors, setMessage, message } = useAuth();
     const navigate = useNavigate();
 
     const onSubmit = handleSubmit(async (values) => {
@@ -25,6 +25,8 @@ export const Register = () => {
     })
 
     useEffect(() => {
+        setMessage([]);
+        setAutherrors([]);
         if (IsAuthenticated) navigate("/panel");
     }, [IsAuthenticated]);
 
@@ -36,8 +38,14 @@ export const Register = () => {
             <div className={styles.register}>
 
                 <div className={styles.containerr} id='main'>
-                    {message && <div className=" bg-success mt-2 me-2 text-white shadow">{message}</div>}
-                    {registererrors && <div className=" bg-danger mt-2 me-2 text-white shadow">{registererrors}</div>}
+                    {message && <div class=" items-center bg-green-100 border-l-4 border-green-500 text-green-700  rounded-lg m-2 md:m-10 p-2 md:p-10 shadow-md" style={{ maxWidth: '600px' }}>
+                        <p class="text-lg font-semibold">{message}</p>
+                    </div>
+                    }
+                    {autherrors && <div class=" items-center bg-red-100 border-l-4 border-red-500 text-red-700  rounded-lg m-2 md:m-10 p-2 md:p-10 shadow-md" style={{ maxWidth: '600px' }}>
+                        {autherrors}
+                    </div>
+                    }
                     {errors.refine && <div className=" bg-danger mt-2 me-2 text-white shadow">{errors.refine.message}</div>}
                     <div className={styles['overlay-containerr']}>
                         <div className={styles.overlayr}>

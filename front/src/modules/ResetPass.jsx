@@ -18,7 +18,7 @@ export const ResetPass = () => {
 
     const navigate = useNavigate();
     let { token } = useParams();
-    const { resetpasserrors, messagepass, resetPass, IsChanged } = useAuth();
+    const { IsChanged, resetPass,setAutherrors, setMessage, message, autherrors } = useAuth();
 
     const onSubmit = handleSubmit(async (values) => {
         const data = {
@@ -29,12 +29,23 @@ export const ResetPass = () => {
     });
 
     useEffect(() => {
+        setMessage();
+        setAutherrors([]);
         if (IsChanged) navigate("/login");
     }, [IsChanged])
 
     return (
         <div>
             <Header />
+            {message && <div class=" items-center bg-green-100 border-l-4 border-green-500 text-green-700  rounded-lg m-2 md:m-10 p-2 md:p-10 shadow-md" style={{ maxWidth: '600px' }}>
+                <p class="text-lg font-semibold">{message}</p>
+            </div>
+            }
+            {autherrors && <div class=" items-center bg-red-100 border-l-4 border-red-500 text-red-700  rounded-lg m-2 md:m-10 p-2 md:p-10 shadow-md" style={{ maxWidth: '600px' }}>
+                {autherrors}
+            </div>
+            }
+
             {/*<div className="container-fluid position-relative p-4 text-center">
                 {messagepass && <div className=" bg-success mt-2 me-2 text-white shadow">{messagepass}</div>}
                 {resetpasserrors && <div className=" bg-danger mt-2 me-2 text-white shadow">{resetpasserrors}</div>}
@@ -88,8 +99,6 @@ export const ResetPass = () => {
                         <img className="w-8 h-8 mr-2" src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/logo.svg" alt="logo" />
                         CLEAR
                     </a>
-                    {messagepass && <div className=" bg-success mt-2 me-2 text-white shadow">{messagepass}</div>}
-                    {resetpasserrors && <div className=" bg-danger mt-2 me-2 text-white shadow">{resetpasserrors}</div>}
                     <div className="w-full p-6 bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md dark:bg-gray-800 dark:border-gray-700 sm:p-8">
                         <h1 className="mb-1 text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
                             Restaurar contraseña
