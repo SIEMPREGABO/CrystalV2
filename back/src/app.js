@@ -1,30 +1,39 @@
-import express from 'express';
-import cors from 'cors';
-import morgan from 'morgan';
-import authRoutes from './routes/auth.routes.js';
-import cookie_parser from 'cookie-parser';
-import projectRoutes from './routes/project.routes.js';
+import express from 'express'
+import cors from 'cors'
+import morgan from 'morgan'
+import authRoutes from './routes/auth.routes.js'
+import cookie_parser from 'cookie-parser'
+import projectRoutes from './routes/project.routes.js'
 import { activarTareasInactivas } from './controllers/project.controller.js';
 import http from 'http';
 import { Server as ServerSocket } from "socket.io";
 
 const app = express();
- // Crea un servidor HTTP utilizando Express
 
-// Configura Express
+//settings
+
 app.use(morgan('dev'));
 app.use(express.json());
 app.set('port', 4000);
 app.use(cookie_parser());
+
+
+//middleware
+
 app.use(cors({
     origin: ['http://localhost:3000', 'http://localhost:4001'],
     credentials: true
 }));
-app.use("/api", authRoutes);
-app.use("/api", projectRoutes);
+
+
+//routes
+
+app.use("/api",authRoutes);
+app.use("/api",projectRoutes);
+
 activarTareasInactivas();
 
-// Inicializa socket.io utilizando el servidor HTTP
+
 const server = http.createServer(app);
 server.listen('4001');
 const io = new ServerSocket(server, {

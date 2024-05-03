@@ -1,22 +1,20 @@
-import Header from './modules/Header';
-import Home from './modules/Home';
-import Login from './modules/Login';
-import Register from './modules/Register';
+import Home from './modules/Home.jsx';
+import Login from './modules/Login.jsx';
+import Register from './modules/Register.jsx';
 import { Routes, Route } from 'react-router-dom';
-import Panel from './modules/Panel.js';
-import Reset from './modules/Reset.js';
-import ResetPass from './modules/ResetPass.js';
+import Panel from './modules/Panel.jsx';
+import Reset from './modules/Reset.jsx';
+import ResetPass from './modules/ResetPass.jsx';
 import './/css/App.css';
 import { AuthProvider } from './context/authContext.js';
 import ProtectedRoute from './ProtectedRoute';
-import Footer from "./modules/Footer.js";
-import Proyecto from "./modules/Proyect.js"
-import FormProyect from './modules/FormProyect.js';
-import RequerimientoVoz from './modules/RequerimientosVoz.js';
-import ConfigProfile from './modules/ConfigProfile.js';
+import Footer from "./modules/Footer.jsx";
+import Proyecto from "./modules/Proyect.jsx";
+import FormProyect from './modules/FormProyect.jsx';
+import ConfigProfile from './modules/ConfigProfile.jsx';
 import { ProjectProvider } from './context/projectContext.js';
 import { ContextProvider } from "./context/Provider";
-import Requerimientos from './modules/Requerimientos.js';
+
 function App() {
   return (
     <AuthProvider>
@@ -33,11 +31,9 @@ function App() {
             <Route path="/panel" element={<Panel />} />
             <Route path="/configurar-proyecto" element={<FormProyect />} />
             <Route path="/configurar-perfil" element={<ConfigProfile />} />
-            <Route path="/Proyecto/:id/*" element={<Proyecto />}>
+            <Route path="/Proyecto/:id/*" element={<Proyecto/>}>
               <Route index element={<Proyecto />} />
             </Route>
-            <Route path="/requerimientos-x-voz" element={<RequerimientoVoz />}></Route>
-            <Route path="/requerimientos" element={<Requerimientos />}></Route>
           </Route>
         </Routes>
         <Footer />

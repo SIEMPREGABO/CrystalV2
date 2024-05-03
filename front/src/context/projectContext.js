@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { createContext, useContext, useState } from "react";
-import { requestCreate, requestJoin, requestProjects, requestParticipants, requestFechasProject, requestFechasEntregas, requestAddRequirement, requestAddMessage, requestMessages, requestGetTareas} from "../requests/projectReq.js";
+import { requestCreate, requestJoin, requestProjects, requestPermissions, requestgetProject, 
+  requestAddRequirement, requestCreateTask, requestAdd, requestAddMessage, requestMessages } from "../requests/projectReq.js";
 import Cookies from "js-cookie";
 
 const ProjectContext = createContext();
@@ -12,27 +13,32 @@ export const useProject = () => {
 };
 
 export const ProjectProvider = ({ children }) => {
-  const [project, setProject] = useState([]);
+
+  const [IsParticipant, setIsParticipant] = useState(true);
+  const [userRole, setUserRole] = useState(false);
+
+  const [message, setMessage] = useState([]);
   const [projecterrors, setProjecterrors] = useState([]);
+
   const [IsCreated, setIsCreated] = useState(false);
   const [IsJoined, setIsJoined] = useState(false);
-  const [message, setMessage] = useState([]);
+
   const [projects, setProjects] = useState([]);
   const [joinerrors, setJoinerrors] = useState([]);
-  const [fechaserrors, setFechaserrors] = useState([]);
-  const [getParticipantserrors, setParticipantserrors] = useState([]);
+
   const [participants, setParticipants] = useState([]);
   const [fechasproject, setFechasproject] = useState([]);
   const [fechasentregas, setFechasentregas] = useState([]);
-  const [requirementerrors, setRequirementErrors] = useState([]);
+  const [fechasiteraciones, setFechasiteraciones] = useState([]);
+  const [tareas, setTareas] = useState([]);
+
   const [entregaactual, setEntregaactual] = useState([]);
   const [iteracionactual, setIteracionactual] = useState([]);
+  const [requerimientos, setRequerimientos] = useState([]);
   const [messagesChat, setMessagesChat] = useState([]);
   const [chaterrors, setChatErrors] = useState([]);
-  //const [requerimientos, setRequerimientos] = useState([])
-  //const [IsLoading, setLoading] = useState(true);
-  const [tareasProject, setTareasProject] = useState([]);
-  const [tareasErrors, setTareasErrors] = useState([]);
+
+
   useEffect(() => {
     if (message.length > 0) {
       const timer = setTimeout(() => {
@@ -42,12 +48,10 @@ export const ProjectProvider = ({ children }) => {
       }, 5000);
       return () => clearTimeout(timer);
     }
-    if (projecterrors.length > 0 || joinerrors.length > 0 || getParticipantserrors.length > 0 || fechaserrors.length > 0) {
+    if (projecterrors.length > 0 || joinerrors.length > 0) {
       const timer = setTimeout(() => {
         setProjecterrors([]);
         setJoinerrors([]);
-        setParticipantserrors([]);
-        setFechaserrors([]);
       }, 5000);
       return () => clearTimeout(timer);
     }
@@ -64,9 +68,20 @@ export const ProjectProvider = ({ children }) => {
       return () => clearTimeout(timer);
     }
 
-  }, [IsCreated, projecterrors, message, joinerrors, IsJoined, getParticipantserrors, fechaserrors]);
+  }, [IsCreated, projecterrors, message, joinerrors, IsJoined]);
 
-
+  const createTask = async (Task) => {
+    try {
+      const res = await requestCreateTask(Task);
+      console.log(res.data.message);
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.message) {
+        setProjecterrors(error.response.data.message);
+      } else {
+        setProjecterrors("Error del servidor");
+      }
+    }
+  }
 
   const create = async (project) => {
     try {
@@ -82,11 +97,10 @@ export const ProjectProvider = ({ children }) => {
     }
   };
 
-  const createRequirements = async (project) => {
+  const getProjects = async () => {
     try {
-      const res = await requestAddRequirement(project);
-      console.log(res.data);
-      setMessage("Requerimiento creado con éxito");
+      const res = await requestProjects();
+      setProjects(res.data);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
         setProjecterrors(error.response.data.message);
@@ -94,7 +108,7 @@ export const ProjectProvider = ({ children }) => {
         setProjecterrors("Error del servidor");
       }
     }
-  }
+  };
 
   const createMessages = async (message) => {
     try{
@@ -104,21 +118,6 @@ export const ProjectProvider = ({ children }) => {
       if(error.response && error.response.data && error.response.data.message){
         setProjecterrors(error.response.data.message);
       }else{
-        setProjecterrors("Error del servidor");
-      }
-    }
-  }
-
-  const getProjects = async () => {
-    try {
-      //const cookies = Cookies.get();
-      const res = await requestProjects();
-      setProjects(res.data);
-      //setIsCreated(true);
-    } catch (error) {
-      if (error.response && error.response.data && error.response.data.message) {
-        setProjecterrors(error.response.data.message);
-      } else {
         setProjecterrors("Error del servidor");
       }
     }
@@ -141,20 +140,6 @@ export const ProjectProvider = ({ children }) => {
     }
   };
 
-  const getParticipants = async (project) => {
-    try {
-      const res = await requestParticipants(project);
-      //console.log(res.data);
-      setParticipants(res.data);
-    } catch (error) {
-      if (error.response && error.response.data && error.response.data.message) {
-        setParticipantserrors(error.response.data.message);
-      } else {
-        setParticipantserrors("Error del servidor");
-      }
-    }
-  }
-
   const joinProject = async (joinable) => {
     try {
       const res = await requestJoin(joinable);
@@ -169,44 +154,81 @@ export const ProjectProvider = ({ children }) => {
     }
   }
 
-  const getFechasProyecto = async (project) => {
+  const addParticipant = async (participant) => {
     try {
-      const res = await requestFechasProject(project);
-      //console.log(res.data);
-      setFechasproject(res.data);
+      const res = await requestAdd(participant);
+      setMessage(res.data.message);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
-        setFechaserrors(error.response.data.message);
+        setJoinerrors(error.response.data.message);
       } else {
-        setFechaserrors("Error del servidor");
+        setJoinerrors("Error del servidor");
       }
     }
   }
 
-  const getFechasEntregas = async (project) => {
+  const createRequirements = async (project) => {
     try {
-      const res = await requestFechasEntregas(project);
-      //console.log(res.data);
-      setFechasentregas(res.data);
+      const res = await requestAddRequirement(project);
+      console.log(res.data);
+      setMessage("Requerimiento creado con éxito");
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
-        setFechaserrors(error.response.data.message);
+        setProjecterrors(error.response.data.message);
       } else {
-        setFechaserrors("Error del servidor");
+        setProjecterrors("Error del servidor");
       }
     }
   }
 
-  const getTareasProjects = async (project) => {
-    try{
-      const res = await requestGetTareas(project);
-
-      setTareasProject(res.data);
-    }catch(error){
+  const getProject = async (project) => {
+    try {
+      const res = await requestgetProject(project);
+      setParticipants(res.data.participants);
+      setFechasproject(res.data.fechasProyecto);
+      setFechasentregas(res.data.fechasEntregas);
+      setFechasiteraciones(res.data.fechasIteraciones);
+      setEntregaactual(res.data.entregaActual);
+      setIteracionactual(res.data.iteracionActual);
+      setRequerimientos(res.data.requerimientos);
+      setTareas(res.data.tasks)
+      //console.log(res.data.fechasProyecto);
+    } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
-        setTareasErrors(error.response.data.message);
+        setProjecterrors(error.response.data.message);
       } else {
-        setTareasErrors("Error en el servidor");
+        setProjecterrors("Error del servidor");
+      }
+    }
+  }
+
+  const getPermissions = async (id) => {
+    try {
+      const nombreCookie = `Proyecto${id.ID}`;
+      const Cookie = Cookies.get(nombreCookie);
+      if (!Cookie) {
+        setIsParticipant(false);
+        return;
+      }
+      const Permission = await requestPermissions(id);
+      if (!Permission.data) setIsParticipant(false);
+      else {
+        setIsParticipant(true);
+        if (Permission.data.role === "admin") {
+          setUserRole(true);
+        }
+        await getProject(id);
+      }
+    } catch (error) {
+      if (error.response && error.response.status === 401) {
+        setIsParticipant(false);
+      } else {
+        setIsParticipant(false);
+        if (error.response && error.response.data && error.response.data.message) {
+          setProjecterrors(error.response.data.message);
+        } else {
+          setProjecterrors("Error del servidor");
+        }
       }
     }
   }
@@ -214,32 +236,32 @@ export const ProjectProvider = ({ children }) => {
   return (
     <ProjectContext.Provider
       value={{
-        project,
         projects,
         projecterrors,
         IsCreated,
         message,
         joinerrors,
         participants,
-        getParticipantserrors,
-        fechaserrors,
         fechasproject,
         fechasentregas,
-        requirementerrors,
+        fechasiteraciones,
+        entregaactual,
+        iteracionactual,
+        userRole,
+        IsParticipant,requerimientos,tareas,
         chaterrors,
         messagesChat,
-        tareasProject,
-        tareasErrors,
+        setIsParticipant,
         create,
         getProjects,
         joinProject,
-        getParticipants,
-        getFechasProyecto,
-        getFechasEntregas,
+        getProject,
+        getPermissions,
         createRequirements,
+        createTask,
+        addParticipant,
         createMessages,
-        getMessages,
-        getTareasProjects
+        getMessages
       }}
     >
       {children}

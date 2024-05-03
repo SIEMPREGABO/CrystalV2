@@ -14,11 +14,14 @@ import { FiEdit } from 'react-icons/fi';
 import { BsKanban } from 'react-icons/bs';
 import { IoMdContacts } from 'react-icons/io';
 import { RiContactsLine } from 'react-icons/ri';
+import { useProject } from '../context/projectContext';
+import { links } from '../data/dummy';
 
 const Sidebar = () => {
   const { activeMenu, setActiveMenu, screenSize, currentColor } = useStateContext();
   const { id } = useParams();
-  const [isAdmin, setIsAdmin] = useState(true);
+  const { userRole } = useProject();
+
 
   const handleCloseSideBar = () => {
     if (activeMenu && screenSize <= 900) {
@@ -43,7 +46,29 @@ const Sidebar = () => {
             </button>
           </TooltipComponent>
         </div>
-        {isAdmin &&
+        <div className='mt-10'>
+            {links.map((item) => (
+              <div key={item.title}>
+                <p className='text-gray-400 m-3 mt-4 uppercase'>{item.title}</p>
+                {item.links.map((link) => (
+                  link.isAdmin === userRole || !link.isAdmin ? (
+                    <NavLink
+                      to={`/Proyecto/${id}/${link.url}`}
+                      key={link.name}
+                      onClick={handleCloseSideBar}
+                      style={({ isActive }) => ({ backgroundColor: isActive ? currentColor : '' })}
+                      className={({ isActive }) => isActive ? activeLink : normalLink}>
+                      {link.icon}
+                      <span className='capitalize'>{link.name}</span>
+                    </NavLink>
+                  ) : null
+                ))}
+              </div>
+            ))}
+          </div>
+
+
+        {/*userRole &&
           <div className='mt-10'>
             <p className='text-gray-400 m-3 mt-4 uppercase'>
               DASHBOARD
@@ -116,7 +141,7 @@ const Sidebar = () => {
               </span>
             </NavLink>
 
-            <NavLink to={`/Proyecto/${id}/ChatIteracion`}
+            <NavLink to={`/Proyecto/${id}/Chat`}
               onClick={handleCloseSideBar}
               style={({ isActive }) => ({ backgroundColor: isActive ? currentColor : '' })}
               className={({ isActive }) => isActive ? activeLink : normalLink}>
@@ -147,13 +172,13 @@ const Sidebar = () => {
               </span>
             </NavLink>
           </div>
-        }
-        {!isAdmin &&
+        </div>*/}
+        {/*!userRole &&
           <div className='mt-10'>
             <p className='text-gray-400 m-3 mt-4 uppercase'>
               DASHBOARD
             </p>
-            <NavLink to={`/Proyecto/${id}/`}
+            <NavLink to={`/Proyecto/${id}`}
               onClick={handleCloseSideBar}
               style={({ isActive }) => ({ backgroundColor: isActive ? currentColor : '' })}
               className={({ isActive }) => isActive ? activeLink : normalLink}>
@@ -209,7 +234,7 @@ const Sidebar = () => {
 
 
           </div>
-        }
+      */}
       </>)}
 
     </div>

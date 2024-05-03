@@ -9,7 +9,6 @@ async function main(){
         console.log("MySQL connected from index");
         app.listen(app.get('port'));
         console.log('Server on port',app.get('port'));
-        
     } catch (error) {
         console.error(error);
     }

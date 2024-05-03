@@ -92,11 +92,59 @@ export function verificarUnion(ID_PROYECTO, ID_USUARIO) {
     });
 }
 
+export function verificarUnionCorreo(ID_PROYECTO, CORREO) {
+    return new Promise(async (resolve, reject) => {
+        const connection = await getConnection();
+        const query = 'SELECT * FROM U_SEUNE_P WHERE ID_PROYECTO = ? AND ID_USUARIO = ? ';
+        const queryUser = 'SELECT ID FROM USUARIO WHERE CORREO = ?';
+        connection.query(queryUser, [CORREO], (err, results) => {
+            if (err) {
+                reject(err);
+            } else {
+                if (results.length > 0) {
+                    const ID_USUARIO = results[0].ID;
+                    connection.query(query, [ID_PROYECTO, ID_USUARIO], (err, results) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            if (results.length > 0) {
+                                resolve({ success: true });
+                            } else {
+                                resolve({ success: false, ID_USUARIO: ID_USUARIO });
+                            }
+                        }
+                    })
+                } else {
+                    resolve({ success: false });
+                }
+            }
+        });
+    });
+}
+
+export function verificarNumeroParticipantes(ID_PROYECTO) {
+    return new Promise(async (resolve, reject) => {
+        const connection = await getConnection();
+        const query = 'SELECT * FROM U_SEUNE_P WHERE ID_PROYECTO = ? ';
+        connection.query(query, [ID_PROYECTO], (err, results) => {
+            if (err) {
+                reject(err);
+            } else {
+                if (results.length < 20) {
+                    resolve({ success: true });
+                } else {
+                    resolve({ success: false });
+                }
+            }
+        });
+    });
+}
+
 export function projectsUsuario(ID) {
     return new Promise(async (resolve, reject) => {
         const connection = await getConnection();
         const usuarioQuery = 'SELECT ID_PROYECTO, ES_CREADOR FROM U_SEUNE_P WHERE ID_USUARIO = ?';
-        const projectQuery = 'SELECT NOMBRE, ID FROM PROYECTOS WHERE ID = ?';
+        const projectQuery = `SELECT NOMBRE, ID, ESTADO, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO, CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO FROM PROYECTOS WHERE ID = ?`;
         connection.query(usuarioQuery, [ID], (err, results) => {
             if (err) {
                 reject(err);
@@ -110,11 +158,11 @@ export function projectsUsuario(ID) {
                                 if (err) {
                                     reject(err);
                                 } else {
-                                    resolve({ NOMBRE: projectResults[0].NOMBRE, ID: projectResults[0].ID });
+                                    resolve({ NOMBRE: projectResults[0].NOMBRE, ID: projectResults[0].ID, ESTADO: projectResults[0].ESTADO, FECHA_INICIO: projectResults[0].FECHA_INICIO, FECHA_TERMINO: projectResults[0].FECHA_TERMINO });
                                 }
                             });
                         });
-                        return { admin: ES_CREADOR, NOMBRE: projectData.NOMBRE, ID: projectData.ID };
+                        return { admin: ES_CREADOR, NOMBRE: projectData.NOMBRE, ID: projectData.ID, ESTADO: projectData.ESTADO, FECHA_INICIO: projectData.FECHA_INICIO, FECHA_TERMINO: projectData.FECHA_TERMINO };
                     });
                     Promise.all(projectsPromises)
                         .then((projects) => {
@@ -188,20 +236,12 @@ export function obtenerFechas(tabla) {
     });
 }
 
-export function obtenerFechasID(tabla,ID) {
+export function obtenerFechasTareas(tabla) {
     return new Promise(async (resolve, reject) => {
         try {
-            let query = ""
             const connection = await getConnection();
-            if(tabla === "PROYECTOS"){
-                query =  `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO, CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, ESTADO FROM ${tabla} WHERE ID = ?`
-            }else if(tabla === "ENTREGAS"){
-                query =  `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO, CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, ESTADO FROM ${tabla} WHERE ID_PROYECTO = ?`
-            }else if(tabla === "ITERACIONES"){
-                query =  `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO, CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, ESTADO FROM ${tabla} WHERE ID_ENTREGA = ?`
-            }
-            //const query = `SELECT ID, FECHA_INICIO, FECHA_TERMINO, ESTADO FROM ${tabla} WHERE ID = ?`;
-            connection.query(query,[ID], (err, results) => {
+            const query = `SELECT ID, FECHA_INICIO,FECHA_TERMINO, FECHA_MAX_TERMINO, ESTADO_DESARROLLO FROM ${tabla}`;
+            connection.query(query, (err, results) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -214,13 +254,21 @@ export function obtenerFechasID(tabla,ID) {
     });
 }
 
-/*
-export function obtenerFechasIDEntregas(tabla,ID) {
+
+export function obtenerFechasID(tabla, ID) {
     return new Promise(async (resolve, reject) => {
         try {
+            let query = ""
             const connection = await getConnection();
-            const query =  `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO, CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, ESTADO FROM ${tabla} WHERE ID_PROYECTO = ?`
-            connection.query(query,[ID], (err, results) => {
+            if (tabla === "PROYECTOS") {
+                query = `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO, CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, ESTADO, NOMBRE,OBJETIVO,DESCRIPCION_GNRL,CODIGO_UNIRSE, FECHA_CREACION,ID_CATEGORIA_CRYSTAL  FROM ${tabla} WHERE ID = ?`
+            } else if (tabla === "ENTREGAS") {
+                query = `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO, CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, ESTADO FROM ${tabla} WHERE ID_PROYECTO = ?`
+            } else if (tabla === "ITERACIONES") {
+                query = `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO, CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, ESTADO, ID_ENTREGA FROM ${tabla} WHERE ID_ENTREGA = ?`
+            }
+            //const query = `SELECT ID, FECHA_INICIO, FECHA_TERMINO, ESTADO FROM ${tabla} WHERE ID = ?`;
+            connection.query(query, [ID], (err, results) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -232,7 +280,83 @@ export function obtenerFechasIDEntregas(tabla,ID) {
         }
     });
 }
-*/
+
+export function getRequerimientosEntrega(ID_ENTREGA) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const connection = await getConnection();
+            const query = 'SELECT ID, OBJETIVO, DESCRIPCION, ID_TIPO_REQUERIMIENTO, ID_ENTREGA FROM REQUERIMIENTOS WHERE ID_ENTREGA = ?';
+            connection.query(query, [ID_ENTREGA], async (err, results) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(results);
+                }
+            })
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+export function getTareas(ID_ITERACION) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const connection = await getConnection();
+            const query = 'SELECT ID_ITERACION ,ID_USUARIO, ID_TAREA_REALIZADA, ROL_REALIZADO FROM COLABORACIONES WHERE ID_ITERACION = ?';
+            const querytask = `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO,CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, CONVERT_TZ(FECHA_MAX_TERMINO, '+00:00', '-06:00') AS FECHA_MAX_TERMINO,NOMBRE,DESCRIPCION,ESTADO_DESARROLLO,ID_REQUERIMIENTO,DESCRIPCION FROM TAREAS WHERE ID = ?`;
+            connection.query(query, [ID_ITERACION], async (err, results) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    if (results.length > 0) {
+                        const taskspromises = results.map(async (result) => {
+                            const ID_TAREA = result.ID_TAREA_REALIZADA;
+                            const taskData = await new Promise((resolve, reject) => {
+                                connection.query(querytask, [ID_TAREA], (err, taskResults) => {
+                                    if (err) {
+                                        reject(err);
+                                    } else {
+                                        resolve({ NOMBRE: taskResults[0].NOMBRE, 
+                                            ID: taskResults[0].ID, 
+                                            ESTADO_DESARROLLO: taskResults[0].ESTADO_DESARROLLO, 
+                                            FECHA_INICIO: taskResults[0].FECHA_INICIO, 
+                                            FECHA_TERMINO: taskResults[0].FECHA_TERMINO, 
+                                            FECHA_MAX_TERMINO: taskResults[0].FECHA_MAX_TERMINO, 
+                                            ID_REQUERIMIENTO: taskResults[0].ID_REQUERIMIENTO,
+                                            DESCRIPCION: taskResults[0].DESCRIPCION });
+                                    }
+                                });
+                            });
+                            return {
+                                NOMBRE: taskData.NOMBRE,
+                                ID: taskData.ID,
+                                ESTADO_DESARROLLO: taskData.ESTADO_DESARROLLO,
+                                FECHA_INICIO: taskData.FECHA_INICIO,
+                                FECHA_TERMINO: taskData.FECHA_TERMINO,
+                                FECHA_MAX_TERMINO: taskData.FECHA_MAX_TERMINO,
+                                ID_REQUERIMIENTO: taskData.ID_REQUERIMIENTO,
+                                DESCRIPCION: taskData.DESCRIPCION
+                            };
+                        })
+                        Promise.all(taskspromises)
+                            .then((task) => {
+                                resolve(task);
+                            })
+                            .catch((err) => {
+                                reject(err);
+                            });
+                    } else {
+                        resolve([]);
+                    }
+                }
+            })
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
 export function getParticipantsQuery(ID_PROYECTO) {
     return new Promise(async (resolve, reject) => {
         try {
@@ -273,24 +397,24 @@ export function ActualizarEstado(ESTADO, TABLA, ID) {
         try {
             let query = "";
             const connection = await getConnection();
-            if(TABLA === 0){
+            if (TABLA === 0) {
                 query = 'UPDATE PROYECTOS SET ESTADO = ? WHERE ID = ?';
-                console.log("Proyecto: ",ID," se escuentra en: ", ESTADO);
+                console.log("Proyecto: ", ID, " se escuentra en: ", ESTADO);
 
-            }else if(TABLA === 1){
+            } else if (TABLA === 1) {
                 query = 'UPDATE ENTREGAS SET ESTADO = ? WHERE ID = ?';
-                console.log("Entrega: ",ID," se escuentra en: ", ESTADO);
-            }else if(TABLA === 2){
+                console.log("Entrega: ", ID, " se escuentra en: ", ESTADO);
+            } else if (TABLA === 2) {
                 query = 'UPDATE ITERACIONES SET ESTADO = ? WHERE ID = ?';
-                console.log("Ieracion: ",ID," se escuentra en: ", ESTADO);
+                console.log("Iteracion: ", ID, " se escuentra en: ", ESTADO);
             }
-            connection.query(query, [ESTADO, ID], (err, results)=>{
-                if(err){
+            connection.query(query, [ESTADO, ID], (err, results) => {
+                if (err) {
                     reject(err);
-                }else{
-                    if(results.affectedRows > 0){
+                } else {
+                    if (results.affectedRows > 0) {
                         resolve(true);
-                    }else{
+                    } else {
                         resolve(false);
                     }
                 }
@@ -301,22 +425,45 @@ export function ActualizarEstado(ESTADO, TABLA, ID) {
     })
 }
 
-export function AgregarRequerimiento(OBJETIVO, REQUERIMIENTO, ID_TIPO_REQUERIMIENTO, ID_ENTREGA){
+export function ActualizarEstadoTareas(ESTADO, ID) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const connection = await getConnection();
+            const query = 'UPDATE TAREAS SET ESTADO_DESARROLLO = ? WHERE ID = ?';
+            connection.query(query, [ESTADO, ID], (err, results) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    if (results.affectedRows > 0) {
+                        resolve(true);
+                        console.log("Tarea id: ", ID, " se escuentra en: ", ESTADO);
+                    } else {
+                        resolve(false);
+                    }
+                }
+            })
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+export function AgregarRequerimiento(OBJETIVO, REQUERIMIENTO, ID_TIPO_REQUERIMIENTO, ID_ENTREGA) {
     return new Promise(async (resolve, reject) => {
         const connection = await getConnection();
         const requirementsquery = "INSERT INTO REQUERIMIENTOS (OBJETIVO, DESCRIPCION, ID_TIPO_REQUERIMIENTO, ID_ENTREGA) VALUES (?,?,?,?);";
         let idtipo;
 
-        if((typeof ID_TIPO_REQUERIMIENTO) == "number"){
+        if ((typeof ID_TIPO_REQUERIMIENTO) == "number") {
             console.log("la variable es un numero");
             idtipo = ID_TIPO_REQUERIMIENTO;
-        }else if((typeof ID_TIPO_REQUERIMIENTO) == "string"){
+        } else if ((typeof ID_TIPO_REQUERIMIENTO) == "string") {
             console.log("la variable es una cadena");
-            if(ID_TIPO_REQUERIMIENTO == "Cambio"){
+            if (ID_TIPO_REQUERIMIENTO == "Cambio") {
                 idtipo = 6;
-            }else if(ID_TIPO_REQUERIMIENTO == "Requerimiento"){
+            } else if (ID_TIPO_REQUERIMIENTO == "Requerimiento") {
                 idtipo = 1;
-            }else{
+            } else {
                 idtipo = ID_TIPO_REQUERIMIENTO;
             }
         }
@@ -327,18 +474,74 @@ export function AgregarRequerimiento(OBJETIVO, REQUERIMIENTO, ID_TIPO_REQUERIMIE
             idtipo= 1;
             console.log(typeof idtipo);
         }*/
-        connection.query(requirementsquery, [OBJETIVO, REQUERIMIENTO, idtipo, ID_ENTREGA], (error, results)=>{
-            if(error){
+        connection.query(requirementsquery, [OBJETIVO, REQUERIMIENTO, idtipo, ID_ENTREGA], (error, results) => {
+            if (error) {
                 reject(error);
-            }else if(results.affectedRows > 0 ){
-                resolve({success: true});
-            }else{
+            } else if (results.affectedRows > 0) {
+                resolve({ success: true });
+            } else {
                 resolve({ success: false });
             }
-        } );
+        });
     })
 }
 
+export function CrearTarea(NOMBRE, DESCRIPCION, FECHA_INICIO, FECHA_TERMINO, FECHA_MAX_TERMINO, ID_iteracion, ID_USUARIO, ID_REQUERIMIENTO, ROLPARTICIPANTE, ID_TAREA_DEPENDIENTE) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let rol;
+            if(ROLPARTICIPANTE === "Diseñador Principal") rol = 1;
+            if(ROLPARTICIPANTE === "Diseñador") rol = 3;
+            if(ROLPARTICIPANTE === "Embajador") rol = 2;
+            const connection = await getConnection();
+            const ESTADO_DESARROLLO = "En espera";
+            const query = "INSERT INTO TAREAS(NOMBRE,DESCRIPCION,ESTADO_DESARROLLO,FECHA_INICIO,FECHA_TERMINO,FECHA_MAX_TERMINO,ID_REQUERIMIENTO) VALUES (?,?,?,?,?,?,?);";
+            const queryColab = "INSERT INTO COLABORACIONES (ID_USUARIO, ID_ITERACION, ID_TAREA_REALIZADA, ROL_REALIZADO) VALUES (?,?,?,?)";
+            const queryDependencia = "INSERT INTO T_DEPENDE_T (ID_TAREA_DEPENDIENTE, ID_SUBTAREA) VALUES (?,?)"
+            connection.query(query, [NOMBRE, DESCRIPCION, ESTADO_DESARROLLO, FECHA_INICIO, FECHA_TERMINO, FECHA_MAX_TERMINO, ID_REQUERIMIENTO], (err, results) => {
+                if (err) {
+                    reject(err)
+                    console.log("mamw", err)
+                } else {
+                    if (results.affectedRows > 0) {
+                        const id_tarea_creada = results.insertId;
+                        connection.query(queryColab, [ID_USUARIO, ID_iteracion, id_tarea_creada, rol], (err, results) => {
+                            if (err) {
+                                reject(err)
+                                console.log(err);
+                            } else {
+                                if (results.affectedRows > 0) {
+                                    if (ID_TAREA_DEPENDIENTE != "") {
+                                        connection.query(queryDependencia, [ID_TAREA_DEPENDIENTE, id_tarea_creada], (err, results) => {
+                                            if (err) {
+                                                reject(err);
+                                            } else {
+                                                if (results.affectedRows > 0) {
+                                                    resolve({ success: true })
+                                                } else {
+                                                    resolve({ success: false })
+                                                }
+                                            }
+                                        })
+                                    } else {
+                                        resolve({ success: true })
+                                    }
+                                } else {
+                                    resolve({ success: false })
+                                }
+                            }
+                        })
+                    } else {
+                        resolve({ success: false })
+                    }
+                }
+            })
+        } catch (error) {
+            reject(error)
+        }
+
+    })
+}
 
 export function AgregarMensaje(CONTENIDO, FECHA, HORA, USUARIO, ITERACION){
     return new Promise(async (resolve, reject) => {
@@ -372,25 +575,6 @@ export function GetMessages(ID_iteracion){
                 resolve(results);
             }
         });
-        }catch(error){
-            reject(error);
-        }
-    });
-}
-
-export function GetTareasProject(ID_PROYECT){
-    return new Promise(async (resolve, reject) => {
-        try{
-            const connection = await getConnection();
-            const tareasquery = "SELECT t.*, r.ID, e.ID AS Entrega FROM TAREAS t JOIN REQUERIMIENTOS r ON t.ID_REQUERIMIENTO = r.ID JOIN ENTREGAS e ON r.ID_ENTREGA = e.ID WHERE e.ID_PROYECTO = ?;";
-
-            connection.query(tareasquery, [ID_PROYECT], (error, results) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(results);
-                }
-            });
         }catch(error){
             reject(error);
         }

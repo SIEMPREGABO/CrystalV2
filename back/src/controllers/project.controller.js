@@ -1,11 +1,13 @@
 import moment from 'moment-timezone';
-import { SECRET_TOKEN } from '../config.js';
+import { SECRET_TOKEN, SECRETPASS_TOKEN } from '../config.js';
 import { generarCodigo, generarEntregas } from '../libs/makerProject.js';
-import { agregarUsuario, crearProyecto, projectsUsuario, verificarCodigo, verificarUnion, obtenerFechas, getParticipantsQuery, ActualizarEstado, obtenerFechasID , AgregarRequerimiento, AgregarMensaje, GetMessages, GetTareasProject } from '../querys/projectquerys.js';
+import { agregarUsuario, crearProyecto, projectsUsuario, verificarCodigo, verificarUnion, 
+obtenerFechas, getParticipantsQuery, ActualizarEstado, obtenerFechasID, getRequerimientosEntrega, 
+AgregarRequerimiento, verificarUnionCorreo, verificarNumeroParticipantes, CrearTarea, getTareas, 
+obtenerFechasTareas, ActualizarEstadoTareas, AgregarMensaje, GetMessages } from '../querys/projectquerys.js';
 import jwt from 'jsonwebtoken'
 import { zonaHoraria } from '../config.js';
 import { createProjectToken } from '../libs/jwt.js';
-
 import { array } from 'zod';
 //import { resetSchema } from '../../../frontend/src/schemas/auth.js';
 
@@ -14,7 +16,6 @@ export const createProject = async (req, res) => {
     const { NOMBRE_PROYECTO, OBJETIVO, DESCRIPCION_GNRL, FECHA_INICIO, FECHA_TERMINO, ENTREGAS, ID } = req.body;
     console.log(req.body);
     try {
-        //NOMBRE_PROYECTO, OBJETIVOS, DESCRIPCION, FECHA_ACTUAL, FECHA_INICIO, FECHA_TERMINO, ENTREGAS
         const FECHA_INICIAL = moment(FECHA_INICIO).tz(zonaHoraria).add(1, 'days');
         const FECHA_FINAL = moment(FECHA_TERMINO).tz(zonaHoraria).endOf('day');
 
@@ -51,13 +52,13 @@ export const getProjects = async (req, res) => {
         if (error) return res.status(401).json({ message: ["No autorizado"] });
         const projects = await projectsUsuario(user.id);
         const projectCookies = {};
-        if(projects.length > 0){
+        if (projects.length > 0) {
             await Promise.all(projects.map(async (project) => {
                 let role = 'participant';
                 if (project.admin) {
                     role = 'admin'
                 }
-    
+
                 const payload = {
                     ID_PROYECTO: project.ID,
                     role: role
@@ -66,39 +67,24 @@ export const getProjects = async (req, res) => {
                 projectCookies[`Proyecto${project.ID}`] = projectToken;
             }));
             Object.entries(projectCookies).forEach(([name, value]) => {
-                res.cookie(name, value, { httpOnly: true });
+                res.cookie(name, value);
             });
         }
         res.json(projects);
     })
 }
 
-export const getParticipants = async (req,res) => {
-    const {ID_PROYECTO} = req.body;
-    try {
-        //if(!ID_PROYECTO) return res.status(500).json({message:["Error en el servidor"]});
-        const participants = await getParticipantsQuery(ID_PROYECTO);
-
-        //participants.map((participant)=>{
-        //    console.log(participant.NOMBRE_USUARIO, participant.ID_USUARIO, participant.FECHA_UNION, participant.NUMERO_BOLETA);
-        //});
-
-        res.json(participants);
-    } catch (error) {
-        res.status(500).json({message:["Error en el servidor"]})
-    }
-}
 
 export const joinProject = async (req, res) => {
     const FECHA_ACTUAL = moment().tz(zonaHoraria);
-
     try {
         const { CODIGO_UNIRSE, ID_USUARIO } = req.body;
-        //console.log(req.body);
         const proyecto = await verificarCodigo(CODIGO_UNIRSE);
         const ES_CREADOR = false;
         let REGISTRO_ACTUAL = moment(FECHA_ACTUAL).format('YYYY-MM-DD HH:mm:ss');
         if (!proyecto) return res.status(404).json({ message: ["Projecto no existente"] });
+        const numeroParticipantes = await verificarNumeroParticipantes(proyecto.project[0].ID);
+        if(numeroParticipantes.success) return res.status(400).json({message : ["Numero maximo de participantes alcanzado"]});
         const registrado = await verificarUnion(proyecto.project[0].ID, ID_USUARIO);
         if (registrado.success) return res.status(400).json({ message: ["Ya estas participando en el proyecto"] })
         const union = await agregarUsuario(REGISTRO_ACTUAL, ES_CREADOR, proyecto.project[0].ID, ID_USUARIO);
@@ -109,75 +95,131 @@ export const joinProject = async (req, res) => {
     }
 }
 
-export const getFechasProject = async (req,res) => {
-    const {ID_PROYECTO} = req.body;
+export const getPermissions = async (req, res) => {
+    const { ID } = req.body;
+    const namecookie = `Proyecto${ID}`;
     try {
-        const FECHAS_PROYECTO = await obtenerFechasID("PROYECTOS",ID_PROYECTO);
-        return res.json(FECHAS_PROYECTO);
-
+        const cookieValue = req.cookies[namecookie];
+        if (!cookieValue) return res.status(401).json({ message: ["No autorizado"] });
+        jwt.verify(cookieValue, SECRET_TOKEN, async (err, user) => {
+            if (err) return res.status(400).json({ message: ["Error inesperado, intentalo de nuevo"] });
+            return res.json({
+                ID: user.ID_PROYECTO,
+                role: user.role
+            });
+        }
+        );
     } catch (error) {
-        return res.status(500).json({messsage:["Error inesperado, intentanlo de nuevo"]})
+        return res.status(500).json({ message: ["Error inesperado, intentalo de nuevo"] });
+
     }
 }
 
-export const getFechasEntregas = async (req,res) =>{
-    const {ID_PROYECTO} = req.body;
+export const getProject = async (req, res) => {
+    const { ID } = req.body;
+    const ID_PROYECTO = ID;
     try {
-        const FECHAS_ENTREGAS =  await obtenerFechasID("ENTREGAS",ID_PROYECTO);
-        //console.log(FECHAS_ENTREGAS);
-        const FECHAS_ITERACIONES = await Promise.all(FECHAS_ENTREGAS.map(async (ENTREGA)=>{
-            //console.log(ENTREGA.ID);
-            const FECHAS_ITERACION = await obtenerFechasID("ITERACIONES",ENTREGA.ID)
-            return(FECHAS_ITERACION);
-        }))
-        /*FECHAS_ITERACIONES.map((ITERACIONPORENTREGA)=>{
-            ITERACIONPORENTREGA.map((ITERACION)=>{
-                console.log(ITERACION.ID);
+        const FECHAS_PROYECTO = await obtenerFechasID("PROYECTOS", ID_PROYECTO);
+        let ENTREGA_ACTUAL = "";
+        let ITERACION_ACTUAL = "";
+        const FECHAS_ENTREGAS = await obtenerFechasID("ENTREGAS", ID_PROYECTO);
+
+        const FECHAS_ITERACIONES = await Promise.all(FECHAS_ENTREGAS.map(async (ENTREGA) => {
+            const FECHAS_ITERACION = await obtenerFechasID("ITERACIONES", ENTREGA.ID);
+            return (FECHAS_ITERACION);
+        }));
+
+        const participants = await getParticipantsQuery(ID_PROYECTO);
+        FECHAS_ENTREGAS.map((ENTREGA) => {
+            if (ENTREGA.ESTADO === 'En desarrollo') {
+                ENTREGA_ACTUAL = ENTREGA;
+            }
+        });
+        FECHAS_ITERACIONES.map((ITERACIONESPORENTREGA) => {
+            ITERACIONESPORENTREGA.map((ITERACION) => {
+                if (ITERACION.ESTADO === 'En desarrollo') {
+                    ITERACION_ACTUAL = ITERACION;
+                }
             })
-        })*/
-        
+        });
+
+        const requerimientos = await getRequerimientosEntrega(ENTREGA_ACTUAL.ID);
+        const tasks = await getTareas(ITERACION_ACTUAL.ID);
+
+        //console.log(requerimientos);
         const data = {
+            fechasProyecto: FECHAS_PROYECTO,
             fechasEntregas: FECHAS_ENTREGAS,
-            fechasIteraciones: FECHAS_ITERACIONES
+            fechasIteraciones: FECHAS_ITERACIONES,
+            entregaActual: ENTREGA_ACTUAL,
+            iteracionActual: ITERACION_ACTUAL,
+            participants: participants,
+            requerimientos: requerimientos,
+            tasks: tasks
         };
-        const fechasenviadas = data.fechasIteraciones;
-        //console.log(data.fechasIteraciones);
-        fechasenviadas.map((ITERACIONPORENTREGA)=>{
-            ITERACIONPORENTREGA.map((ITERACION)=>{
-                console.log(ITERACION.ID);
-            })
-        })
-
-        //return res.json(data);
+        return res.json(data);
     } catch (error) {
-        return res.status(500).json({message:["Error inesperado, intentalo de nuevo"]})
+        return res.status(500).json({ messsage: error })
     }
 }
+
 
 export const getTasks = async (req, res) => {
+    const {ID_ITERACION} = req.body;
     try {
-        const tasks = await getTasks();
-        if (!tasks.success) res.status(500).json({ mensaje: ["Error en la base de datos"] });
-        if (tasks.vacio) res.status(200).json({ mensaje: ["No hay mensajes por mostrar"] });
-        res.status(200).json({
-            tasks: tasks.results
-        });
+        const tasks = await getTareas(ID_ITERACION);
+        res.json(tasks);
     } catch (error) {
         res.status(500).json({ mensaje: ["Error inesperado, intentalo nuevamente"] });
     }
 }
 
 export const createTask = async (req, res) => {
-    const { titulo, descripcion, fecha } = req.body
+    const { NOMBRE, DESCRIPCION, FECHA_INICIO,HORAINICIO,HORAENTREGA,HORAMAXIMA, FECHA_TERMINO, FECHA_MAX_TERMINO, iteracionactual, ID_USUARIO, ID_REQUERIMIENTO, ROLPARTICIPANTE, ID_TAREA_DEPENDIENTE} = req.body
+    //console.log(req.body);
+    const FECHA_ACTUAL_SIS = moment().format('YYYY-MM-DD HH:mm:ss');
+    const FECHA_ACTUAL = moment.utc(FECHA_ACTUAL_SIS);
+    try {
+        const HORAINICIO_TAREA = moment(HORAINICIO, 'HH:mm:ss');const HORAENTREGA_TAREA = moment(HORAENTREGA, 'HH:mm:ss');const HORAMAXIMA_TAREA = moment(HORAMAXIMA, 'HH:mm:ss');
 
-    const newTask = new Task({
-        titulo,
-        descripcion,
-        fecha
-    })
+        const FECHA_INICIO_TAREA = moment.utc(FECHA_INICIO);const FECHA_TERMINO_TAREA = moment.utc(FECHA_TERMINO);const FECHA_MAX_TERMINO_TAREA = moment.utc(FECHA_MAX_TERMINO);
+        //console.log(iteracionactual.FECHA_INICIO, iteracionactual.FECHA_TERMINO)
+        const FECHA_INICIO_ITERACION = moment.utc(iteracionactual.FECHA_INICIO);const FECHA_TERMINO_ITERACION =  moment.utc(iteracionactual.FECHA_TERMINO);
+        
+        const FECHA_INICIO_COMPLETA = FECHA_INICIO_TAREA.clone().hours(HORAINICIO_TAREA.hours()).minutes(HORAINICIO_TAREA.minutes()).seconds(HORAINICIO_TAREA.seconds());
+        
+        const FECHA_ENTREGA_COMPLETA = FECHA_TERMINO_TAREA.clone().hours(HORAENTREGA_TAREA.hours()).minutes(HORAENTREGA_TAREA.minutes()).seconds(HORAENTREGA_TAREA.seconds());
+        
+        const FECHA_MAXIMA_COMPLETA = FECHA_MAX_TERMINO_TAREA.clone().hours(HORAMAXIMA_TAREA.hours()).minutes(HORAMAXIMA_TAREA.minutes()).seconds(HORAMAXIMA_TAREA.seconds());
 
-    const saveTask = await newTask.save();
-    res.json(saveTask);
+        //ITERACION VERIFICAR
+        if(FECHA_INICIO_COMPLETA.isBefore(FECHA_INICIO_ITERACION)) return res.status(400).json({ message: ["La fecha inicial debe correponder a la iteracion actual"] });
+        if(FECHA_MAXIMA_COMPLETA.isAfter(FECHA_TERMINO_ITERACION)) return res.status(400).json({ message: ["La fecha max debe correponder a la iteracion actual"] });
+        
+        //FECHAS VERIFICAR
+        if (FECHA_INICIO_COMPLETA.isBefore(FECHA_ACTUAL)) return res.status(400).json({ message: ["Fecha inicial incorrecta"] });
+        if (FECHA_ENTREGA_COMPLETA.isBefore(FECHA_INICIO_COMPLETA)) return res.status(400).json({ message: ["Fecha final incorrecta"] });
+        if (FECHA_MAXIMA_COMPLETA.isBefore(FECHA_ENTREGA_COMPLETA)) return res.status(400).json({ message: ["Fecha final maxima incorrecta"] });
+        
+        
+        const MINUTOS_DIFERENCIA = FECHA_ENTREGA_COMPLETA.diff(FECHA_INICIO_COMPLETA, 'minutes');
+        if (MINUTOS_DIFERENCIA < 120) return res.status(400).json({ message: ["Diferencia minimo de 2 horas entre el inicio y la entrega"] });
+        const MINUTOS_DIFERENCIA_MAX = FECHA_MAXIMA_COMPLETA.diff(FECHA_ENTREGA_COMPLETA, 'minutes');
+        if (MINUTOS_DIFERENCIA_MAX < 120) return res.status(400).json({ message: ["Diferencia minimo de 2 horas en la hora maxima"] });
+        
+        const REGISTRO_INICIO = moment(FECHA_INICIO_COMPLETA).format('YYYY-MM-DD HH:mm:ss');
+        const REGISTRO_ENTREGA = moment(FECHA_ENTREGA_COMPLETA).format('YYYY-MM-DD HH:mm:ss');
+        const REGISTRO_MAX = moment(FECHA_MAXIMA_COMPLETA).format('YYYY-MM-DD HH:mm:ss');
+
+        
+        
+        const tareacreada = await CrearTarea(NOMBRE, DESCRIPCION, REGISTRO_INICIO, REGISTRO_ENTREGA, REGISTRO_MAX, iteracionactual.ID, ID_USUARIO, ID_REQUERIMIENTO, ROLPARTICIPANTE, ID_TAREA_DEPENDIENTE); 
+        if(!tareacreada.success) return res.status(400).json("Error al crear la tarea");
+        return res.status(200).json({message: ["Tarea creada con exito"]});
+        
+    } catch (error) {
+        res.status(500).json({ mensaje: ["Error inesperado, intentalo nuevamente"] });
+    }
 }
 
 export const getTask = async (req, res) => {
@@ -219,27 +261,69 @@ export const obtenerMensajes = async (req, res) => {
     }
 }
 
+export const addParticipant = async (req,res) => {
+    const {CORREO,ID_PROYECTO } = req.body;
+    try {
+        const FECHA_ACTUAL = moment().tz(zonaHoraria);
+        let REGISTRO_ACTUAL = moment(FECHA_ACTUAL).format('YYYY-MM-DD HH:mm:ss');
+        const ES_CREADOR = false;
+        const registrado = await verificarUnionCorreo(ID_PROYECTO, CORREO);
+        if (registrado.success) return res.status(400).json({ message: ["Ya esta participando en el proyecto"] })
+        const numeroParticipantes = await verificarNumeroParticipantes(ID_PROYECTO);
+        if(numeroParticipantes.success) return res.status(400).json({message : ["Numero maximo de participantes alcanzado"]});
+        const union = await agregarUsuario(REGISTRO_ACTUAL, ES_CREADOR, ID_PROYECTO, registrado.ID_USUARIO);
+        if (!union.success) return res.status(500).json({ message: ["Usuario no agregado con exito"] });
+        return res.status(200).json({ message: ["Enlazado a proyecto correctamente"] });
+    } catch (error) {
+        res.status(500).json({ mensaje: ["Error inesperado, intentalo nuevamente"] });
+    }
+}
+
 export const activarTareasInactivas = async (req, res) => {
     const ESTADO = ["En espera", "En desarrollo", "Finalizado"];
+    const ESTADOTAREA = ["En espera","En desarrollo","Atrasada","Cerrada"];
     const FECHA_ACTUAL = moment().tz(zonaHoraria);
     const FECHAS_PROYECTO = await obtenerFechas("PROYECTOS");
     const FECHAS_ENTREGAS = await obtenerFechas("ENTREGAS");
     const FECHAS_ITERACIONES = await obtenerFechas("ITERACIONES");
+    const FECHAS_TAREAS = await obtenerFechasTareas("TAREAS");
     const tiposDeFecha = [FECHAS_PROYECTO, FECHAS_ENTREGAS, FECHAS_ITERACIONES];
 
-    await Promise.all(tiposDeFecha.map(async (fechas,index) => {
+    await Promise.all(tiposDeFecha.map(async (fechas, index) => {
         //console.log(`Fechas del tipo ${index + 1}:`);
         await Promise.all(fechas.map(async (fecha) => {
             let fechaInicial = moment(fecha.FECHA_INICIO).tz(zonaHoraria);
             let fechaFinal = moment(fecha.FECHA_TERMINO).tz(zonaHoraria);
-            if (FECHA_ACTUAL.isAfter(fechaInicial) && (fecha.ESTADO) === "En espera" ) {
-                const actualizar = await ActualizarEstado(ESTADO[1],index,fecha.ID);
+            if (FECHA_ACTUAL.isAfter(fechaInicial) && (fecha.ESTADO) === "En espera") {
+                const actualizar = await ActualizarEstado(ESTADO[1], index, fecha.ID);
             }
             if (FECHA_ACTUAL.isAfter(fechaFinal) && (fecha.ESTADO) === "En desarrollo") {
-                const actualizar = await ActualizarEstado(ESTADO[2],index,fecha.ID);
+                const actualizar = await ActualizarEstado(ESTADO[2], index, fecha.ID);
             }
         }));
     }));
+
+    await Promise.all(FECHAS_TAREAS.map(async (fecha) => {
+        let fechaInicial = moment(fecha.FECHA_INICIO).tz(zonaHoraria);
+        let fechaFinal = moment(fecha.FECHA_TERMINO).tz(zonaHoraria);
+        let fechaFinalMaxima = moment(fecha.FECHA_MAX_TERMINO).tz(zonaHoraria);
+
+        //console.log(fechaInicial,fechaFinal,fechaFinalMaxima);
+        
+        if (FECHA_ACTUAL.isAfter(fechaInicial) && (fecha.ESTADO_DESARROLLO) === "En espera") {
+            const actualizar = await ActualizarEstadoTareas(ESTADOTAREA[1], fecha.ID);
+        }
+
+        if (FECHA_ACTUAL.isAfter(fechaFinal) && (fecha.ESTADO_DESARROLLO) === "En desarrollo") {
+            const actualizar = await ActualizarEstadoTareas(ESTADOTAREA[2], fecha.ID);
+        }
+
+        if(FECHA_ACTUAL.isAfter(fechaFinalMaxima) && (fecha.ESTADO_DESARROLLO) === "Atrasada"){
+            const actualizar = await ActualizarEstadoTareas(ESTADOTAREA[3], fecha.ID);
+        }
+        
+    }));
+
     console.log("Im alive");
     setTimeout(activarTareasInactivas, 10 * 60 * 1000);
 }
@@ -273,21 +357,9 @@ export const getMessages = async (req, res) => {
     //console.log(req.body);
     try{
         const messages = await GetMessages(ID_ITERACION);
-    
+
         res.json(messages);
     } catch (error) {
         res.status(500).json({message:["Error en el servidor al intentar obtener mensajes"]})
-    }
-}
-
-export const getTareas = async (req, res) => {
-    const {ID_PROYECT} = req.body;
-
-    try{
-        const tareas = await GetTareasProject(ID_PROYECT);
-
-        res.json(tareas);
-    }catch(error){
-        res.status(500).json({message:["Error en el servidor al intentar obtener tareas de proyecto"]});
     }
 }

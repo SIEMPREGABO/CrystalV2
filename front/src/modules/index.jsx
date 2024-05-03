@@ -1,8 +1,9 @@
 export {  default as Inicio } from './Inicio';
 export {  default as Kanban } from './Kanban';
-export {  default as ChatIteracion } from './ChatIteracion';
+export {  default as ChatTexto } from './ChatTexto';
 export {  default as VideoChat } from './VideoChat';
-export {  default as Proyecto } from './Proyecto';
+export {  default as Proyect } from './Proyect';
+export {  default as ChatIteracion } from './ChatIteracion';
 export {  default as Configuracion } from './Configuracion';
 export {  default as Entregas } from './Entregas';
 export {  default as Custumer } from './Custumer';
