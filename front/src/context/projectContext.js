@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { createContext, useContext, useState } from "react";
-import { requestCreate, requestJoin, requestProjects, requestParticipants, requestFechasProject, requestFechasEntregas, requestAddRequirement, requestAddMessage, requestMessages } from "../requests/projectReq.js";
+import { requestCreate, requestJoin, requestProjects, requestParticipants, requestFechasProject, requestFechasEntregas, requestAddRequirement, requestAddMessage, requestMessages, requestGetTareas} from "../requests/projectReq.js";
 import Cookies from "js-cookie";
 
 const ProjectContext = createContext();
@@ -31,7 +31,8 @@ export const ProjectProvider = ({ children }) => {
   const [chaterrors, setChatErrors] = useState([]);
   //const [requerimientos, setRequerimientos] = useState([])
   //const [IsLoading, setLoading] = useState(true);
-
+  const [tareasProject, setTareasProject] = useState([]);
+  const [tareasErrors, setTareasErrors] = useState([]);
   useEffect(() => {
     if (message.length > 0) {
       const timer = setTimeout(() => {
@@ -196,6 +197,20 @@ export const ProjectProvider = ({ children }) => {
     }
   }
 
+  const getTareasProjects = async (project) => {
+    try{
+      const res = await requestGetTareas(project);
+
+      setTareasProject(res.data);
+    }catch(error){
+      if (error.response && error.response.data && error.response.data.message) {
+        setTareasErrors(error.response.data.message);
+      } else {
+        setTareasErrors("Error en el servidor");
+      }
+    }
+  }
+
   return (
     <ProjectContext.Provider
       value={{
@@ -213,6 +228,8 @@ export const ProjectProvider = ({ children }) => {
         requirementerrors,
         chaterrors,
         messagesChat,
+        tareasProject,
+        tareasErrors,
         create,
         getProjects,
         joinProject,
@@ -221,7 +238,8 @@ export const ProjectProvider = ({ children }) => {
         getFechasEntregas,
         createRequirements,
         createMessages,
-        getMessages
+        getMessages,
+        getTareasProjects
       }}
     >
       {children}

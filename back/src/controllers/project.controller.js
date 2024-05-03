@@ -1,7 +1,7 @@
 import moment from 'moment-timezone';
 import { SECRET_TOKEN } from '../config.js';
 import { generarCodigo, generarEntregas } from '../libs/makerProject.js';
-import { agregarUsuario, crearProyecto, projectsUsuario, verificarCodigo, verificarUnion, obtenerFechas, getParticipantsQuery, ActualizarEstado, obtenerFechasID , AgregarRequerimiento, AgregarMensaje, GetMessages } from '../querys/projectquerys.js';
+import { agregarUsuario, crearProyecto, projectsUsuario, verificarCodigo, verificarUnion, obtenerFechas, getParticipantsQuery, ActualizarEstado, obtenerFechasID , AgregarRequerimiento, AgregarMensaje, GetMessages, GetTareasProject } from '../querys/projectquerys.js';
 import jwt from 'jsonwebtoken'
 import { zonaHoraria } from '../config.js';
 import { createProjectToken } from '../libs/jwt.js';
@@ -277,5 +277,17 @@ export const getMessages = async (req, res) => {
         res.json(messages);
     } catch (error) {
         res.status(500).json({message:["Error en el servidor al intentar obtener mensajes"]})
+    }
+}
+
+export const getTareas = async (req, res) => {
+    const {ID_PROYECT} = req.body;
+
+    try{
+        const tareas = await GetTareasProject(ID_PROYECT);
+
+        res.json(tareas);
+    }catch(error){
+        res.status(500).json({message:["Error en el servidor al intentar obtener tareas de proyecto"]});
     }
 }

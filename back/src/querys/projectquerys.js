@@ -377,3 +377,22 @@ export function GetMessages(ID_iteracion){
         }
     });
 }
+
+export function GetTareasProject(ID_PROYECT){
+    return new Promise(async (resolve, reject) => {
+        try{
+            const connection = await getConnection();
+            const tareasquery = "SELECT t.*, r.ID, e.ID AS Entrega FROM TAREAS t JOIN REQUERIMIENTOS r ON t.ID_REQUERIMIENTO = r.ID JOIN ENTREGAS e ON r.ID_ENTREGA = e.ID WHERE e.ID_PROYECTO = ?;";
+
+            connection.query(tareasquery, [ID_PROYECT], (error, results) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(results);
+                }
+            });
+        }catch(error){
+            reject(error);
+        }
+    });
+}
