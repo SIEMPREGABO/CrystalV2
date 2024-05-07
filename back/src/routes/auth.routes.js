@@ -9,11 +9,9 @@ const router = Router();
 router.post('/register',validateSchema(registerSchema),register);
 router.post('/login',validateSchema(loginSchema),login);
 router.post('/logout',logout);
-//router.get('/profile',validarToken,profile);
 router.get('/verify', verifyToken);
 router.post('/reset',validateSchema(resetSchema),reset);
 router.post('/resetpass',validateSchema(resetpasswordSchema), resetpass);
-//router.post('/changepass',,changePassword);
 router.post('/updateuser',validateSchema(updateSchema),updateUser);
 
 export default router;

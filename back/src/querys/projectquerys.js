@@ -92,11 +92,28 @@ export function verificarUnion(ID_PROYECTO, ID_USUARIO) {
     });
 }
 
+export function eliminarParticipante(ID_PROYECTO, ID_USUARIO){
+    return new Promise(async (resolve, reject)=>{
+        const connection = await getConnection();
+        const query  = 'DELETE FROM U_SEUNE_P WHERE ID_PROYECTO = ? AND ID_USUARIO = ?;';
+        connection.query(query,[ID_PROYECTO,ID_USUARIO], (err, results) =>{
+            if(err){
+                reject(err);
+            }else{
+                if (results.affectedRows > 0) {
+                    resolve({ success: true });
+                } else {
+                    resolve({ success: false});
+                }
+            }
+        })
+    })
+}
 export function verificarUnionCorreo(ID_PROYECTO, CORREO) {
     return new Promise(async (resolve, reject) => {
         const connection = await getConnection();
-        const query = 'SELECT * FROM U_SEUNE_P WHERE ID_PROYECTO = ? AND ID_USUARIO = ? ';
         const queryUser = 'SELECT ID FROM USUARIO WHERE CORREO = ?';
+        const query = 'SELECT * FROM U_SEUNE_P WHERE ID_PROYECTO = ? AND ID_USUARIO = ? ';
         connection.query(queryUser, [CORREO], (err, results) => {
             if (err) {
                 reject(err);
@@ -108,14 +125,14 @@ export function verificarUnionCorreo(ID_PROYECTO, CORREO) {
                             reject(err);
                         } else {
                             if (results.length > 0) {
-                                resolve({ success: true });
+                                resolve({ success: true, isRegister: true });
                             } else {
-                                resolve({ success: false, ID_USUARIO: ID_USUARIO });
+                                resolve({ success: false,isRegister: true, ID_USUARIO: ID_USUARIO });
                             }
                         }
                     })
                 } else {
-                    resolve({ success: false });
+                    resolve({ isRegister: false });
                 }
             }
         });
@@ -317,14 +334,16 @@ export function getTareas(ID_ITERACION) {
                                     if (err) {
                                         reject(err);
                                     } else {
-                                        resolve({ NOMBRE: taskResults[0].NOMBRE, 
-                                            ID: taskResults[0].ID, 
-                                            ESTADO_DESARROLLO: taskResults[0].ESTADO_DESARROLLO, 
-                                            FECHA_INICIO: taskResults[0].FECHA_INICIO, 
-                                            FECHA_TERMINO: taskResults[0].FECHA_TERMINO, 
-                                            FECHA_MAX_TERMINO: taskResults[0].FECHA_MAX_TERMINO, 
+                                        resolve({
+                                            NOMBRE: taskResults[0].NOMBRE,
+                                            ID: taskResults[0].ID,
+                                            ESTADO_DESARROLLO: taskResults[0].ESTADO_DESARROLLO,
+                                            FECHA_INICIO: taskResults[0].FECHA_INICIO,
+                                            FECHA_TERMINO: taskResults[0].FECHA_TERMINO,
+                                            FECHA_MAX_TERMINO: taskResults[0].FECHA_MAX_TERMINO,
                                             ID_REQUERIMIENTO: taskResults[0].ID_REQUERIMIENTO,
-                                            DESCRIPCION: taskResults[0].DESCRIPCION });
+                                            DESCRIPCION: taskResults[0].DESCRIPCION
+                                        });
                                     }
                                 });
                             });
@@ -361,13 +380,15 @@ export function getParticipantsQuery(ID_PROYECTO) {
     return new Promise(async (resolve, reject) => {
         try {
             const connection = await getConnection();
-            const query = 'SELECT ID_USUARIO, FECHA_UNION FROM U_SEUNE_P WHERE ID_PROYECTO = ?';
+            const query = 'SELECT ID_USUARIO, FECHA_UNION, ES_CREADOR FROM U_SEUNE_P WHERE ID_PROYECTO = ?';
             const queryusers = "SELECT NOMBRE_USUARIO, NUMERO_BOLETA  FROM USUARIO WHERE ID = ?"
             connection.query(query, [ID_PROYECTO], async (err, results) => {
                 if (err) {
                     reject(err);
                 } else {
+
                     const promises = results.map(async (result) => {
+                        const role = result.ES_CREADOR;
                         const Userdata = await new Promise((resolve, reject) => {
                             connection.query(queryusers, [result.ID_USUARIO], (err, Users) => {
                                 if (err) {
@@ -377,7 +398,13 @@ export function getParticipantsQuery(ID_PROYECTO) {
                                 }
                             })
                         })
-                        return { NOMBRE_USUARIO: Userdata.NOMBRE_USUARIO, ID_USUARIO: result.ID_USUARIO, FECHA_UNION: moment(result.FECHA_UNION).tz(zonaHoraria).format("YYYY-MM-DD"), NUMERO_BOLETA: Userdata.NUMERO_BOLETA };
+                        return {
+                            NOMBRE_USUARIO: Userdata.NOMBRE_USUARIO,
+                            ROLE: role,
+                            ID_USUARIO: result.ID_USUARIO,
+                            FECHA_UNION: moment(result.FECHA_UNION).tz(zonaHoraria).format("YYYY-MM-DD"),
+                            NUMERO_BOLETA: Userdata.NUMERO_BOLETA
+                        };
                     })
                     const users = await Promise.all(promises);
                     resolve(users);
@@ -490,9 +517,9 @@ export function CrearTarea(NOMBRE, DESCRIPCION, FECHA_INICIO, FECHA_TERMINO, FEC
     return new Promise(async (resolve, reject) => {
         try {
             let rol;
-            if(ROLPARTICIPANTE === "Diseñador Principal") rol = 1;
-            if(ROLPARTICIPANTE === "Diseñador") rol = 3;
-            if(ROLPARTICIPANTE === "Embajador") rol = 2;
+            if (ROLPARTICIPANTE === "Diseñador Principal") rol = 1;
+            if (ROLPARTICIPANTE === "Diseñador") rol = 3;
+            if (ROLPARTICIPANTE === "Embajador") rol = 2;
             const connection = await getConnection();
             const ESTADO_DESARROLLO = "En espera";
             const query = "INSERT INTO TAREAS(NOMBRE,DESCRIPCION,ESTADO_DESARROLLO,FECHA_INICIO,FECHA_TERMINO,FECHA_MAX_TERMINO,ID_REQUERIMIENTO) VALUES (?,?,?,?,?,?,?);";
@@ -543,39 +570,39 @@ export function CrearTarea(NOMBRE, DESCRIPCION, FECHA_INICIO, FECHA_TERMINO, FEC
     })
 }
 
-export function AgregarMensaje(CONTENIDO, FECHA, HORA, USUARIO, ITERACION){
+export function AgregarMensaje(CONTENIDO, FECHA, HORA, USUARIO, ITERACION) {
     return new Promise(async (resolve, reject) => {
         const connection = await getConnection();
-        const messagesquery = "INSERT INTO CHATS_ITERACIONES (CONTENIDO, FECHA_ENVIO, HORA_ENVIO, ID_USUARIO_ENVIA, ID_ITERACION) VALUES (?,?,?,?,?);";       
+        const messagesquery = "INSERT INTO CHATS_ITERACIONES (CONTENIDO, FECHA_ENVIO, HORA_ENVIO, ID_USUARIO_ENVIA, ID_ITERACION) VALUES (?,?,?,?,?);";
         console.log("AgregarMensaje pq");
-        connection.query(messagesquery, [CONTENIDO, FECHA, HORA, USUARIO, ITERACION], (error, results)=>{
-            if(error){
+        connection.query(messagesquery, [CONTENIDO, FECHA, HORA, USUARIO, ITERACION], (error, results) => {
+            if (error) {
                 console.log(error);
                 reject(error);
-            }else if(results.affectedRows > 0 ){
-                resolve({success: true});
-            }else{
+            } else if (results.affectedRows > 0) {
+                resolve({ success: true });
+            } else {
                 resolve({ success: false });
                 console.log(error);
             }
-        } );
+        });
     })
 }
 
-export function GetMessages(ID_iteracion){
+export function GetMessages(ID_iteracion) {
     return new Promise(async (resolve, reject) => {
-        try{
-        const connection = await getConnection();
-        const chatquery = 'SELECT c.*, u.NOMBRE_USUARIO FROM CHATS_ITERACIONES c JOIN  USUARIO u ON c.ID_USUARIO_ENVIA = u.ID WHERE ID_ITERACION = 1 ORDER BY c.HORA_ENVIO;';
+        try {
+            const connection = await getConnection();
+            const chatquery = 'SELECT c.*, u.NOMBRE_USUARIO FROM CHATS_ITERACIONES c JOIN  USUARIO u ON c.ID_USUARIO_ENVIA = u.ID WHERE ID_ITERACION = 1 ORDER BY c.HORA_ENVIO;';
 
-        connection.query(chatquery, [ID_iteracion], (error, results) => {
-            if (error) {
-                reject(error);
-            } else {
-                resolve(results);
-            }
-        });
-        }catch(error){
+            connection.query(chatquery, [ID_iteracion], (error, results) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(results);
+                }
+            });
+        } catch (error) {
             reject(error);
         }
     });

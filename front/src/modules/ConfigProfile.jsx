@@ -30,19 +30,20 @@ export const ConfigProfile = () => {
         <div>
             <Header />
             <div className="relative flex flex-col justify-center min-h-screen overflow-hidden">
-                {message && <div class=" items-center bg-green-100 border-l-4 border-green-500 text-green-700  rounded-lg m-2 md:m-10 p-2 md:p-10 shadow-md" style={{ maxWidth: '600px' }}>
-                    <p class="text-lg font-semibold">{message}</p>
-                </div>
-                }
-                {autherrors && <div class=" items-center bg-red-100 border-l-4 border-red-500 text-red-700  rounded-lg m-2 md:m-10 p-2 md:p-10 shadow-md" style={{ maxWidth: '600px' }}>
-                    {autherrors}
-                </div>
-                }
-                <div className="6">
+
+                <div className="w-full p-3 m-auto bg-white rounded-md shadow-xl ring-indigo-600 lg:max-w-xl">
+                    {message && <div class=" items-center bg-green-100 border-l-4 border-green-500 text-green-700  rounded-lg m-2 shadow-md" style={{ maxWidth: '600px' }}>
+                        <p class="text-lg font-semibold m-2">{message}</p>
+                    </div>
+                    }
+                    {autherrors && <div class=" items-center bg-red-100 border-l-4 border-red-500 text-red-700  rounded-lg m-2 shadow-md" style={{ maxWidth: '600px' }}>
+                        <p class="text-lg font-semibold m-2">{autherrors}</p>
+                    </div>
+                    }
                     <h1 className="text-3xl font-semibold text-center text-indigo-700 underline uppercase ">
                         Configuración
                     </h1>
-                    <form className="" onSubmit={handleSubmit(onSubmit)} >
+                    <form className="mt-6" onSubmit={handleSubmit(onSubmit)} >
                         <div className="mb-2">
                             <label
                                 htmlFor="NOMBRE_PILA"

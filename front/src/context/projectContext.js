@@ -1,8 +1,11 @@
 import { useEffect } from "react";
 import { createContext, useContext, useState } from "react";
+import { requestVerify } from "../requests/auth.js";
 import { requestCreate, requestJoin, requestProjects, requestPermissions, requestgetProject, 
-  requestAddRequirement, requestCreateTask, requestAdd, requestAddMessage, requestMessages } from "../requests/projectReq.js";
+  requestAddRequirement, requestCreateTask, requestAdd,requestDelete, 
+  requestAddMessage, requestMessages } from "../requests/projectReq.js";
 import Cookies from "js-cookie";
+import { useAuth } from "./authContext.js";
 
 const ProjectContext = createContext();
 
@@ -13,6 +16,7 @@ export const useProject = () => {
 };
 
 export const ProjectProvider = ({ children }) => {
+  const {setUser, setIsAuthenticated ,setLoading} = useAuth();
 
   const [IsParticipant, setIsParticipant] = useState(true);
   const [userRole, setUserRole] = useState(false);
@@ -24,7 +28,6 @@ export const ProjectProvider = ({ children }) => {
   const [IsJoined, setIsJoined] = useState(false);
 
   const [projects, setProjects] = useState([]);
-  const [joinerrors, setJoinerrors] = useState([]);
 
   const [participants, setParticipants] = useState([]);
   const [fechasproject, setFechasproject] = useState([]);
@@ -33,7 +36,7 @@ export const ProjectProvider = ({ children }) => {
   const [tareas, setTareas] = useState([]);
 
   const [entregaactual, setEntregaactual] = useState([]);
-  const [iteracionactual, setIteracionactual] = useState([]);
+  const [iteracionesRestantes, setIteracionesRestantes] = useState([]);
   const [requerimientos, setRequerimientos] = useState([]);
   const [messagesChat, setMessagesChat] = useState([]);
   const [chaterrors, setChatErrors] = useState([]);
@@ -48,10 +51,9 @@ export const ProjectProvider = ({ children }) => {
       }, 5000);
       return () => clearTimeout(timer);
     }
-    if (projecterrors.length > 0 || joinerrors.length > 0) {
+    if (projecterrors.length > 0) {
       const timer = setTimeout(() => {
         setProjecterrors([]);
-        setJoinerrors([]);
       }, 5000);
       return () => clearTimeout(timer);
     }
@@ -68,7 +70,7 @@ export const ProjectProvider = ({ children }) => {
       return () => clearTimeout(timer);
     }
 
-  }, [IsCreated, projecterrors, message, joinerrors, IsJoined]);
+  }, [IsJoined, IsCreated, projecterrors, message]);
 
   const createTask = async (Task) => {
     try {
@@ -86,8 +88,7 @@ export const ProjectProvider = ({ children }) => {
   const create = async (project) => {
     try {
       const res = await requestCreate(project);
-      console.log(res.data);
-      setMessage("Proyecto creado con exito");
+      setMessage(res.data.message);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
         setProjecterrors(error.response.data.message);
@@ -143,13 +144,12 @@ export const ProjectProvider = ({ children }) => {
   const joinProject = async (joinable) => {
     try {
       const res = await requestJoin(joinable);
-      console.log(res.data);
-      setMessage("Usuario registrado en el proyecto");
+      setMessage(res.data.message);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
-        setJoinerrors(error.response.data.message);
+        setProjecterrors(error.response.data.message);
       } else {
-        setJoinerrors("Error del servidor");
+        setProjecterrors("Error del servidor");
       }
     }
   }
@@ -160,9 +160,9 @@ export const ProjectProvider = ({ children }) => {
       setMessage(res.data.message);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
-        setJoinerrors(error.response.data.message);
+        setProjecterrors(error.response.data.message);
       } else {
-        setJoinerrors("Error del servidor");
+        setProjecterrors("Error del servidor");
       }
     }
   }
@@ -170,8 +170,7 @@ export const ProjectProvider = ({ children }) => {
   const createRequirements = async (project) => {
     try {
       const res = await requestAddRequirement(project);
-      console.log(res.data);
-      setMessage("Requerimiento creado con éxito");
+      setMessage(res.data.message);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
         setProjecterrors(error.response.data.message);
@@ -185,14 +184,27 @@ export const ProjectProvider = ({ children }) => {
     try {
       const res = await requestgetProject(project);
       setParticipants(res.data.participants);
+      console.log(res.data.participants);
       setFechasproject(res.data.fechasProyecto);
       setFechasentregas(res.data.fechasEntregas);
       setFechasiteraciones(res.data.fechasIteraciones);
       setEntregaactual(res.data.entregaActual);
-      setIteracionactual(res.data.iteracionActual);
+      setIteracionesRestantes(res.data.iteracionesRestantes);
       setRequerimientos(res.data.requerimientos);
       setTareas(res.data.tasks)
-      //console.log(res.data.fechasProyecto);
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.message) {
+        setProjecterrors(error.response.data.message);
+      } else {
+        setProjecterrors("Error del servidor");
+      }
+    }
+  }
+
+  const deleteParticipant = async (id) => {
+    try {
+      const res = await requestDelete(id);
+      setMessage(res.data.message);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
         setProjecterrors(error.response.data.message);
@@ -233,26 +245,63 @@ export const ProjectProvider = ({ children }) => {
     }
   }
 
+  useEffect(() => {
+    const checkLogin = async () => {
+      const cookies = Cookies.get();
+      if (!cookies.token) {
+        setIsAuthenticated(false);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const res = await requestVerify(cookies.token);
+        if (!res.data) return setIsAuthenticated(false);
+        setIsAuthenticated(true);
+        setUser(res.data);
+        setLoading(false);
+      } catch (error) {
+        setIsAuthenticated(false);
+        setLoading(false);
+      }
+    };
+    checkLogin();
+  }, []);
+
   return (
     <ProjectContext.Provider
       value={{
         projects,
-        projecterrors,
+        
+        IsJoined,
         IsCreated,
-        message,
-        joinerrors,
+        
+        message,projecterrors,
+        
         participants,
+        
         fechasproject,
         fechasentregas,
         fechasiteraciones,
+        
         entregaactual,
-        iteracionactual,
+        iteracionesRestantes,
+        
         userRole,
-        IsParticipant,requerimientos,tareas,
+        IsParticipant,
+        
+        requerimientos,tareas,
+        
         chaterrors,
         messagesChat,
+
+
+        setProjecterrors,
         setIsParticipant,
+        setMessage,
+
         create,
+        deleteParticipant,
         getProjects,
         joinProject,
         getProject,

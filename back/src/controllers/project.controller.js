@@ -1,15 +1,14 @@
 import moment from 'moment-timezone';
-import { SECRET_TOKEN, SECRETPASS_TOKEN } from '../config.js';
+import { SECRET_TOKEN } from '../config.js';
 import { generarCodigo, generarEntregas } from '../libs/makerProject.js';
 import { agregarUsuario, crearProyecto, projectsUsuario, verificarCodigo, verificarUnion, 
 obtenerFechas, getParticipantsQuery, ActualizarEstado, obtenerFechasID, getRequerimientosEntrega, 
 AgregarRequerimiento, verificarUnionCorreo, verificarNumeroParticipantes, CrearTarea, getTareas, 
-obtenerFechasTareas, ActualizarEstadoTareas, AgregarMensaje, GetMessages } from '../querys/projectquerys.js';
+obtenerFechasTareas, ActualizarEstadoTareas, AgregarMensaje, GetMessages, 
+eliminarParticipante} from '../querys/projectquerys.js';
 import jwt from 'jsonwebtoken'
 import { zonaHoraria } from '../config.js';
 import { createProjectToken } from '../libs/jwt.js';
-import { array } from 'zod';
-//import { resetSchema } from '../../../frontend/src/schemas/auth.js';
 
 export const createProject = async (req, res) => {
     const FECHA_ACTUAL = moment().tz(zonaHoraria);
@@ -84,7 +83,7 @@ export const joinProject = async (req, res) => {
         let REGISTRO_ACTUAL = moment(FECHA_ACTUAL).format('YYYY-MM-DD HH:mm:ss');
         if (!proyecto) return res.status(404).json({ message: ["Projecto no existente"] });
         const numeroParticipantes = await verificarNumeroParticipantes(proyecto.project[0].ID);
-        if(numeroParticipantes.success) return res.status(400).json({message : ["Numero maximo de participantes alcanzado"]});
+        if(!numeroParticipantes.success) return res.status(400).json({message : ["Numero maximo de participantes alcanzado"]});
         const registrado = await verificarUnion(proyecto.project[0].ID, ID_USUARIO);
         if (registrado.success) return res.status(400).json({ message: ["Ya estas participando en el proyecto"] })
         const union = await agregarUsuario(REGISTRO_ACTUAL, ES_CREADOR, proyecto.project[0].ID, ID_USUARIO);
@@ -121,7 +120,7 @@ export const getProject = async (req, res) => {
     try {
         const FECHAS_PROYECTO = await obtenerFechasID("PROYECTOS", ID_PROYECTO);
         let ENTREGA_ACTUAL = "";
-        let ITERACION_ACTUAL = "";
+        let ITERACIONES_RESTANTES = [];
         const FECHAS_ENTREGAS = await obtenerFechasID("ENTREGAS", ID_PROYECTO);
 
         const FECHAS_ITERACIONES = await Promise.all(FECHAS_ENTREGAS.map(async (ENTREGA) => {
@@ -130,6 +129,7 @@ export const getProject = async (req, res) => {
         }));
 
         const participants = await getParticipantsQuery(ID_PROYECTO);
+        
         FECHAS_ENTREGAS.map((ENTREGA) => {
             if (ENTREGA.ESTADO === 'En desarrollo') {
                 ENTREGA_ACTUAL = ENTREGA;
@@ -137,25 +137,24 @@ export const getProject = async (req, res) => {
         });
         FECHAS_ITERACIONES.map((ITERACIONESPORENTREGA) => {
             ITERACIONESPORENTREGA.map((ITERACION) => {
-                if (ITERACION.ESTADO === 'En desarrollo') {
-                    ITERACION_ACTUAL = ITERACION;
+                if (ITERACION.ESTADO === 'En desarrollo' || ITERACION.ESTADO === 'En espera') {
+                    ITERACIONES_RESTANTES = ITERACION;
                 }
             })
         });
 
         const requerimientos = await getRequerimientosEntrega(ENTREGA_ACTUAL.ID);
-        const tasks = await getTareas(ITERACION_ACTUAL.ID);
+        //const tasks = await getTareas(ITERACIONES_RESTANTES.ID);
 
-        //console.log(requerimientos);
         const data = {
             fechasProyecto: FECHAS_PROYECTO,
             fechasEntregas: FECHAS_ENTREGAS,
             fechasIteraciones: FECHAS_ITERACIONES,
             entregaActual: ENTREGA_ACTUAL,
-            iteracionActual: ITERACION_ACTUAL,
+            iteracionesRestantes: ITERACIONES_RESTANTES,
             participants: participants,
-            requerimientos: requerimientos,
-            tasks: tasks
+            requerimientos: requerimientos
+            //tasks: tasks
         };
         return res.json(data);
     } catch (error) {
@@ -222,32 +221,6 @@ export const createTask = async (req, res) => {
     }
 }
 
-export const getTask = async (req, res) => {
-    const taskFound = await Task.findById(req.params.id)
-
-    if (!taskFound) return res.status(404).json({ message: "Tarea no encontrada" })
-
-    res.json(taskFound)
-}
-
-export const updateTask = async (req, res) => {
-    const taskFound = await Task.updateOne(req.params.id, req.body, { new: true })
-
-    if (!taskFound) return res.status(404).json({ message: "Tarea no encontrada" })
-
-    res.json(taskFound)
-
-
-
-}
-
-export const deleteTask = async (req, res) => {
-    const taskFound = await Task.findByIdAndDelete(req.params.id)
-    if (!taskFound) return res.status(404).json({ message: "Tarea no encontrada" })
-    res.json({ message: "tarea eliminada" })
-    //res.json(taskFound)
-}
-
 export const obtenerMensajes = async (req, res) => {
     try {
         const mensajes = await getMensajes();
@@ -268,12 +241,24 @@ export const addParticipant = async (req,res) => {
         let REGISTRO_ACTUAL = moment(FECHA_ACTUAL).format('YYYY-MM-DD HH:mm:ss');
         const ES_CREADOR = false;
         const registrado = await verificarUnionCorreo(ID_PROYECTO, CORREO);
+        if(!registrado.isRegister) return res.status(400).json({ message: ["Usuario no registrado en el sistema"] })
         if (registrado.success) return res.status(400).json({ message: ["Ya esta participando en el proyecto"] })
         const numeroParticipantes = await verificarNumeroParticipantes(ID_PROYECTO);
-        if(numeroParticipantes.success) return res.status(400).json({message : ["Numero maximo de participantes alcanzado"]});
+        if(!numeroParticipantes.success) return res.status(400).json({message : ["Numero maximo de participantes alcanzado"]});
         const union = await agregarUsuario(REGISTRO_ACTUAL, ES_CREADOR, ID_PROYECTO, registrado.ID_USUARIO);
         if (!union.success) return res.status(500).json({ message: ["Usuario no agregado con exito"] });
         return res.status(200).json({ message: ["Enlazado a proyecto correctamente"] });
+    } catch (error) {
+        res.status(500).json({ mensaje: ["Error inesperado, intentalo nuevamente"] });
+    }
+}
+
+export const deleteParticipant = async (req,res) => {
+    const {ID, ID_PROYECTO} = req.body;
+    try {
+        const eliminado = await eliminarParticipante(ID_PROYECTO,ID);
+        if(!eliminado.success) return res.status(500).json({message:["Error al eliminar al participante"]});
+        return res.status(200).json({ message: ["Usuario eliminado con exito"] });
     } catch (error) {
         res.status(500).json({ mensaje: ["Error inesperado, intentalo nuevamente"] });
     }
@@ -354,7 +339,6 @@ export const agregarMensaje = async (req, res) => {
 
 export const getMessages = async (req, res) => {
     const {ID_ITERACION} = req.body;
-    //console.log(req.body);
     try{
         const messages = await GetMessages(ID_ITERACION);
 

@@ -153,7 +153,7 @@ export function extraerUsuario(CORREO) {
 export function autenticarUsuario(ID) {
     return new Promise(async (resolve, reject) => {
         const connection = await getConnection();
-        const query = 'SELECT ID,NOMBRE_USUARIO, CORREO, FECHA_CREACION FROM USUARIO WHERE ID = ?';
+        const query = 'SELECT ID,NOMBRE_USUARIO,TELEFONO ,NUMERO_BOLETA,NOMBRE_PILA,APELLIDO_PATERNO,APELLIDO_MATERNO, CORREO, FECHA_CREACION FROM USUARIO WHERE ID = ?';
         connection.query(query, [ID], (err, results) => {
             if (err) {
                 reject(err);

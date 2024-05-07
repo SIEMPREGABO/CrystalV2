@@ -19,7 +19,7 @@ export const FormProyect = () => {
     });
 
     const navigate = useNavigate();
-    const { create, projecterrors, IsCreated, message } = useProject();
+    const { create, IsCreated, message, projecterrors, setProjecterrors ,setMessage} = useProject();
     const { user } = useAuth();
 
 
@@ -33,11 +33,12 @@ export const FormProyect = () => {
             ENTREGAS: values.ENTREGAS,
             ID: user.ID
         }
-
         create(data);
     })
 
     useEffect(() => {
+        setProjecterrors([]);
+        setMessage([]);
         if (IsCreated) navigate("/panel");
     }, [IsCreated]);
 
@@ -45,9 +46,16 @@ export const FormProyect = () => {
         <div>
             <Header />
             <div className="relative flex flex-col justify-center min-h-svh overflow-hidden">
+
                 <div className="w-full p-3 m-auto bg-white rounded-md shadow-xl ring-indigo-600 lg:max-w-xl">
-                    {message && <div className=" bg-success mt-2 me-2 text-white shadow">{message}</div>}
-                    {projecterrors && <div className=" bg-danger mt-2 me-2 text-white shadow">{projecterrors}</div>}
+                    {message && <div class=" items-center bg-green-100 border-l-4 border-green-500 text-green-700  rounded-lg m-2 shadow-md" style={{ maxWidth: '600px' }}>
+                        <p class="text-lg font-semibold m-2">{message}</p>
+                    </div>
+                    }
+                    {projecterrors && <div class=" items-center bg-red-100 border-l-4 border-red-500 text-red-700  rounded-lg m-2 shadow-md" style={{ maxWidth: '600px' }}>
+                        <p class="text-lg font-semibold m-2">{projecterrors}</p>
+                    </div>
+                    }
                     <h1 className="text-3xl font-semibold text-center text-indigo-700 underline uppercase mt-3">
                         Crea tu Proyecto
                     </h1>
@@ -137,7 +145,7 @@ export const FormProyect = () => {
                                     </select>
                                 </div>
                             </div>
-                        </div>                       
+                        </div>
                         <div className="mt-6">
                             <input
                                 type="submit"

@@ -13,9 +13,7 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [IsSended, setIsSended] = useState(false);
   const [IsAuthenticated, setIsAuthenticated] = useState(false);
-  const [IsChanged, setIsChanged] = useState(false);
 
   const [autherrors, setAutherrors] = useState([]);
 
@@ -24,12 +22,6 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (IsChanged) {
-      const timer = setTimeout(() => {
-        setIsChanged(false);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
     if (autherrors.length > 0) {
       const timer = setTimeout(() => {
         setAutherrors([]);
@@ -39,12 +31,10 @@ export const AuthProvider = ({ children }) => {
     if (message.length > 0) {
       const timer = setTimeout(() => {
         setMessage([]);
-        //setIsChanged(true);
       }, 5000);
       return () => clearTimeout(timer);
     }
-
-  }, [IsChanged,autherrors,message]);
+  }, [autherrors,message]);
 
 
 
@@ -54,10 +44,7 @@ export const AuthProvider = ({ children }) => {
       const res = await requestLogin(user);
       setUser(res.data);
       setIsAuthenticated(true);
-      //console.log(res.data);
-      //console.log(error.response.data.message);
     } catch (error) {
-      //setLoginerrors(error.response.data.message);
       if (error.response && error.response.data && error.response.data.message) {
         setAutherrors(error.response.data.message);
       } else {
@@ -69,11 +56,8 @@ export const AuthProvider = ({ children }) => {
   const signup = async (user) => {
     try {
       const res = await requestRegister(user);
-      //setUser(res.data);
       setMessage(res.data.message);
     } catch (error) {
-      //console.log(error.response.data.message);
-      //setRegistererrors(error.response.data.message);
       if (error.response && error.response.data && error.response.data.message) {
         setAutherrors(error.response.data.message);
       } else {
@@ -85,12 +69,8 @@ export const AuthProvider = ({ children }) => {
   const resetToken = async (user) => {
     try {
       const res = await requestReset(user);
-      if (!res.data) return setIsSended(false);
-      setIsSended(true);
       setMessage(res.data.message);
     } catch (error) {
-      //console.log(error.response.data.message);
-      //setReseterrors(error.response.data.message);
       if (error.response && error.response.data && error.response.data.message) {
         setAutherrors(error.response.data.message);
       } else {
@@ -101,12 +81,9 @@ export const AuthProvider = ({ children }) => {
 
   const resetPass = async (user) => {
     try {
-      //console.log(user);
       const res = await requestPass(user);
-      console.log(res.data);
       setMessage(res.data.message);
     } catch (error) {
-      //setResetpasserrors(error.response.data.message);
       if (error.response && error.response.data && error.response.data.message) {
         setAutherrors(error.response.data.message);
       } else {
@@ -117,8 +94,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      const res = await requestLogout();
-      //console.log(res);
+      await requestLogout();      
       setIsAuthenticated(false);
       setUser(null);
     } catch (error) {
@@ -137,7 +113,6 @@ export const AuthProvider = ({ children }) => {
       setUser(res.data);
       setMessage("Informacion Actualizada");
     } catch (error) {
-      //setUpdateerrors(error.response.data.message);
       if (error.response && error.response.data && error.response.data.message) {
         setAutherrors(error.response.data.message);
       } else {
@@ -176,10 +151,10 @@ export const AuthProvider = ({ children }) => {
         
         autherrors,message,
 
-        IsAuthenticated,IsSended,isLoading,IsChanged,
+        IsAuthenticated,isLoading,
 
-        setAutherrors,setMessage,
-        
+        setAutherrors,setMessage, setUser,setIsAuthenticated, setLoading,
+
         signin,
         signup,
         resetToken,

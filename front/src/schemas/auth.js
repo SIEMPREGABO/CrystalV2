@@ -44,12 +44,11 @@ export const updateSchema = z.object({
     }).regex(
         new RegExp(/^\d{10}$/), { message: "Numero Invalido" }
     ),
-    CORREO: z.string({
-    }).nonempty({
+    CORREO: z.string().nonempty({
         message: "El email es requerido"
     }).regex(
-        new RegExp(/^(\w+[/./-]?){1,}@[a-z]+[/.]\w{2,}$/),
-        { message: 'Correo Invalido' })
+        new RegExp(/^(\w+[/./-]?){1,}@[a-z]+[/.]\w{2,}$/),{ message: 'Correo Invalido' }
+    )
 });
 
 export const resetSchema = z.object({
