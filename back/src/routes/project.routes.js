@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { validarToken } from "../middlewares/validate.token.js";
 import { getTasks, createTask, createProject, obtenerMensajes, getProjects, 
-    joinProject,getProject, getPermissions, agregarRequerimiento, agregarMensaje, getMessages } from "../controllers/project.controller.js";
+    joinProject,getProject, getPermissions, agregarRequerimiento, agregarMensaje, getMessages, getTareasxIteracion } from "../controllers/project.controller.js";
 import { createSchema, joinSchema, taskSchema } from "../schemas/project.schema.js";
 import { validateSchema } from "../middlewares/validator.middleware.js";
 
@@ -19,5 +19,6 @@ router.get('/tasks', validarToken ,getTasks);
 router.post('/createTask',validateSchema(taskSchema),createTask);
 router.post('/addMessage', agregarMensaje);
 router.post('/getMessages', getMessages);
+router.post('/getProjectTasks', getTareasxIteracion);
 
 export default router;

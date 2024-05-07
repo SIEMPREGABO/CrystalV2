@@ -357,6 +357,58 @@ export function getTareas(ID_ITERACION) {
     })
 }
 
+export function GetTareasxIteracion(ID_PROYECTO){
+    return new Promise(async (resolve, reject) => {
+        try{
+            const connection = await getConnection();
+            
+            const entregasquery = `
+SELECT 
+    e.ID,
+    (
+        SELECT JSON_ARRAYAGG(
+            JSON_OBJECT(
+                "id", i.ID,
+                "tareas", (
+                    SELECT JSON_ARRAYAGG(
+                        JSON_OBJECT(
+                            "nombre", nombre,
+                            "est_desarr", estado_desarrollo
+                        )
+                    ) 
+                    FROM TAREAS 
+                    WHERE ID_ITERACION = i.ID
+                )
+            )
+        ) 
+        FROM iteraciones i 
+        WHERE ID_ENTREGA = e.ID
+    ) AS ITERACIONES 
+FROM entregas e 
+WHERE ID_PROYECTO = ?;
+`;
+            
+            //const entregasquery = "SELECT e.ID, (SELECT JSON_ARRAYAGG(JSON_OBJECT('id', i.ID, 'tareas', (SELECT JSON_ARRAYAGG(JSON_OBJECT('nombre', nombre, 'est_desarr', estado_desarrollo)) FROM TAREAS WHERE ID_ITERACION = i.ID))) FROM iteraciones i WHERE ID_ENTREGA = e.ID) AS ITERACIONES FROM entregas e WHERE ID_PROYECTO = ?;";
+            const iteracionesquery = "SELECT ID FROM ITERACIONES WHERE ID_ENTREGA = ?";
+            const tareasquery = "SELECT NOMBRE, ESTADO_DESARROLLO FROM TAREAS WHERE ID_ITERACION = ?";
+
+            connection.query(entregasquery, [ID_PROYECTO], async (err, results) => {
+                if(err){
+                    reject(err);
+                }else{
+                    if(results.length > 0){
+                        resolve(results);
+                    }else{
+                        resolve([]);
+                    }
+                }
+            });
+        }catch(error){
+            reject(error);
+        }
+    });
+}
+
 export function getParticipantsQuery(ID_PROYECTO) {
     return new Promise(async (resolve, reject) => {
         try {

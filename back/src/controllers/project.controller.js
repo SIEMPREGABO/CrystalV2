@@ -4,7 +4,7 @@ import { generarCodigo, generarEntregas } from '../libs/makerProject.js';
 import { agregarUsuario, crearProyecto, projectsUsuario, verificarCodigo, verificarUnion, 
 obtenerFechas, getParticipantsQuery, ActualizarEstado, obtenerFechasID, getRequerimientosEntrega, 
 AgregarRequerimiento, verificarUnionCorreo, verificarNumeroParticipantes, CrearTarea, getTareas, 
-obtenerFechasTareas, ActualizarEstadoTareas, AgregarMensaje, GetMessages } from '../querys/projectquerys.js';
+obtenerFechasTareas, ActualizarEstadoTareas, AgregarMensaje, GetMessages, GetTareasxIteracion} from '../querys/projectquerys.js';
 import jwt from 'jsonwebtoken'
 import { zonaHoraria } from '../config.js';
 import { createProjectToken } from '../libs/jwt.js';
@@ -363,3 +363,14 @@ export const getMessages = async (req, res) => {
         res.status(500).json({message:["Error en el servidor al intentar obtener mensajes"]})
     }
 }
+
+export const getTareasxIteracion = async (req, res) => {
+    const {ID_PROYECTO} = req.body;
+
+    try{
+        const tareasxiteracion = await GetTareasxIteracion(ID_PROYECTO);
+        res.json(tareasxiteracion);
+    }catch(error){
+        res.status(500).json({message:["Error en el servidor al intentar obtener mensajes"]})
+    }
+};

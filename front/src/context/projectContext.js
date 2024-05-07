@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { createContext, useContext, useState } from "react";
 import { requestCreate, requestJoin, requestProjects, requestPermissions, requestgetProject, 
-  requestAddRequirement, requestCreateTask, requestAdd, requestAddMessage, requestMessages } from "../requests/projectReq.js";
+  requestAddRequirement, requestCreateTask, requestAdd, requestAddMessage, requestMessages, requestTasksProject } from "../requests/projectReq.js";
 import Cookies from "js-cookie";
 
 const ProjectContext = createContext();
@@ -37,7 +37,7 @@ export const ProjectProvider = ({ children }) => {
   const [requerimientos, setRequerimientos] = useState([]);
   const [messagesChat, setMessagesChat] = useState([]);
   const [chaterrors, setChatErrors] = useState([]);
-
+  const [entregasproject,  setEntregasProject] = useState([]);
 
   useEffect(() => {
     if (message.length > 0) {
@@ -140,6 +140,18 @@ export const ProjectProvider = ({ children }) => {
     }
   };
 
+  const getTasksProject = async (project) => {
+    try{
+      const res = await requestTasksProject(project);
+      setEntregasProject(res.data);
+    }catch(error){
+      if (error.response && error.response.data && error.response.data.message) {
+        setProjecterrors(error.response.data.message);
+      } else {
+        setProjecterrors("Error del servidor");
+      }
+    }
+  }
   const joinProject = async (joinable) => {
     try {
       const res = await requestJoin(joinable);
@@ -251,6 +263,7 @@ export const ProjectProvider = ({ children }) => {
         IsParticipant,requerimientos,tareas,
         chaterrors,
         messagesChat,
+        entregasproject,
         setIsParticipant,
         create,
         getProjects,
@@ -261,7 +274,8 @@ export const ProjectProvider = ({ children }) => {
         createTask,
         addParticipant,
         createMessages,
-        getMessages
+        getMessages,
+        getTasksProject
       }}
     >
       {children}
