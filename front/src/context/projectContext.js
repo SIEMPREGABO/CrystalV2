@@ -204,7 +204,7 @@ export const ProjectProvider = ({ children }) => {
       setIteracionactual(res.data.iteracionActual);
       setRequerimientos(res.data.requerimientos);
       setTareas(res.data.tasks)
-      //console.log(res.data.fechasProyecto);
+      console.log(tareas);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
         setProjecterrors(error.response.data.message);

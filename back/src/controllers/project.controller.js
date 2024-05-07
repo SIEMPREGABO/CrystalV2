@@ -157,6 +157,7 @@ export const getProject = async (req, res) => {
             requerimientos: requerimientos,
             tasks: tasks
         };
+        //console.log(data.tasks);
         return res.json(data);
     } catch (error) {
         return res.status(500).json({ messsage: error })
@@ -175,20 +176,20 @@ export const getTasks = async (req, res) => {
 }
 
 export const createTask = async (req, res) => {
-    const { NOMBRE, DESCRIPCION, FECHA_INICIO,HORAINICIO,HORAENTREGA,HORAMAXIMA, FECHA_TERMINO, FECHA_MAX_TERMINO, iteracionactual, ID_USUARIO, ID_REQUERIMIENTO, ROLPARTICIPANTE, ID_TAREA_DEPENDIENTE} = req.body
+    const { NOMBRE, DESCRIPCION, FECHA_INICIO,HORAINICIO,HORAMAXIMA, FECHA_MAX_TERMINO, iteracionactual, ID_USUARIO, ID_REQUERIMIENTO, ROLPARTICIPANTE, ID_TAREA_DEPENDIENTE} = req.body
     //console.log(req.body);
     const FECHA_ACTUAL_SIS = moment().format('YYYY-MM-DD HH:mm:ss');
     const FECHA_ACTUAL = moment.utc(FECHA_ACTUAL_SIS);
     try {
-        const HORAINICIO_TAREA = moment(HORAINICIO, 'HH:mm:ss');const HORAENTREGA_TAREA = moment(HORAENTREGA, 'HH:mm:ss');const HORAMAXIMA_TAREA = moment(HORAMAXIMA, 'HH:mm:ss');
+        const HORAINICIO_TAREA = moment(HORAINICIO, 'HH:mm:ss');const HORAMAXIMA_TAREA = moment(HORAMAXIMA, 'HH:mm:ss');
 
-        const FECHA_INICIO_TAREA = moment.utc(FECHA_INICIO);const FECHA_TERMINO_TAREA = moment.utc(FECHA_TERMINO);const FECHA_MAX_TERMINO_TAREA = moment.utc(FECHA_MAX_TERMINO);
+        const FECHA_INICIO_TAREA = moment.utc(FECHA_INICIO);const FECHA_MAX_TERMINO_TAREA = moment.utc(FECHA_MAX_TERMINO);
         //console.log(iteracionactual.FECHA_INICIO, iteracionactual.FECHA_TERMINO)
         const FECHA_INICIO_ITERACION = moment.utc(iteracionactual.FECHA_INICIO);const FECHA_TERMINO_ITERACION =  moment.utc(iteracionactual.FECHA_TERMINO);
         
         const FECHA_INICIO_COMPLETA = FECHA_INICIO_TAREA.clone().hours(HORAINICIO_TAREA.hours()).minutes(HORAINICIO_TAREA.minutes()).seconds(HORAINICIO_TAREA.seconds());
         
-        const FECHA_ENTREGA_COMPLETA = FECHA_TERMINO_TAREA.clone().hours(HORAENTREGA_TAREA.hours()).minutes(HORAENTREGA_TAREA.minutes()).seconds(HORAENTREGA_TAREA.seconds());
+        //const FECHA_ENTREGA_COMPLETA = FECHA_TERMINO_TAREA.clone().hours(HORAENTREGA_TAREA.hours()).minutes(HORAENTREGA_TAREA.minutes()).seconds(HORAENTREGA_TAREA.seconds());
         
         const FECHA_MAXIMA_COMPLETA = FECHA_MAX_TERMINO_TAREA.clone().hours(HORAMAXIMA_TAREA.hours()).minutes(HORAMAXIMA_TAREA.minutes()).seconds(HORAMAXIMA_TAREA.seconds());
 
@@ -198,22 +199,22 @@ export const createTask = async (req, res) => {
         
         //FECHAS VERIFICAR
         if (FECHA_INICIO_COMPLETA.isBefore(FECHA_ACTUAL)) return res.status(400).json({ message: ["Fecha inicial incorrecta"] });
-        if (FECHA_ENTREGA_COMPLETA.isBefore(FECHA_INICIO_COMPLETA)) return res.status(400).json({ message: ["Fecha final incorrecta"] });
+        //if (FECHA_ENTREGA_COMPLETA.isBefore(FECHA_INICIO_COMPLETA)) return res.status(400).json({ message: ["Fecha final incorrecta"] });
         if (FECHA_MAXIMA_COMPLETA.isBefore(FECHA_ENTREGA_COMPLETA)) return res.status(400).json({ message: ["Fecha final maxima incorrecta"] });
         
         
         const MINUTOS_DIFERENCIA = FECHA_ENTREGA_COMPLETA.diff(FECHA_INICIO_COMPLETA, 'minutes');
         if (MINUTOS_DIFERENCIA < 120) return res.status(400).json({ message: ["Diferencia minimo de 2 horas entre el inicio y la entrega"] });
-        const MINUTOS_DIFERENCIA_MAX = FECHA_MAXIMA_COMPLETA.diff(FECHA_ENTREGA_COMPLETA, 'minutes');
-        if (MINUTOS_DIFERENCIA_MAX < 120) return res.status(400).json({ message: ["Diferencia minimo de 2 horas en la hora maxima"] });
+        //const MINUTOS_DIFERENCIA_MAX = FECHA_MAXIMA_COMPLETA.diff(FECHA_ENTREGA_COMPLETA, 'minutes');
+        //if (MINUTOS_DIFERENCIA_MAX < 120) return res.status(400).json({ message: ["Diferencia minimo de 2 horas en la hora maxima"] });
         
         const REGISTRO_INICIO = moment(FECHA_INICIO_COMPLETA).format('YYYY-MM-DD HH:mm:ss');
-        const REGISTRO_ENTREGA = moment(FECHA_ENTREGA_COMPLETA).format('YYYY-MM-DD HH:mm:ss');
+        //const REGISTRO_ENTREGA = moment(FECHA_ENTREGA_COMPLETA).format('YYYY-MM-DD HH:mm:ss');
         const REGISTRO_MAX = moment(FECHA_MAXIMA_COMPLETA).format('YYYY-MM-DD HH:mm:ss');
 
+        console.log("Controller function createTask");
         
-        
-        const tareacreada = await CrearTarea(NOMBRE, DESCRIPCION, REGISTRO_INICIO, REGISTRO_ENTREGA, REGISTRO_MAX, iteracionactual.ID, ID_USUARIO, ID_REQUERIMIENTO, ROLPARTICIPANTE, ID_TAREA_DEPENDIENTE); 
+        const tareacreada = await CrearTarea(NOMBRE, DESCRIPCION, REGISTRO_INICIO, REGISTRO_MAX, iteracionactual.ID, ID_USUARIO, ID_REQUERIMIENTO, ROLPARTICIPANTE, ID_TAREA_DEPENDIENTE); 
         if(!tareacreada.success) return res.status(400).json("Error al crear la tarea");
         return res.status(200).json({message: ["Tarea creada con exito"]});
         

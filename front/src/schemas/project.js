@@ -50,17 +50,11 @@ export const taskSchema = z.object({
     FECHA_INICIO: z.string().nonempty({
         required_error: 'La fecha de inicio es requerida'
     }),
-    FECHA_TERMINO: z.string().nonempty({
-        required_error: 'La fecha de termino es requerida'
-    }),
     FECHA_MAX_TERMINO:z.string().nonempty({
         required_error: 'La fecha max es requerida'
     }),
     HORAINICIO:z.string().nonempty({
         required_error: 'La hora inicio es requerida'
-    }),
-    HORAENTREGA:z.string().nonempty({
-        required_error: 'La hora de entrega es requerida'
     }),
     HORAMAXIMA:z.string().nonempty({
         required_error: 'La hora max es requerida'

@@ -303,9 +303,22 @@ export function getTareas(ID_ITERACION) {
     return new Promise(async (resolve, reject) => {
         try {
             const connection = await getConnection();
-            const query = 'SELECT ID_ITERACION ,ID_USUARIO, ID_TAREA_REALIZADA, ROL_REALIZADO FROM COLABORACIONES WHERE ID_ITERACION = ?';
-            const querytask = `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO,CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, CONVERT_TZ(FECHA_MAX_TERMINO, '+00:00', '-06:00') AS FECHA_MAX_TERMINO,NOMBRE,DESCRIPCION,ESTADO_DESARROLLO,ID_REQUERIMIENTO,DESCRIPCION FROM TAREAS WHERE ID = ?`;
-            connection.query(query, [ID_ITERACION], async (err, results) => {
+            const query = 'SELECT MAX(c.ID_USUARIO) AS ID_USUARIO, c.ID_TAREA_REALIZADA,  MAX(c.ROL_REALIZADO) AS ROL_REALIZADO, MAX(t.ESTADO_DESARROLLO) AS ESTADO_DESARROLLO FROM COLABORACIONES c  JOIN TAREAS t ON c.ID_TAREA_REALIZADA = t.ID WHERE c.ID_ITERACION = 3 AND t.ESTADO_DESARROLLO NOT LIKE "cerrada" group by c.ID_TAREA_REALIZADA ;';
+            const querytask = `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO,CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, CONVERT_TZ(FECHA_MAX_TERMINO, '+00:00', '-06:00') AS FECHA_MAX_TERMINO,NOMBRE,DESCRIPCION,ESTADO_DESARROLLO,ID_REQUERIMIENTO,DESCRIPCION FROM TAREAS WHERE ID_ITERACION = ? AND ESTADO_DESARROLLO NOT LIKE "cerrada"`;
+            connection.query(querytask, [ID_ITERACION], async (err, results) => {
+                if(err){
+                    reject(err)
+                }else{
+                    if(results.length > 0){
+                        //console.log(results);
+                        resolve(results);
+                    }else{
+                        //console.log("vacio");
+                        resolve([]);
+                    }
+                }
+            });
+            /*connection.query(query, [ID_ITERACION], async (err, results) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -350,7 +363,7 @@ export function getTareas(ID_ITERACION) {
                         resolve([]);
                     }
                 }
-            })
+            })*/
         } catch (error) {
             reject(error);
         }
@@ -538,7 +551,7 @@ export function AgregarRequerimiento(OBJETIVO, REQUERIMIENTO, ID_TIPO_REQUERIMIE
     })
 }
 
-export function CrearTarea(NOMBRE, DESCRIPCION, FECHA_INICIO, FECHA_TERMINO, FECHA_MAX_TERMINO, ID_iteracion, ID_USUARIO, ID_REQUERIMIENTO, ROLPARTICIPANTE, ID_TAREA_DEPENDIENTE) {
+export function CrearTarea(NOMBRE, DESCRIPCION, FECHA_INICIO, FECHA_MAX_TERMINO, ID_iteracion, ID_USUARIO, ID_REQUERIMIENTO, ROLPARTICIPANTE, ID_TAREA_DEPENDIENTE) {
     return new Promise(async (resolve, reject) => {
         try {
             let rol;
@@ -547,10 +560,10 @@ export function CrearTarea(NOMBRE, DESCRIPCION, FECHA_INICIO, FECHA_TERMINO, FEC
             if(ROLPARTICIPANTE === "Embajador") rol = 2;
             const connection = await getConnection();
             const ESTADO_DESARROLLO = "En espera";
-            const query = "INSERT INTO TAREAS(NOMBRE,DESCRIPCION,ESTADO_DESARROLLO,FECHA_INICIO,FECHA_TERMINO,FECHA_MAX_TERMINO,ID_REQUERIMIENTO) VALUES (?,?,?,?,?,?,?);";
+            const query = "INSERT INTO TAREAS(NOMBRE,DESCRIPCION,ESTADO_DESARROLLO,FECHA_INICIO,FECHA_MAX_TERMINO,ID_REQUERIMIENTO) VALUES (?,?,?,?,?,?,?);";
             const queryColab = "INSERT INTO COLABORACIONES (ID_USUARIO, ID_ITERACION, ID_TAREA_REALIZADA, ROL_REALIZADO) VALUES (?,?,?,?)";
             const queryDependencia = "INSERT INTO T_DEPENDE_T (ID_TAREA_DEPENDIENTE, ID_SUBTAREA) VALUES (?,?)"
-            connection.query(query, [NOMBRE, DESCRIPCION, ESTADO_DESARROLLO, FECHA_INICIO, FECHA_TERMINO, FECHA_MAX_TERMINO, ID_REQUERIMIENTO], (err, results) => {
+            connection.query(query, [NOMBRE, DESCRIPCION, ESTADO_DESARROLLO, FECHA_INICIO, FECHA_MAX_TERMINO, ID_REQUERIMIENTO], (err, results) => {
                 if (err) {
                     reject(err)
                     console.log("mamw", err)
@@ -563,7 +576,7 @@ export function CrearTarea(NOMBRE, DESCRIPCION, FECHA_INICIO, FECHA_TERMINO, FEC
                                 console.log(err);
                             } else {
                                 if (results.affectedRows > 0) {
-                                    if (ID_TAREA_DEPENDIENTE != "") {
+                                    if (ID_TAREA_DEPENDIENTE != "0") {
                                         connection.query(queryDependencia, [ID_TAREA_DEPENDIENTE, id_tarea_creada], (err, results) => {
                                             if (err) {
                                                 reject(err);
