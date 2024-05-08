@@ -6,7 +6,8 @@ obtenerFechas, getParticipantsQuery, ActualizarEstado, obtenerFechasID, getReque
 AgregarRequerimiento, verificarUnionCorreo, verificarNumeroParticipantes, CrearTarea, getTareas, 
 obtenerFechasTareas, ActualizarEstadoTareas, AgregarMensaje, GetMessages, 
 eliminarParticipante,
-GetTareasxIteracion} from '../querys/projectquerys.js';
+GetTareasxIteracion,
+getTareaDependiente} from '../querys/projectquerys.js';
 import jwt from 'jsonwebtoken'
 import { zonaHoraria } from '../config.js';
 import { createProjectToken } from '../libs/jwt.js';
@@ -145,7 +146,7 @@ export const getProject = async (req, res) => {
         });
 
         const requerimientos = await getRequerimientosEntrega(ENTREGA_ACTUAL.ID);
-        //const tasks = await getTareas(ITERACION_ACTUAL.ID);
+        const tasks = await getTareas(ITERACION_ACTUAL.ID);
 
         const data = {
             fechasProyecto: FECHAS_PROYECTO,
@@ -154,8 +155,8 @@ export const getProject = async (req, res) => {
             entregaActual: ENTREGA_ACTUAL,
             iteracionesActual: ITERACION_ACTUAL,
             participants: participants,
-            requerimientos: requerimientos
-            //tasks: tasks
+            requerimientos: requerimientos,
+            tasks: tasks
         };
         return res.json(data);
     } catch (error) {
@@ -174,7 +175,7 @@ export const getTasks = async (req, res) => {
     }
 }
 
-
+// meter al getProject
 export const getTareasxIteracion = async (req, res) => {
     const {ID_PROYECTO} = req.body;
 
@@ -192,6 +193,9 @@ export const createTask = async (req, res) => {
     const FECHA_ACTUAL_SIS = moment().format('YYYY-MM-DD HH:mm:ss');
     const FECHA_ACTUAL = moment.utc(FECHA_ACTUAL_SIS);
     try {
+        
+
+
         const HORAINICIO_TAREA = moment(HORAINICIO, 'HH:mm:ss');const HORAMAXIMA_TAREA = moment(HORAMAXIMA, 'HH:mm:ss');
 
         const FECHA_INICIO_TAREA = moment.utc(FECHA_INICIO);const FECHA_MAX_TERMINO_TAREA = moment.utc(FECHA_MAX_TERMINO);
@@ -199,9 +203,7 @@ export const createTask = async (req, res) => {
         const FECHA_INICIO_ITERACION = moment.utc(iteracionactual.FECHA_INICIO);const FECHA_TERMINO_ITERACION =  moment.utc(iteracionactual.FECHA_TERMINO);
         
         const FECHA_INICIO_COMPLETA = FECHA_INICIO_TAREA.clone().hours(HORAINICIO_TAREA.hours()).minutes(HORAINICIO_TAREA.minutes()).seconds(HORAINICIO_TAREA.seconds());
-        
         //const FECHA_ENTREGA_COMPLETA = FECHA_TERMINO_TAREA.clone().hours(HORAENTREGA_TAREA.hours()).minutes(HORAENTREGA_TAREA.minutes()).seconds(HORAENTREGA_TAREA.seconds());
-        
         const FECHA_MAXIMA_COMPLETA = FECHA_MAX_TERMINO_TAREA.clone().hours(HORAMAXIMA_TAREA.hours()).minutes(HORAMAXIMA_TAREA.minutes()).seconds(HORAMAXIMA_TAREA.seconds());
 
         //ITERACION VERIFICAR
@@ -213,6 +215,19 @@ export const createTask = async (req, res) => {
         //if (FECHA_ENTREGA_COMPLETA.isBefore(FECHA_INICIO_COMPLETA)) return res.status(400).json({ message: ["Fecha final incorrecta"] });
         if (FECHA_MAXIMA_COMPLETA.isBefore(FECHA_ENTREGA_COMPLETA)) return res.status(400).json({ message: ["Fecha final maxima incorrecta"] });
         
+        if(ID_TAREA_DEPENDIENTE != ""){
+            const tarea = await getTareaDependiente(ID_TAREA_DEPENDIENTE);
+            if(!tarea.success) return res.status(500).json({message: ["Error al extraer la tarea"]});
+            const FECHA_INICIO_DEP = tarea.task[0].FECHA_INICIO;
+            const FECHA_TERMINO_DEP = tarea.task[0].FECHA_TERMINO;
+
+            if (FECHA_INICIO_COMPLETA.isBefore(FECHA_ACTUAL)) return res.status(400).json({ message: ["Fecha inicial incorrecta"] });
+            //if (FECHA_ENTREGA_COMPLETA.isBefore(FECHA_INICIO_COMPLETA)) return res.status(400).json({ message: ["Fecha final incorrecta"] });
+            if (FECHA_MAXIMA_COMPLETA.isBefore(FECHA_ENTREGA_COMPLETA)) return res.status(400).json({ message: ["Fecha final maxima incorrecta"] });
+    
+
+
+        }
         
         const MINUTOS_DIFERENCIA = FECHA_MAXIMA_COMPLETA.diff(FECHA_INICIO_COMPLETA, 'minutes');
         if (MINUTOS_DIFERENCIA < 120) return res.status(400).json({ message: ["Diferencia minimo de 2 horas entre el inicio y la entrega"] });

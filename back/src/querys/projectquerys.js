@@ -565,6 +565,29 @@ export function AgregarRequerimiento(OBJETIVO, REQUERIMIENTO, ID_TIPO_REQUERIMIE
     })
 }
 
+export function getTareaDependiente(ID_TAREA_DEPENDIENTE){
+    return new Promise (async (resolve,reject)=>{
+        try {
+            const connection = await getConnection();
+            const query = "SELECT  NOMBRE,DESCRIPCION,ESTADO_DESARROLLO,FECHA_INICIO,FECHA_TERMINO ,FECHA_MAX_TERMINO,ID_REQUERIMIENTO,ID_ITERACION FROM TAREAS WHERE ID = ?;"
+            connection.query(query, [ID_TAREA_DEPENDIENTE],(err,results)=>{
+                if(err){
+                    reject(err);
+                }else{
+                    if(results.length > 0){
+                        resolve({success: true, task: results})
+                    }else{
+                        resolve({success: false});
+                    }
+                    
+                }
+            })
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
 export function CrearTarea(NOMBRE, DESCRIPCION, FECHA_INICIO, FECHA_MAX_TERMINO, ID_iteracion, ID_USUARIO, ID_REQUERIMIENTO, ROLPARTICIPANTE, ID_TAREA_DEPENDIENTE) {
     return new Promise(async (resolve, reject) => {
         try {
@@ -580,7 +603,7 @@ export function CrearTarea(NOMBRE, DESCRIPCION, FECHA_INICIO, FECHA_MAX_TERMINO,
             connection.query(query, [NOMBRE, DESCRIPCION, ESTADO_DESARROLLO, FECHA_INICIO, FECHA_MAX_TERMINO, ID_REQUERIMIENTO], (err, results) => {
                 if (err) {
                     reject(err)
-                    console.log("mamw", err)
+                    //console.log("mamw", err)
                 } else {
                     if (results.affectedRows > 0) {
                         const id_tarea_creada = results.insertId;
