@@ -3,7 +3,8 @@ import { createContext, useContext, useState } from "react";
 import { requestVerify } from "../requests/auth.js";
 import { requestCreate, requestJoin, requestProjects, requestPermissions, requestgetProject, 
   requestAddRequirement, requestCreateTask, requestAdd,requestDelete, 
-  requestAddMessage, requestMessages } from "../requests/projectReq.js";
+  requestAddMessage, requestMessages, 
+  requestTasksProject} from "../requests/projectReq.js";
 import Cookies from "js-cookie";
 import { useAuth } from "./authContext.js";
 
@@ -24,8 +25,6 @@ export const ProjectProvider = ({ children }) => {
   const [message, setMessage] = useState([]);
   const [projecterrors, setProjecterrors] = useState([]);
 
-  const [IsCreated, setIsCreated] = useState(false);
-  const [IsJoined, setIsJoined] = useState(false);
 
   const [projects, setProjects] = useState([]);
 
@@ -33,21 +32,25 @@ export const ProjectProvider = ({ children }) => {
   const [fechasproject, setFechasproject] = useState([]);
   const [fechasentregas, setFechasentregas] = useState([]);
   const [fechasiteraciones, setFechasiteraciones] = useState([]);
+
   const [tareas, setTareas] = useState([]);
+  const [scheduleData, setScheduleData] = useState([]);
+
 
   const [entregaactual, setEntregaactual] = useState([]);
-  const [iteracionesRestantes, setIteracionesRestantes] = useState([]);
+  const [iteracionactual, setiteracionactual] = useState([]);
   const [requerimientos, setRequerimientos] = useState([]);
   const [messagesChat, setMessagesChat] = useState([]);
   const [chaterrors, setChatErrors] = useState([]);
+
+  const [entregasproject,  setEntregasProject] = useState([]);
 
 
   useEffect(() => {
     if (message.length > 0) {
       const timer = setTimeout(() => {
         setMessage([]);
-        setIsCreated(true);
-        setIsJoined(true);
+
       }, 5000);
       return () => clearTimeout(timer);
     }
@@ -57,26 +60,65 @@ export const ProjectProvider = ({ children }) => {
       }, 5000);
       return () => clearTimeout(timer);
     }
-    if (IsCreated) {
-      const timer = setTimeout(() => {
-        setIsCreated(false);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-    if (IsJoined) {
-      const timer = setTimeout(() => {
-        setIsJoined(false);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
+  }, [projecterrors, message]);
 
-  }, [IsJoined, IsCreated, projecterrors, message]);
+  useEffect(() => {
+    let events = [];
+    
+    fechasproject?.forEach(project => {
+      events.push({
+        Subject: `Inicio del Proyecto: ${project.NOMBRE}`,  
+        StartTime: new Date(project.FECHA_INICIO),
+        EndTime: new Date(project.FECHA_TERMINO),
+        IsAllDay: true
+      });
+    });
+
+
+    fechasentregas?.forEach((entrega, index) => {
+      events.push({
+        Subject: `Entrega ${index + 1}`,
+        StartTime: new Date(entrega.FECHA_INICIO),
+        EndTime: new Date(entrega.FECHA_TERMINO),
+        IsAllDay: true
+      });
+    });
+
+
+    fechasiteraciones?.forEach((iteracionesPorEntrega, index) => {
+      iteracionesPorEntrega.forEach((iteracion, subIndex) => {
+        events.push({
+          Subject: `Iteración ${subIndex + 1} de Entrega ${index + 1}`,
+          StartTime: new Date(iteracion.FECHA_INICIO),
+          EndTime: new Date(iteracion.FECHA_TERMINO),
+          IsAllDay: true
+        });
+      });
+    });
+    console.log(events);
+    setScheduleData(events);
+    
+  }, [fechasproject, fechasentregas, fechasiteraciones]);
 
   const createTask = async (Task) => {
     try {
       const res = await requestCreateTask(Task);
       console.log(res.data.message);
     } catch (error) {
+      if (error.response && error.response.data && error.response.data.message) {
+        setProjecterrors(error.response.data.message);
+      } else {
+        setProjecterrors("Error del servidor");
+      }
+    }
+  }
+
+
+  const getTasksProject = async (project) => {
+    try{
+      const res = await requestTasksProject(project);
+      setEntregasProject(res.data);
+    }catch(error){
       if (error.response && error.response.data && error.response.data.message) {
         setProjecterrors(error.response.data.message);
       } else {
@@ -184,12 +226,11 @@ export const ProjectProvider = ({ children }) => {
     try {
       const res = await requestgetProject(project);
       setParticipants(res.data.participants);
-      console.log(res.data.participants);
       setFechasproject(res.data.fechasProyecto);
       setFechasentregas(res.data.fechasEntregas);
       setFechasiteraciones(res.data.fechasIteraciones);
       setEntregaactual(res.data.entregaActual);
-      setIteracionesRestantes(res.data.iteracionesRestantes);
+      setiteracionactual(res.data.iteracionactual);
       setRequerimientos(res.data.requerimientos);
       setTareas(res.data.tasks)
     } catch (error) {
@@ -273,19 +314,18 @@ export const ProjectProvider = ({ children }) => {
       value={{
         projects,
         
-        IsJoined,
-        IsCreated,
-        
         message,projecterrors,
         
         participants,
+        entregasproject,
         
         fechasproject,
         fechasentregas,
         fechasiteraciones,
+        scheduleData,
         
         entregaactual,
-        iteracionesRestantes,
+        iteracionactual,
         
         userRole,
         IsParticipant,
@@ -299,6 +339,7 @@ export const ProjectProvider = ({ children }) => {
         setProjecterrors,
         setIsParticipant,
         setMessage,
+        setScheduleData,
 
         create,
         deleteParticipant,
@@ -310,7 +351,8 @@ export const ProjectProvider = ({ children }) => {
         createTask,
         addParticipant,
         createMessages,
-        getMessages
+        getMessages,
+        getTasksProject
       }}
     >
       {children}

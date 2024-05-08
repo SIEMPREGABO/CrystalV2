@@ -1,21 +1,22 @@
 import React, { useEffect, useState } from 'react'
 import { ScheduleComponent, ViewsDirective, ViewDirective, Day, Week, WorkWeek, Month, Agenda, Inject, Resize, DragAndDrop } from '@syncfusion/ej2-react-schedule';
 import { DatePickerComponent } from '@syncfusion/ej2-react-calendars';
-//import { scheduleData } from '../data/dummy';
 import { Header } from '../components';
 import { useProject } from '../context/projectContext';
-import { useParams } from 'react-router-dom';
 
-const Calendario = () => {
+const Calendario = ({ readOnly = true ,width, height, title ="Calendario"}) => {
   const {
     fechasproject,
     fechasentregas,
-    fechasiteraciones
+    fechasiteraciones,
+    scheduleData,
+    setScheduleData
   } = useProject();
-  const [scheduleData, setScheduleData] = useState([]);
 
+  /*
   useEffect(() => {
     let events = [];
+    
     fechasproject?.forEach(project => {
       events.push({
         Subject: `Inicio del Proyecto: ${project.NOMBRE}`,  
@@ -49,20 +50,23 @@ const Calendario = () => {
 
     setScheduleData(events);
   }, [fechasproject, fechasentregas, fechasiteraciones]);
-
+*/
 
 
 
   return (
     <div className='m-2 md:m-10 mt-24  p-2 md:p-10 bg-white rounded-3xl'>
-      <Header title="Calendario" />
-
-      <ScheduleComponent height="650px" eventSettings={{ dataSource: scheduleData }}>
-        <Inject services={[Day, Week, WorkWeek, Month, Agenda, Resize, DragAndDrop]} />
+      <Header title={title}/>
+    
+      <ScheduleComponent height= {height} width={width} readonly={readOnly} eventSettings={{ dataSource: scheduleData }}>
+        <Inject services={[Day, Week, WorkWeek, Month, Agenda]} />
       </ScheduleComponent>
+      
     </div>
+
+
+
   )
 }
 
 export default Calendario;
-

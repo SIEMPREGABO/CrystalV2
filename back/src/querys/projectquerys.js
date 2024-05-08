@@ -278,11 +278,11 @@ export function obtenerFechasID(tabla, ID) {
             let query = ""
             const connection = await getConnection();
             if (tabla === "PROYECTOS") {
-                query = `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO, CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, ESTADO, NOMBRE,OBJETIVO,DESCRIPCION_GNRL,CODIGO_UNIRSE, FECHA_CREACION,ID_CATEGORIA_CRYSTAL  FROM ${tabla} WHERE ID = ?`
+                query = `SELECT ID, FECHA_INICIO,  FECHA_TERMINO, ESTADO, NOMBRE,OBJETIVO,DESCRIPCION_GNRL,CODIGO_UNIRSE, FECHA_CREACION,ID_CATEGORIA_CRYSTAL  FROM ${tabla} WHERE ID = ?`
             } else if (tabla === "ENTREGAS") {
-                query = `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO, CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, ESTADO FROM ${tabla} WHERE ID_PROYECTO = ?`
+                query = `SELECT ID,  FECHA_INICIO,  FECHA_TERMINO, ESTADO FROM ${tabla} WHERE ID_PROYECTO = ?`
             } else if (tabla === "ITERACIONES") {
-                query = `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO, CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, ESTADO, ID_ENTREGA FROM ${tabla} WHERE ID_ENTREGA = ?`
+                query = `SELECT ID,   FECHA_INICIO,  FECHA_TERMINO, ESTADO, ID_ENTREGA FROM ${tabla} WHERE ID_ENTREGA = ?`
             }
             //const query = `SELECT ID, FECHA_INICIO, FECHA_TERMINO, ESTADO FROM ${tabla} WHERE ID = ?`;
             connection.query(query, [ID], (err, results) => {
@@ -293,6 +293,58 @@ export function obtenerFechasID(tabla, ID) {
                 }
             });
         } catch (error) {
+            reject(error);
+        }
+    });
+}
+
+export function GetTareasxIteracion(ID_PROYECTO){
+    return new Promise(async (resolve, reject) => {
+        try{
+            const connection = await getConnection();
+
+            const entregasquery = `
+SELECT 
+    e.ID,
+    (
+        SELECT JSON_ARRAYAGG(
+            JSON_OBJECT(
+                "id", i.ID,
+                "tareas", (
+                    SELECT JSON_ARRAYAGG(
+                        JSON_OBJECT(
+                            "nombre", nombre,
+                            "est_desarr", estado_desarrollo
+                        )
+                    ) 
+                    FROM TAREAS 
+                    WHERE ID_ITERACION = i.ID
+                )
+            )
+        ) 
+        FROM iteraciones i 
+        WHERE ID_ENTREGA = e.ID
+    ) AS ITERACIONES 
+FROM entregas e 
+WHERE ID_PROYECTO = ?;
+`;
+
+            //const entregasquery = "SELECT e.ID, (SELECT JSON_ARRAYAGG(JSON_OBJECT('id', i.ID, 'tareas', (SELECT JSON_ARRAYAGG(JSON_OBJECT('nombre', nombre, 'est_desarr', estado_desarrollo)) FROM TAREAS WHERE ID_ITERACION = i.ID))) FROM iteraciones i WHERE ID_ENTREGA = e.ID) AS ITERACIONES FROM entregas e WHERE ID_PROYECTO = ?;";
+            //const iteracionesquery = "SELECT ID FROM ITERACIONES WHERE ID_ENTREGA = ?";
+            //const tareasquery = "SELECT NOMBRE, ESTADO_DESARROLLO FROM TAREAS WHERE ID_ITERACION = ?";
+
+            connection.query(entregasquery, [ID_PROYECTO], async (err, results) => {
+                if(err){
+                    reject(err);
+                }else{
+                    if(results.length > 0){
+                        resolve(results);
+                    }else{
+                        resolve([]);
+                    }
+                }
+            });
+        }catch(error){
             reject(error);
         }
     });
@@ -513,19 +565,19 @@ export function AgregarRequerimiento(OBJETIVO, REQUERIMIENTO, ID_TIPO_REQUERIMIE
     })
 }
 
-export function CrearTarea(NOMBRE, DESCRIPCION, FECHA_INICIO, FECHA_TERMINO, FECHA_MAX_TERMINO, ID_iteracion, ID_USUARIO, ID_REQUERIMIENTO, ROLPARTICIPANTE, ID_TAREA_DEPENDIENTE) {
+export function CrearTarea(NOMBRE, DESCRIPCION, FECHA_INICIO, FECHA_MAX_TERMINO, ID_iteracion, ID_USUARIO, ID_REQUERIMIENTO, ROLPARTICIPANTE, ID_TAREA_DEPENDIENTE) {
     return new Promise(async (resolve, reject) => {
         try {
             let rol;
-            if (ROLPARTICIPANTE === "Diseñador Principal") rol = 1;
-            if (ROLPARTICIPANTE === "Diseñador") rol = 3;
-            if (ROLPARTICIPANTE === "Embajador") rol = 2;
+            if(ROLPARTICIPANTE === "Diseñador Principal") rol = 1;
+            if(ROLPARTICIPANTE === "Diseñador") rol = 3;
+            if(ROLPARTICIPANTE === "Embajador") rol = 2;
             const connection = await getConnection();
             const ESTADO_DESARROLLO = "En espera";
-            const query = "INSERT INTO TAREAS(NOMBRE,DESCRIPCION,ESTADO_DESARROLLO,FECHA_INICIO,FECHA_TERMINO,FECHA_MAX_TERMINO,ID_REQUERIMIENTO) VALUES (?,?,?,?,?,?,?);";
+            const query = "INSERT INTO TAREAS(NOMBRE,DESCRIPCION,ESTADO_DESARROLLO,FECHA_INICIO,FECHA_MAX_TERMINO,ID_REQUERIMIENTO) VALUES (?,?,?,?,?,?,?);";
             const queryColab = "INSERT INTO COLABORACIONES (ID_USUARIO, ID_ITERACION, ID_TAREA_REALIZADA, ROL_REALIZADO) VALUES (?,?,?,?)";
             const queryDependencia = "INSERT INTO T_DEPENDE_T (ID_TAREA_DEPENDIENTE, ID_SUBTAREA) VALUES (?,?)"
-            connection.query(query, [NOMBRE, DESCRIPCION, ESTADO_DESARROLLO, FECHA_INICIO, FECHA_TERMINO, FECHA_MAX_TERMINO, ID_REQUERIMIENTO], (err, results) => {
+            connection.query(query, [NOMBRE, DESCRIPCION, ESTADO_DESARROLLO, FECHA_INICIO, FECHA_MAX_TERMINO, ID_REQUERIMIENTO], (err, results) => {
                 if (err) {
                     reject(err)
                     console.log("mamw", err)
@@ -538,7 +590,7 @@ export function CrearTarea(NOMBRE, DESCRIPCION, FECHA_INICIO, FECHA_TERMINO, FEC
                                 console.log(err);
                             } else {
                                 if (results.affectedRows > 0) {
-                                    if (ID_TAREA_DEPENDIENTE != "") {
+                                    if (ID_TAREA_DEPENDIENTE != "0") {
                                         connection.query(queryDependencia, [ID_TAREA_DEPENDIENTE, id_tarea_creada], (err, results) => {
                                             if (err) {
                                                 reject(err);
@@ -569,6 +621,7 @@ export function CrearTarea(NOMBRE, DESCRIPCION, FECHA_INICIO, FECHA_TERMINO, FEC
 
     })
 }
+
 
 export function AgregarMensaje(CONTENIDO, FECHA, HORA, USUARIO, ITERACION) {
     return new Promise(async (resolve, reject) => {

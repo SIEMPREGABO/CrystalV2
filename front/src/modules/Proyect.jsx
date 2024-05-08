@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 import Participantes from "./Usuario.jsx";
 import ChatIteracion from "./ChatIteracion";
-import Configuracion from "./Config.js"
+import Configuracion from "./Config.jsx"
 import Calendario from "./Calendario.jsx";
 import AsignarTarea from "./AsignarTarea.jsx";
 import Dashboard from "./Inicio.jsx";
