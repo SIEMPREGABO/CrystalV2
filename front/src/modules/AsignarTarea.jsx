@@ -14,7 +14,7 @@ function AsignarTarea() {
   });
   // la funcion creatTask
   //Agregar a la tarea la tarea dependiente y el requerimiento que cumple y rol, a quien se asigna
-  const { fechasproject, iteracionactual, createTask, participants, requerimientos,projecterrors, tareas } = useProject();
+  const { fechasproject, message, setProjecterrors, setMessage, iteracionactual, createTask, participants, requerimientos, projecterrors, tareas } = useProject();
   const onSubmit = handleSubmit(async (values) => {
     console.log("submit iniciado");
     const data = {
@@ -34,8 +34,9 @@ function AsignarTarea() {
   });
 
   useEffect(() => {
+    setProjecterrors([]);
+    setMessage([]);
     //console.log(fechasproject);
-    console.log(tareas)
   }, [])
 
 
@@ -43,7 +44,6 @@ function AsignarTarea() {
   return (
 
     <div className="relative flex flex-col justify-center min-h-screen overflow-hidden">
-       {projecterrors && <div className=" bg-danger mt-2 me-2 text-white shadow">{projecterrors}</div>}
 
       {fechasproject[0].ESTADO === "En espera" &&
         <div>
@@ -55,7 +55,16 @@ function AsignarTarea() {
 
       {fechasproject[0].ESTADO === "En desarrollo" &&
         <div>
+          {message && <div class=" items-center bg-green-100 border-l-4 border-green-500 text-green-700  rounded-lg m-2 shadow-md" style={{ maxWidth: '600px' }}>
+            <p class="text-lg font-semibold m-2">{message}</p>
+          </div>
+          }
+          {projecterrors && <div class=" items-center bg-red-100 border-l-4 border-red-500 text-red-700  rounded-lg m-2 shadow-md" style={{ maxWidth: '600px' }}>
+            <p class="text-lg font-semibold m-2">{projecterrors}</p>
+          </div>
+          }
           {iteracionactual !== "" &&
+
             <div className="w-full p-6 m-auto bg-white rounded-md shadow-xl ring-indigo-600 lg:max-w-xl">
               <h1 className="text-3xl font-semibold text-center text-indigo-700 underline uppercase">
                 Asigna una tarea
@@ -103,7 +112,7 @@ function AsignarTarea() {
                       />
 
                     </div>
-                    
+
                     <div>
                       <label htmlFor="FECHA_MAX_TERMINO" className="block text-sm font-semibold text-gray-800">
                         Fecha Maxima de Entrega <span className='text-sm font-semibold text-red-800'>*</span>
@@ -137,7 +146,7 @@ function AsignarTarea() {
                       />
 
                     </div>
-                    
+
                     <div>
 
                       <label htmlFor="HORAMAXIMA" className="block text-sm font-semibold text-gray-800">

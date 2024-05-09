@@ -50,7 +50,6 @@ export const ProjectProvider = ({ children }) => {
     if (message.length > 0) {
       const timer = setTimeout(() => {
         setMessage([]);
-
       }, 5000);
       return () => clearTimeout(timer);
     }
@@ -103,10 +102,11 @@ export const ProjectProvider = ({ children }) => {
   const createTask = async (Task) => {
     try {
       const res = await requestCreateTask(Task);
-      console.log(res.data.message);
+      setMessage(res.data.message);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
         setProjecterrors(error.response.data.message);
+        console.log(error.response.data.message);
       } else {
         setProjecterrors("Error del servidor");
       }
@@ -212,7 +212,8 @@ export const ProjectProvider = ({ children }) => {
   const createRequirements = async (project) => {
     try {
       const res = await requestAddRequirement(project);
-      setMessage(res.data.message);
+      console.log(res.data);
+      //setMessage(res.data.message);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
         setProjecterrors(error.response.data.message);
@@ -231,6 +232,7 @@ export const ProjectProvider = ({ children }) => {
       setFechasiteraciones(res.data.fechasIteraciones);
       setEntregaactual(res.data.entregaActual);
       setiteracionactual(res.data.iteracionactual);
+      
       setRequerimientos(res.data.requerimientos);
       setTareas(res.data.tasks)
     } catch (error) {
