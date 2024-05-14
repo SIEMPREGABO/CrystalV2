@@ -4,7 +4,7 @@ import { requestVerify } from "../requests/auth.js";
 import { requestCreate, requestJoin, requestProjects, requestPermissions, requestgetProject, 
   requestAddRequirement, requestCreateTask, requestAdd,requestDelete, 
   requestAddMessage, requestMessages, 
-  requestTasksProject} from "../requests/projectReq.js";
+  requestTasksProject,requestConfig} from "../requests/projectReq.js";
 import Cookies from "js-cookie";
 import { useAuth } from "./authContext.js";
 
@@ -60,7 +60,7 @@ export const ProjectProvider = ({ children }) => {
       return () => clearTimeout(timer);
     }
   }, [projecterrors, message]);
-
+/*
   useEffect(() => {
     let events = [];
     
@@ -98,10 +98,24 @@ export const ProjectProvider = ({ children }) => {
     setScheduleData(events);
     
   }, [fechasproject, fechasentregas, fechasiteraciones]);
-
+*/
   const createTask = async (Task) => {
     try {
       const res = await requestCreateTask(Task);
+      setMessage(res.data.message);
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.message) {
+        setProjecterrors(error.response.data.message);
+        console.log(error.response.data.message);
+      } else {
+        setProjecterrors("Error del servidor");
+      }
+    }
+  }
+
+  const configProyect = async (fechas) => {
+    try {
+      const res = await requestConfig(fechas);
       setMessage(res.data.message);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
@@ -344,6 +358,7 @@ export const ProjectProvider = ({ children }) => {
         setScheduleData,
 
         create,
+        configProyect,
         deleteParticipant,
         getProjects,
         joinProject,

@@ -3,7 +3,8 @@ import { validarToken } from "../middlewares/validate.token.js";
 import { getTasks, createTask, createProject, getProjects, 
     joinProject,getProject, getPermissions, agregarRequerimiento, agregarMensaje, getMessages, 
     addParticipant,
-    deleteParticipant, getTareasxIteracion} from "../controllers/project.controller.js";
+    deleteParticipant, getTareasxIteracion,
+    configurarProyecto} from "../controllers/project.controller.js";
 import { createSchema, joinSchema, taskSchema } from "../schemas/project.schema.js";
 import { validateSchema } from "../middlewares/validator.middleware.js";
 
@@ -22,5 +23,6 @@ router.post('/createTask',validateSchema(taskSchema),createTask);
 router.post('/addMessage', agregarMensaje);
 router.post('/getMessages', getMessages);
 router.post('/getProjectTasks', getTareasxIteracion);
+router.post('/configProject', configurarProyecto);
 
 export default router;

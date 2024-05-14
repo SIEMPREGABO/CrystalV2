@@ -321,7 +321,18 @@ export function obtenerTareasDep() {
         }
     })
 }
-
+/*
+export const autorizarFechasProject(ID){
+    return new Promise(async(resolve, reject)=>{
+        try {
+            const connection = await getConnection();
+            const query = "SELECT "
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+*/
 export function obtenerFechasID(tabla, ID) {
     return new Promise(async (resolve, reject) => {
         try {
@@ -330,7 +341,7 @@ export function obtenerFechasID(tabla, ID) {
             if (tabla === "PROYECTOS") {
                 query = `SELECT ID, FECHA_INICIO,  FECHA_TERMINO, ESTADO, NOMBRE,OBJETIVO,DESCRIPCION_GNRL,CODIGO_UNIRSE, FECHA_CREACION,ID_CATEGORIA_CRYSTAL  FROM ${tabla} WHERE ID = ?`
             } else if (tabla === "ENTREGAS") {
-                query = `SELECT ID,  FECHA_INICIO,  FECHA_TERMINO, ESTADO FROM ${tabla} WHERE ID_PROYECTO = ?`
+                query = `SELECT ID,  FECHA_INICIO,  FECHA_TERMINO, ESTADO, ID_PROYECTO FROM ${tabla} WHERE ID_PROYECTO = ?`
             } else if (tabla === "ITERACIONES") {
                 query = `SELECT ID,   FECHA_INICIO,  FECHA_TERMINO, ESTADO, ID_ENTREGA FROM ${tabla} WHERE ID_ENTREGA = ?`
             }
