@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { ScheduleComponent, ViewsDirective, ViewDirective, Day, Week, WorkWeek, Month, Agenda, Inject, Resize, DragAndDrop } from '@syncfusion/ej2-react-schedule';
 import { DatePickerComponent } from '@syncfusion/ej2-react-calendars';
 import { Header } from '../components';
@@ -13,7 +13,6 @@ const Calendario = ({ readOnly = true ,width, height, title ="Calendario"}) => {
     setScheduleData
   } = useProject();
 
-  /*
   useEffect(() => {
     let events = [];
     
@@ -50,22 +49,14 @@ const Calendario = ({ readOnly = true ,width, height, title ="Calendario"}) => {
 
     setScheduleData(events);
   }, [fechasproject, fechasentregas, fechasiteraciones]);
-*/
-
-
 
   return (
     <div className='m-2 md:m-10 mt-24  p-2 md:p-10 bg-white rounded-3xl'>
       <Header title={title}/>
-    
-      <ScheduleComponent height= {height} width={width} readonly={readOnly} eventSettings={{ dataSource: scheduleData }}>
-        <Inject services={[Day, Week, WorkWeek, Month, Agenda]} />
+      <ScheduleComponent height= "850px" width={width} readonly={readOnly} eventSettings={{ dataSource: scheduleData }}>
+        <Inject services={[Day, Week, WorkWeek, Month, Agenda, DragAndDrop]} />
       </ScheduleComponent>
-      
     </div>
-
-
-
   )
 }
 

@@ -359,6 +359,32 @@ export function obtenerFechasID(tabla, ID) {
     });
 }
 
+export function obtenerFechasConfigID(tabla, ID) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let query = ""
+            const connection = await getConnection();
+            if (tabla === "PROYECTOS") {
+                query = `SELECT ID, FECHA_INICIO,  FECHA_TERMINO, ESTADO, NOMBRE,OBJETIVO,DESCRIPCION_GNRL,CODIGO_UNIRSE, FECHA_CREACION,ID_CATEGORIA_CRYSTAL  FROM ${tabla} WHERE ID = ?`
+            } else if (tabla === "ENTREGAS") {
+                query = `SELECT ID,  FECHA_INICIO,  FECHA_TERMINO, ESTADO, ID_PROYECTO FROM ${tabla} WHERE ID = ?`
+            } else if (tabla === "ITERACIONES") {
+                query = `SELECT ID,   FECHA_INICIO,  FECHA_TERMINO, ESTADO, ID_ENTREGA FROM ${tabla} WHERE ID = ?`
+            }
+            //const query = `SELECT ID, FECHA_INICIO, FECHA_TERMINO, ESTADO FROM ${tabla} WHERE ID = ?`;
+            connection.query(query, [ID], (err, results) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(results);
+                }
+            });
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
 export function GetTareasxIteracion(ID_PROYECTO) {
     return new Promise(async (resolve, reject) => {
         try {

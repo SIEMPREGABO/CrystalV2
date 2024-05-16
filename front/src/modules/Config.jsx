@@ -16,7 +16,7 @@ export const Config = () => {
 
 
   const handleSaveChanges = () => {
-    console.log(scheduleData)
+    //console.log(scheduleData)
 
     configProyect(scheduleData);
 };
@@ -71,7 +71,7 @@ export const Config = () => {
     });
 
     setScheduleData(events);
-    console.log(contador);
+    //console.log(contador);
 
   }, [fechasproject, fechasentregas, fechasiteraciones]);
 
@@ -84,7 +84,7 @@ export const Config = () => {
 
 
         <Header title="Calendario" />
-        {console.log(scheduleData)}
+
         <ScheduleComponent height="850px" width="600px" eventSettings={{ dataSource: scheduleData }}>
           <Inject services={[Day, Month, Agenda, Resize, DragAndDrop]} />
         </ScheduleComponent>
