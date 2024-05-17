@@ -10,7 +10,8 @@ import {
     GetTareasxIteracion,
     getTareaDependiente,
     obtenerTareasDep,
-    obtenerFechasConfigID
+    obtenerFechasConfigID,
+    ActualizarFechasQuery
 } from '../querys/projectquerys.js';
 import jwt from 'jsonwebtoken'
 import { zonaHoraria } from '../config.js';
@@ -332,7 +333,7 @@ export const configurarProyecto = async (req, res) => {
             let counterxentrega = 0;
 
 
-            const iteracionesPromises = await Promise.all(iteraciones.map(async(iteracion, index) => {
+            const iteracionesPromises = await Promise.all(iteraciones.map(async (iteracion, index) => {
 
                 if (iteracion.Id_entrega === entrega.Id_entrega) {
                     diasIteracion += moment(iteracion.EndTime).diff(moment(iteracion.StartTime), 'days') + 1;
@@ -369,20 +370,20 @@ export const configurarProyecto = async (req, res) => {
 
 
                 }
-                if (iteracion.modificado && (iteracion.State === 'Finalizado' || iteracion.State === 'En desarrollo'))return { errorIt: true, message: `No puedes modificar una iteracion finalizada o en desarrollo ${iteracion.Title}` };
+                if (iteracion.modificado && (iteracion.State === 'Finalizado' || iteracion.State === 'En desarrollo')) return { errorIt: true, message: `No puedes modificar una iteracion finalizada o en desarrollo ${iteracion.Title}` };
 
                 return { errorIt: false };
             }));
 
             //const iteracionesResponses = await Promise.all(iteracionesPromises);
-   
+
             const iteracionErrorResponse = iteracionesPromises.find(response => response.errorIt === true);
             if (iteracionErrorResponse) {
                 // Si hay un error en alguna iteración, devuelve la respuesta de error
                 return { error: true, message: iteracionErrorResponse.message };
             }
 
-          
+
 
             if (diasIteracion !== diasEntregaActual) {
                 diasIteracion = 0;
@@ -402,6 +403,20 @@ export const configurarProyecto = async (req, res) => {
             //console.log(errorResponse.message);
             return res.status(400).json({ message: errorResponse.message });
         }
+        const tiposDeFecha = [proyectos, entregas, iteraciones];
+
+
+        const success = await Promise.all(tiposDeFecha.map(async (tipo, index) => {
+            //console.log(`Fechas del tipo ${index + 1}:`);
+            return await Promise.all(tipo.map(async (objeto) => {
+                const actualizarFecha = await ActualizarFechasQuery(tipo, objeto);
+                return actualizarFecha.success;
+            }));
+        }));
+
+        const someFailed = success.some(tipoSuccessArray => tipoSuccessArray.includes(false));
+        if (someFailed) return res.status(400).json({ message: ['Some updates failed'] });
+
 
         res.status(200).json({ message: ["Todo bien tilin"] })
 
