@@ -112,7 +112,7 @@ export const ChatIteracion = () => {
         <div className='sticky'>
         <ul>
             {messages.map((message, i) => (
-              <li key={i} className={`my-2 p-2 table text-sm rounded-sm w-fit ${message.from === 'Me' ? 'bg-sky-400 ml-auto text-black' : 'bg-indigo-300 mr-auto'}`}>
+              <li key={i} className={`my-2 p-2 table text-sm rounded-sm w-fit ${message.from === 'Me' ? 'bg-pink-400 ml-auto text-black' : 'bg-indigo-300 mr-auto'}`}>
                 <b className='text-xs text-white-500'>{message.from}</b>: {message.data}
               </li>
             ))}

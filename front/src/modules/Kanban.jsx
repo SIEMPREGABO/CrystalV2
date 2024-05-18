@@ -1,96 +1,287 @@
-import React, { useEffect } from 'react';
-import { Header } from '../components'; // Asegúrate de que este import sea correcto
+import React, { useEffect, useState } from 'react';
+import { Header } from '../components';
 import { KanbanComponent, ColumnsDirective, ColumnDirective } from '@syncfusion/ej2-react-kanban';
-import '@syncfusion/ej2-base/styles/material.css'; // Asegúrate de importar los estilos necesarios
+import '@syncfusion/ej2-base/styles/material.css';
+import { L10n } from '@syncfusion/ej2-base';
 import { useProject } from '../context/projectContext';
+import { DialogComponent } from '@syncfusion/ej2-react-popups';
+import { ButtonComponent } from '@syncfusion/ej2-react-buttons';
+
+import '../css/kanban.module.css';
+
+L10n.load({
+  'esp': {
+    'kanban': {
+      'items': 'tareas',
+      'save': 'Guardar',
+      'cancel': 'Cancelar',
+      'delete': 'Eliminar',
+      'yes': 'Sí',
+      'no': 'No',
+      'editTitle': 'Detalles de Tarea',
+      'deleteTitle': 'Eliminar Tarea',
+      'deleteContent': '¿Seguro que deseas eliminar esta tarea?',
+      'noCard': 'Sin tareas por el momento',
+      'required': 'El campo es requerido'
+    }
+  }
+});
 
 const Kanban = () => {
-  const {tareas} = useProject();
+  const { tareasKanban, setTareasKanban, deleteTask, updateTask, updateTaskState } = useProject();
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const [selectedTarea, setSelectedTarea] = useState(null);
+  const [idTarea, setIDTarea] = useState(0);
+  const [nombreTarea, setNomTarea] = useState("Tarea Defecto ");
+  const [descTarea, setDescTarea] = useState("Tarea por Defecto ");
+  const [estadoTarea, setEstadoTarea] = useState("");
+  const [fechaiTarea, setFechaITarea] = useState("2000-01-01");
+  const [fechamTarea, setFechaMTarea] = useState("2000-01-01");
 
-  useEffect(()=>{
-    console.log(tareas);
-  },[tareas]);
+  useEffect(() => {
+    console.log(tareasKanban);
+  }, []);
 
-  let data = [
-    { Id: 1, Status: 'Open', Summary: 'Analyze the new requirements gathered from the customer.', Type: 'Story', Priority: 'Low', Tags: 'Analyze,Customer', Estimate: 3.5, Assignee: 'Nancy Davloio', RankId: 1 },
-    { Id: 2, Status: 'InProgress', Summary: 'Fix the issues reported in the IE browser.', Type: 'Bug', Priority: 'Release Breaker', Tags: 'IE', Estimate: 2.5, Assignee: 'Janet Leverling', RankId: 2  },
-    { Id: 3, Status: 'Testing', Summary: 'Fix the issues reported by the customer.', Type: 'Bug', Priority: 'Low', Tags: 'Customer', Estimate: '3.5', Assignee: 'Steven walker', RankId: 1 },
-    { Id: 4, Status: 'Close', Summary: 'Arrange a web meeting with the customer to get the login page requirements.', Type: 'Others', Priority: 'Low', Tags: 'Meeting', Estimate: 2, Assignee: 'Michael Suyama', RankId: 1 },
-    { Id: 5, Status: 'Done', Summary: 'Validate new requirements', Type: 'Improvement', Priority: 'Low', Tags: 'Validation', Estimate: 1.5, Assignee: 'Robert King', RankId: 1 },
-    { Id: 6, Status: 'Done', Summary: 'Validate new requirements', Type: 'Improvement', Priority: 'Low', Tags: 'Validation', Estimate: 1.5, Assignee: 'Robert King', RankId: 1 },
-    { Id: 7, Status: 'InProgress  ', Summary: 'Validate new requirements', Type: 'Improvement', Priority: 'Low', Tags: 'Validation', Estimate: 1.5, Assignee: 'Robert King', RankId: 1 },
-    { Id: 8, Status: 'To Do', Summary: 'Validate new requirements', Type: 'Improvement', Priority: 'Low', Tags: 'Validation', Estimate: 1.5, Assignee: 'Robert King', RankId: 1 },
-    { Id: 9, Status: 'Testing', Summary: 'Validate new requirements', Type: 'Improvement', Priority: 'Low', Tags: 'Validation', Estimate: 1.5, Assignee: 'Robert King', RankId: 1 },
+  useEffect(() => {
 
-  ];
+  }, [tareasKanban]);
 
-  const headerTemplate = (props) => {
-    return (
-      <div>
-        <div>{props.keyField}</div>
-        <div>{props.headerText}</div>
-        {/* Agrega aquí cualquier otro contenido deseado para el encabezado */}
-      </div>
-    );
-  };
+  useEffect(() => {
+    if (selectedTarea != null) {
+      console.log(selectedTarea);
+      setIDTarea(selectedTarea.ID);
+      setNomTarea(selectedTarea.NOMBRE + " ");
+      setDescTarea(selectedTarea.DESCRIPCION + " ");
+      setEstadoTarea(selectedTarea.ESTADO_DESARROLLO);
 
-  const columnTemplate = (props) => {
-    return (
-      <div >
-        <div className="">{props.keyField}</div>
-        <div className="">{props.headerText}</div>
-        {/* Agrega aquí cualquier otro contenido deseado para la columna */}
-      </div>
-    );
-  };
+      const fecha_inicio = new Date(selectedTarea.FECHA_INICIO);
+      const fecha_mx = new Date(selectedTarea.FECHA_MAX_TERMINO);
+      let di = fecha_inicio.getDate();
+      let mi = fecha_inicio.getMonth() + 1;
+      if (mi < 10) {
+        mi = "0" + mi;
+      }
+      if (di < 10) {
+        di = "0" + di;
+      }
+      const yi = fecha_inicio.getFullYear();
+      let fecha = yi + "-" + mi + "-" + di;
 
-  // Definición de la plantilla de tooltip
+      let df = fecha_mx.getDate();
+      let mf = fecha_mx.getMonth() + 1;
+      if (mf < 10) {
+        mf = "0" + mf;
+      }
+      if (df < 10) {
+        df = "0" + df;
+      }
+      const yf = fecha_mx.getFullYear();
+      let fechaf = yf + "-" + mf + "-" + df;
+
+      setFechaITarea(fecha);
+      setFechaMTarea(fechaf);
+      console.log(estadoTarea);
+    }
+  }, [selectedTarea]);
+
   const tooltipTemplate = (data) => (
     <div>
-      <p><b>ID:</b> {data.Id}</p>
-      <p><b>Summary:</b> {data.Summary}</p>
-      <p><b>Type:</b> {data.Type}</p>
-      <p><b>Priority:</b> {data.Priority}</p>
-      <p><b>Tags:</b> {data.Tags}</p>
-      <p><b>Estimate:</b> {data.Estimate} days</p>
-      <p><b>Assignee:</b> {data.Assignee}</p>
+      <p><b>ID:</b> {data.ID}</p>
+      <p><b>DESCRIPCION:</b> {data.DESCRIPCION}</p>
+      <p><b>Requerimiento:</b> {data.OBJETIVO}</p>
+      <p><b>Estado:</b> {data.ESTADO_DESARROLLO}</p>
+      <p><b>Entregar antes de:</b> {data.FECHA_MAX_TERMINO}</p>
+      <p><b>Desarrollador:</b> {data.Desarrollador}</p>
     </div>
   );
 
+  const DialogOpen = (args) => {
+    args.cancel = true;
+
+
+  }
+
+  const handleKeyDownN = (event) => {
+    if (event.key === ' ') {
+      // Ingresa un espacio cuando se presiona la tecla de espacio
+      setNomTarea(nombreTarea + ' ');
+      // Evita el comportamiento predeterminado de la tecla de espacio
+      event.preventDefault();
+    }
+  }
+
+  const handleKeyDownD = (event) => {
+    if (event.key === ' ') {
+      // Ingresa un espacio cuando se presiona la tecla de espacio
+      setDescTarea(descTarea + ' ');
+      // Evita el comportamiento predeterminado de la tecla de espacio
+      event.preventDefault();
+    }
+  }
+
+  const handleCloseDialog = () => {
+    setDialogVisible(false);
+    setSelectedTarea(null);
+  };
+
+  const handleDoubleClick = (data) => {
+    setDialogVisible(true);
+    setSelectedTarea(data);
+  }
+
+  const onDragStop = (args) => {
+    console.log(args.data);
+    
+    const dragTask = {
+      ESTADO_DESARROLLO: args.data[0].ESTADO_DESARROLLO,
+      ID: args.data[0].ID,
+    }
+
+    updateTaskState(dragTask);
+  }
+
+  const onDragStart = (args) => {
+    console.log(args.data);
+  }
+
+
+  const handleDelete = () => {
+    const deletedTask = {
+      ID: idTarea
+    }
+
+    deleteTask(deletedTask);
+
+    setTareasKanban(prevData =>
+      prevData.filter(card => card.ID !== idTarea)
+    );
+    setDialogVisible(false);
+
+  }
+
+  const handleSave = () => {
+    // Lógica para guardar cambios
+    //console.log(idTarea);
+    setTareasKanban(prevData =>
+      prevData.map(card =>
+        card.ID === idTarea
+          ? { ...card, NOMBRE: nombreTarea, DESCRIPCION: descTarea, ESTADO_DESARROLLO: estadoTarea, FECHA_INICIO: fechaiTarea, FECHA_MAX_TERMINO: fechamTarea } : card
+      )
+    );
+    const updatedTask = {
+      ID: idTarea,
+      NOMBRE: nombreTarea,
+      DESCRIPCION: descTarea,
+      ESTADO_DESARROLLO: estadoTarea,
+      FECHA_INICIO: fechaiTarea,
+      FECHA_MAX_TERMINO: fechamTarea
+    }
+
+    updateTask(updatedTask);
+    //console.log(matchingTasks);
+    //console.log(matchingIndex);
+    console.log('Guardar cambios');
+    setDialogVisible(false);
+  };
+
+  const handleCancel = () => {
+    // Lógica para cancelar
+    console.log('Cancelar');
+    setDialogVisible(false);
+  };
+
   return (
     <div className="m-2 md:m-10 mt-24 p-2 md:p-10 bg-white rounded-3xl e-kanbantooltiptemp">
-      {tareas && (
-        <div>
-          {tareas.map((tarea) => (
-            <div>
-              <p>Nombre: {tarea.NOMBRE}</p>
-              <p>Desc: {tarea.DESCRIPCION}</p>
-              <p>Fecha inicio: {tarea.FECHA_INICIO}</p>
-              <p>Fecha max final: {tarea.FECHA_MAX_TERMINO}</p>
-              <p>Fecha final: {tarea.FECHA_TERMINO}</p>
-              <p>Id: {tarea.ID}</p>
-              <p>Estado: {tarea.ESTADO_DESARROLLO}</p>
-              <p>Requerimiento id: {tarea.ID_REQUERIMIENTO}</p>
-            </div>
-          ))}
-        </div>
-      )}
-      <Header category="App" title="Kanban"/>
+      <Header category="App" title="Kanban" />
       <KanbanComponent
         id="kanban"
-        keyField="Status"
-        dataSource={data}
-        cardSettings={{ contentField: "Summary", headerField: "Id" }}
+        keyField='ESTADO_DESARROLLO'
+        dataSource={tareasKanban}
+        cardSettings={{ contentField: "DESCRIPCION", headerField: "NOMBRE" }}
         enableTooltip={true}
-        tooltipTemplate={tooltipTemplate} 
+        swimlaneSettings={{ keyField: "Desarrollador" }}
+        locale='esp'
+        dialogOpen={DialogOpen.bind(this)}
+        tooltipTemplate={tooltipTemplate.bind(this)}
+        //dialogSettings={{template:dialogTemplate }}
+        cardDoubleClick={(args) => { handleDoubleClick(args.data) }}
+        dragStart={onDragStart}
+        dragStop={onDragStop}
       >
         <ColumnsDirective>
-          <ColumnDirective headerText="To Do" keyField="Open" headerTemplate={headerTemplate} />
-          <ColumnDirective headerText="In Progress" keyField="InProgress" headerTemplate={headerTemplate} />
-          <ColumnDirective headerText="Testing" keyField="Testing" headerTemplate={headerTemplate} />
-          <ColumnDirective headerText="Done" keyField="Close"/>
+          <ColumnDirective headerText="Pendiente" keyField="En espera" allowToggle={true} cssClass="e-column-key-Open" />
+          <ColumnDirective headerText="En desarrollo" keyField="En desarrollo" allowToggle={true} cssClass='in-progress-column' />
+          <ColumnDirective headerText="Por Revisar" keyField="Por Revisar" allowToggle={true} cssClass='testing-column' />
+          <ColumnDirective headerText="Cerrada" keyField="Cerrada" cssClass='done-column' />
         </ColumnsDirective>
       </KanbanComponent>
+      <DialogComponent
+        id="kanban_dialog"
+        header='Detalles de Tarea'
+        width='500px'
+        target='#kanban'
+        showCloseIcon={true}
+        close={handleCloseDialog}
+        closeOnEscape={true}
+        visible={dialogVisible}
+      >
+        <form>
+          <input type="text" id="ID" name="ID" className='hidden' defaultValue={idTarea} />
+          <div className="input-group mb-3 flex items-center ">
+            <label htmlFor="tarea" className='block text-sm font-semibold text-gray-800'>Tarea: </label>
+            <input className="w-full px-4 py-2 mt-2 text-black bg-white border rounded-md focus:border-indigo-400 focus:ring-indigo-300 focus:outline-none focus:ring focus:ring-opacity-40" placeholder=
+              "task" aria-label="Username" id="tarea" name='tarea' value={nombreTarea} spellCheck={false}
+              onChange={(e) => setNomTarea(e.target.value)} onKeyDown={handleKeyDownN} />
+          </div>
+          <div className="input-group mb-3 flex items-center ">
+            <label htmlFor="desc-tarea" className='block text-sm font-semibold text-gray-800'>Descripcion: </label>
+            <textarea type="text" spellCheck={false} className="w-full px-4 py-2 mt-2 text-black bg-white border rounded-md focus:border-indigo-400 focus:ring-indigo-300 focus:outline-none focus:ring focus:ring-opacity-40" placeholder=
+              "task-desc" rows={4} aria-label="Username" id="desc-tarea" name='desc-tarea'
+              value={descTarea} onChange={(e) => setDescTarea(e.target.value)} onKeyDown={handleKeyDownD}></textarea>
+          </div>
+          <div className="input-group mb-3 flex items-center ">
+            <label htmlFor="estado" className='block text-sm font-semibold text-gray-800'>Estado: </label>
+            <select id="estado" value={estadoTarea} name='estado' onChange={(e) => setEstadoTarea(e.target.value)} className="block w-full px-4 py-2 mt-2 text-black bg-white border rounded-md focus:border-indigo-400 focus:ring-indigo-300 focus:outline-none focus:ring focus:ring-opacity-40">
+              <option value="" >Selecciona una opción</option>
+              <option value="En espera" >En espera</option>
+              <option value="En desarrollo" >En desarrollo</option>
+              <option value="Por Revisar" >Por Revisar</option>
+              <option value="Cerrada" >Cerrada</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="FECHA_INICIO" className="block text-sm font-semibold text-gray-800">
+              Fecha de inicio
+            </label>
+            <input
+              type="date"
+              id="FECHA_INICIO"
+              name="FECHA_INICIO"
+              className="block w-full px-4 py-2 mt-6 text-black bg-white border rounded-md focus:border-indigo-400 focus:ring-indigo-300 focus:outline-none focus:ring focus:ring-opacity-40"
+              value={fechaiTarea}
+              onChange={(e) => setFechaITarea(e.target.value)}
+            />
+          </div>
+          <div>
+            <label htmlFor="FECHA_INICIO" className="block text-sm font-semibold text-gray-800">
+              Fecha Máxima de término
+            </label>
+            <input
+              type="date"
+              id="FECHA_TERMINO"
+              name="FECHA_TERMINO"
+              className="block w-full px-4 py-2 mt-6 text-black bg-white border rounded-md focus:border-indigo-400 focus:ring-indigo-300 focus:outline-none focus:ring focus:ring-opacity-40"
+              value={fechamTarea}
+              onChange={(e) => setFechaMTarea(e.target.value)}
+            />
+          </div>
+          <div className="e-footer-content">
+            <button type="button" className="e-control e-btn e-lib e-flat e-dialog-delete" onClick={handleDelete}>Eliminar</button>
+            <button type="button" className="e-control e-btn e-lib e-flat e-dialog-edit e-primary" onClick={handleSave}>Guardar</button>
+            <button type="button" className="e-control e-btn e-lib e-flat e-dialog-cancel" onClick={handleCloseDialog}>Cancelar</button>
+          </div>
+        </form>
+      </DialogComponent>
     </div>
   );
 };

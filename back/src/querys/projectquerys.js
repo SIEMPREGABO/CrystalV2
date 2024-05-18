@@ -306,13 +306,13 @@ export function getTareas(ID_ITERACION) {
             const query = 'SELECT MAX(c.ID_USUARIO) AS ID_USUARIO, c.ID_TAREA_REALIZADA,  MAX(c.ROL_REALIZADO) AS ROL_REALIZADO, MAX(t.ESTADO_DESARROLLO) AS ESTADO_DESARROLLO FROM COLABORACIONES c  JOIN TAREAS t ON c.ID_TAREA_REALIZADA = t.ID WHERE c.ID_ITERACION = 3 AND t.ESTADO_DESARROLLO NOT LIKE "cerrada" group by c.ID_TAREA_REALIZADA ;';
             const querytask = `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO,CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, CONVERT_TZ(FECHA_MAX_TERMINO, '+00:00', '-06:00') AS FECHA_MAX_TERMINO,NOMBRE,DESCRIPCION,ESTADO_DESARROLLO,ID_REQUERIMIENTO,DESCRIPCION FROM TAREAS WHERE ID_ITERACION = ? AND ESTADO_DESARROLLO NOT LIKE "cerrada"`;
             connection.query(querytask, [ID_ITERACION], async (err, results) => {
-                if(err){
+                if (err) {
                     reject(err)
-                }else{
-                    if(results.length > 0){
+                } else {
+                    if (results.length > 0) {
                         //console.log(results);
                         resolve(results);
-                    }else{
+                    } else {
                         //console.log("vacio");
                         resolve([]);
                     }
@@ -370,11 +370,35 @@ export function getTareas(ID_ITERACION) {
     })
 }
 
-export function GetTareasxIteracion(ID_PROYECTO){
+export function GetTareasKanban(ID_ITERACION) {
     return new Promise(async (resolve, reject) => {
-        try{
+        try {
             const connection = await getConnection();
-            
+
+            const kanbanquery = 'select c.ID_TAREA_REALIZADA, u.NOMBRE_USUARIO as Desarrollador, t.*, r.OBJETIVO FROM COLABORACIONES c JOIN USUARIO u ON c.ID_USUARIO=U.ID JOIN TAREAS t ON c.ID_TAREA_REALIZADA = t.ID JOIN REQUERIMIENTOS r  ON t.ID_REQUERIMIENTO = r.ID WHERE t.ID_ITERACION = ? ;'
+
+            connection.query(kanbanquery, [ID_ITERACION], async (err, results) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    if (results.length > 0) {
+                        resolve(results);
+                    } else {
+                        resolve([]);
+                    }
+                }
+            });
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
+export function GetTareasxIteracion(ID_PROYECTO) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const connection = await getConnection();
+
             const entregasquery = `
 SELECT 
     e.ID,
@@ -400,23 +424,91 @@ SELECT
 FROM entregas e 
 WHERE ID_PROYECTO = ?;
 `;
-            
+
             //const entregasquery = "SELECT e.ID, (SELECT JSON_ARRAYAGG(JSON_OBJECT('id', i.ID, 'tareas', (SELECT JSON_ARRAYAGG(JSON_OBJECT('nombre', nombre, 'est_desarr', estado_desarrollo)) FROM TAREAS WHERE ID_ITERACION = i.ID))) FROM iteraciones i WHERE ID_ENTREGA = e.ID) AS ITERACIONES FROM entregas e WHERE ID_PROYECTO = ?;";
             const iteracionesquery = "SELECT ID FROM ITERACIONES WHERE ID_ENTREGA = ?";
             const tareasquery = "SELECT NOMBRE, ESTADO_DESARROLLO FROM TAREAS WHERE ID_ITERACION = ?";
 
             connection.query(entregasquery, [ID_PROYECTO], async (err, results) => {
-                if(err){
+                if (err) {
                     reject(err);
-                }else{
-                    if(results.length > 0){
+                } else {
+                    if (results.length > 0) {
                         resolve(results);
-                    }else{
+                    } else {
                         resolve([]);
                     }
                 }
             });
-        }catch(error){
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
+export function DeleteTask(ID_TAREA) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const connection = await getConnection();
+            console.log("El ID EN LA QUERY ES: " + ID_TAREA)
+            const dependenttaskquery = "SELECT * FROM T_DEPENDE_T WHERE ID_TAREA_DEPENDIENTE = ?"
+            const deletetQuery = "DELETE FROM TAREAS WHERE ID = ?;"
+            const deletecQuery = "DELETE FROM COLABORACIONES WHERE ID_TAREA_REALIZADA = ?;"
+            connection.query(dependenttaskquery, [ID_TAREA], async (err, results) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    if (results.length > 0) {
+                        console.log("si hay tareas dependientes");
+                        reject("Esta tarea Tiene tareas que dependen de ella");
+                    } else {
+                        console.log("no hay tareas dependientes");
+                        connection.query(deletecQuery, [ID_TAREA], async (errc, resultsc) => {
+                            if (errc) {
+                                reject(errc);
+                            } else {
+                                if (resultsc.affectedRows > 0) {
+                                    console.log("eliminando colaboraciones");
+                                    connection.query(deletetQuery, [ID_TAREA], async (errt, resultst) => {
+                                        if (errt) {
+                                            reject(errt);
+                                        } else {
+                                            console.log("eliminando tarea");
+                                            resolve("Tarea Eliminada Correctamente");
+                                        }
+                                    });
+                                } else {
+                                    console.log("no hay resultados para esta tarea en colaboraciones")
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+export function UpdateTask(ID, NOMBRE, DESCRIPCION, ESTADO_DESARROLLO, FECHA_INICIO, FECHA_MAX_TERMINO) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const connection = await getConnection();
+            const updatequery = "UPDATE TAREAS SET NOMBRE=?, DESCRIPCION=?, ESTADO_DESARROLLO=?, FECHA_INICIO=?, FECHA_MAX_TERMINO=? WHERE ID = ?";
+
+            connection.query(updatequery, [NOMBRE, DESCRIPCION, ESTADO_DESARROLLO, FECHA_INICIO, FECHA_MAX_TERMINO, ID], async (err, results) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    if (results.affectedRows > 0) {
+                        resolve(true);
+                    } else {
+                        reject("Ha habido un problema al actualizar la tarea");
+                    }
+                }
+            });
+        } catch (error) {
             reject(error);
         }
     });
@@ -494,19 +586,46 @@ export function ActualizarEstadoTareas(ESTADO, ID) {
     return new Promise(async (resolve, reject) => {
         try {
             const connection = await getConnection();
-            const query = 'UPDATE TAREAS SET ESTADO_DESARROLLO = ? WHERE ID = ?';
-            connection.query(query, [ESTADO, ID], (err, results) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    if (results.affectedRows > 0) {
-                        resolve(true);
-                        console.log("Tarea id: ", ID, " se escuentra en: ", ESTADO);
+            let query = '';
+            if (ESTADO === "Cerrada") {
+                const now = new Date();
+
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0'); // Los meses comienzan desde 0
+                const day = String(now.getDate()).padStart(2, '0');
+
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                const fecha_termino = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+                query = 'UPDATE TAREAS SET ESTADO_DESARROLLO = ?, FECHA_TERMINO = ? WHERE ID = ?';
+                connection.query(query, [ESTADO, fecha_termino, ID], (err, results) => {
+                    if (err) {
+                        reject(err);
                     } else {
-                        resolve(false);
+                        if (results.affectedRows > 0) {
+                            resolve(true);
+                            console.log("Tarea id: ", ID, " se escuentra en: ", ESTADO);
+                        } else {
+                            resolve(false);
+                        }
                     }
-                }
-            })
+                })
+            } else {
+                query = 'UPDATE TAREAS SET ESTADO_DESARROLLO = ? WHERE ID = ?';
+                connection.query(query, [ESTADO, ID], (err, results) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        if (results.affectedRows > 0) {
+                            resolve(true);
+                            console.log("Tarea id: ", ID, " se escuentra en: ", ESTADO);
+                        } else {
+                            resolve(false);
+                        }
+                    }
+                })
+            }
         } catch (error) {
             reject(error);
         }
@@ -555,9 +674,9 @@ export function CrearTarea(NOMBRE, DESCRIPCION, FECHA_INICIO, FECHA_MAX_TERMINO,
     return new Promise(async (resolve, reject) => {
         try {
             let rol;
-            if(ROLPARTICIPANTE === "Diseñador Principal") rol = 1;
-            if(ROLPARTICIPANTE === "Diseñador") rol = 3;
-            if(ROLPARTICIPANTE === "Embajador") rol = 2;
+            if (ROLPARTICIPANTE === "Diseñador Principal") rol = 1;
+            if (ROLPARTICIPANTE === "Diseñador") rol = 3;
+            if (ROLPARTICIPANTE === "Embajador") rol = 2;
             const connection = await getConnection();
             const ESTADO_DESARROLLO = "En espera";
             const query = "INSERT INTO TAREAS(NOMBRE,DESCRIPCION,ESTADO_DESARROLLO,FECHA_INICIO,FECHA_MAX_TERMINO,ID_REQUERIMIENTO) VALUES (?,?,?,?,?,?,?);";
@@ -608,39 +727,39 @@ export function CrearTarea(NOMBRE, DESCRIPCION, FECHA_INICIO, FECHA_MAX_TERMINO,
     })
 }
 
-export function AgregarMensaje(CONTENIDO, FECHA, HORA, USUARIO, ITERACION){
+export function AgregarMensaje(CONTENIDO, FECHA, HORA, USUARIO, ITERACION) {
     return new Promise(async (resolve, reject) => {
         const connection = await getConnection();
-        const messagesquery = "INSERT INTO CHATS_ITERACIONES (CONTENIDO, FECHA_ENVIO, HORA_ENVIO, ID_USUARIO_ENVIA, ID_ITERACION) VALUES (?,?,?,?,?);";       
+        const messagesquery = "INSERT INTO CHATS_ITERACIONES (CONTENIDO, FECHA_ENVIO, HORA_ENVIO, ID_USUARIO_ENVIA, ID_ITERACION) VALUES (?,?,?,?,?);";
         console.log("AgregarMensaje pq");
-        connection.query(messagesquery, [CONTENIDO, FECHA, HORA, USUARIO, ITERACION], (error, results)=>{
-            if(error){
+        connection.query(messagesquery, [CONTENIDO, FECHA, HORA, USUARIO, ITERACION], (error, results) => {
+            if (error) {
                 console.log(error);
                 reject(error);
-            }else if(results.affectedRows > 0 ){
-                resolve({success: true});
-            }else{
+            } else if (results.affectedRows > 0) {
+                resolve({ success: true });
+            } else {
                 resolve({ success: false });
                 console.log(error);
             }
-        } );
+        });
     })
 }
 
-export function GetMessages(ID_iteracion){
+export function GetMessages(ID_iteracion) {
     return new Promise(async (resolve, reject) => {
-        try{
-        const connection = await getConnection();
-        const chatquery = 'SELECT c.*, u.NOMBRE_USUARIO FROM CHATS_ITERACIONES c JOIN  USUARIO u ON c.ID_USUARIO_ENVIA = u.ID WHERE ID_ITERACION = 1 ORDER BY c.HORA_ENVIO;';
+        try {
+            const connection = await getConnection();
+            const chatquery = 'SELECT c.*, u.NOMBRE_USUARIO FROM CHATS_ITERACIONES c JOIN  USUARIO u ON c.ID_USUARIO_ENVIA = u.ID WHERE ID_ITERACION = 1 ORDER BY c.HORA_ENVIO;';
 
-        connection.query(chatquery, [ID_iteracion], (error, results) => {
-            if (error) {
-                reject(error);
-            } else {
-                resolve(results);
-            }
-        });
-        }catch(error){
+            connection.query(chatquery, [ID_iteracion], (error, results) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(results);
+                }
+            });
+        } catch (error) {
             reject(error);
         }
     });

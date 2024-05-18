@@ -4,7 +4,8 @@ import { generarCodigo, generarEntregas } from '../libs/makerProject.js';
 import { agregarUsuario, crearProyecto, projectsUsuario, verificarCodigo, verificarUnion, 
 obtenerFechas, getParticipantsQuery, ActualizarEstado, obtenerFechasID, getRequerimientosEntrega, 
 AgregarRequerimiento, verificarUnionCorreo, verificarNumeroParticipantes, CrearTarea, getTareas, 
-obtenerFechasTareas, ActualizarEstadoTareas, AgregarMensaje, GetMessages, GetTareasxIteracion} from '../querys/projectquerys.js';
+obtenerFechasTareas, ActualizarEstadoTareas, AgregarMensaje, GetMessages, GetTareasxIteracion, GetTareasKanban,
+DeleteTask, UpdateTask} from '../querys/projectquerys.js';
 import jwt from 'jsonwebtoken'
 import { zonaHoraria } from '../config.js';
 import { createProjectToken } from '../libs/jwt.js';
@@ -145,7 +146,7 @@ export const getProject = async (req, res) => {
 
         const requerimientos = await getRequerimientosEntrega(ENTREGA_ACTUAL.ID);
         const tasks = await getTareas(ITERACION_ACTUAL.ID);
-
+        const tasksKanban = await GetTareasKanban(ITERACION_ACTUAL.ID);
         //console.log(requerimientos);
         const data = {
             fechasProyecto: FECHAS_PROYECTO,
@@ -155,7 +156,8 @@ export const getProject = async (req, res) => {
             iteracionActual: ITERACION_ACTUAL,
             participants: participants,
             requerimientos: requerimientos,
-            tasks: tasks
+            tasks: tasks,
+            tasksKanban: tasksKanban,
         };
         //console.log(data.tasks);
         return res.json(data);
@@ -223,6 +225,8 @@ export const createTask = async (req, res) => {
     }
 }
 
+
+
 export const getTask = async (req, res) => {
     const taskFound = await Task.findById(req.params.id)
 
@@ -231,22 +235,24 @@ export const getTask = async (req, res) => {
     res.json(taskFound)
 }
 
-export const updateTask = async (req, res) => {
-    const taskFound = await Task.updateOne(req.params.id, req.body, { new: true })
-
-    if (!taskFound) return res.status(404).json({ message: "Tarea no encontrada" })
-
-    res.json(taskFound)
-
-
-
-}
 
 export const deleteTask = async (req, res) => {
-    const taskFound = await Task.findByIdAndDelete(req.params.id)
-    if (!taskFound) return res.status(404).json({ message: "Tarea no encontrada" })
-    res.json({ message: "tarea eliminada" })
+    const deleteTask = await DeleteTask(req.body.ID);
+    if(!deleteTask.success) return res.status(400).json("Error al crear la tarea");
+    return res.status(200).json("Tarea Eliminada Correctamente");
     //res.json(taskFound)
+}
+
+export const updateTask = async (req, res) => {
+    const updTask = await UpdateTask(req.body.ID,req.body.NOMBRE, req.body.DESCRIPCION, req.body.ESTADO_DESARROLLO, req.body.FECHA_INICIO, req.body.FECHA_MAX_TERMINO);
+    if(!updTask.success) return res.status(400).json("Error al actualizar la tarea");
+    return res.status(200).json("Tarea Eliminada Correctamente");
+}
+
+export const updateTaskState = async (req, res) => {
+    const updTask = await ActualizarEstadoTareas(req.body.ESTADO_DESARROLLO, req.body.ID);
+    if(!updTask.success) return res.status(400).json("Error al actualizar la tarea");
+    return res.status(200).json("Tarea Eliminada Correctamente");
 }
 
 export const obtenerMensajes = async (req, res) => {

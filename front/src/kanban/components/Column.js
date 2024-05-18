@@ -5,7 +5,7 @@ import "./scroll.css";
 import { Droppable } from "react-beautiful-dnd";
 
 const Container = styled.div`
-  background-color: #ffffff;
+  background-color: #03AED2;
   border-radius: 2.5px;
   width: 300px;
   height: 475px;
