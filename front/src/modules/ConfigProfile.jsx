@@ -29,8 +29,9 @@ export const ConfigProfile = () => {
     return (
         <div>
             <Header />
-            <div className="relative flex flex-col justify-center min-h-screen overflow-hidden">
-                {message && <div class=" items-center bg-green-100 border-l-4 border-green-500 text-green-700  rounded-lg m-2 md:m-10 p-2 md:p-10 shadow-md" style={{ maxWidth: '600px' }}>
+            
+            <div className="relative d-flex flex-col justify-center align-items-center min-h-screen overflow-hidden">
+            {message && <div class=" items-center bg-green-100 border-l-4 border-green-500 text-green-700  rounded-lg m-2 md:m-10 p-2 md:p-10 shadow-md" style={{ maxWidth: '600px' }}>
                     <p class="text-lg font-semibold">{message}</p>
                 </div>
                 }
@@ -38,7 +39,7 @@ export const ConfigProfile = () => {
                     {autherrors}
                 </div>
                 }
-                <div className="6">
+                <div className="6 card p-5" style={{width: 50+"%"}}>
                     <h1 className="text-3xl font-semibold text-center text-indigo-700 underline uppercase ">
                         Configuración
                     </h1>

@@ -514,6 +514,39 @@ export function UpdateTask(ID, NOMBRE, DESCRIPCION, ESTADO_DESARROLLO, FECHA_INI
     });
 }
 
+export function getProjectInfo(ID_PROYECTO) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const connection = await getConnection();
+            const query = `SELECT
+            (SELECT count(ID_USUARIO) AS NUMPARTICIPANTES FROM U_SEUNE_P WHERE ID_PROYECTO = 1 GROUP BY ID_PROYECTO) AS NUMPARTICIPANTS,
+            (SELECT COUNT(e.ID) FROM Entregas e WHERE e.ID_PROYECTO = 1) AS NUMENTREGAS,
+            (SELECT COUNT(e.ID) FROM Entregas e WHERE e.ID_PROYECTO = 1 AND e.ESTADO = "Finalizado") AS NUMENTREGASCMP,
+            (SELECT COUNT(i.ID) FROM Iteraciones i JOIN Entregas e ON e.ID = i.ID_ENTREGA WHERE e.ID_PROYECTO = 1) AS NUMITERACIONES,
+            (SELECT COUNT(i.ID) FROM Iteraciones i JOIN Entregas e ON e.ID = i.ID_ENTREGA WHERE e.ID_PROYECTO = 1 AND i.ESTADO = "Finalizado") AS NUMITERACIONESCMP,
+            (SELECT COUNT(t.ID) FROM ENTREGAS e JOIN ITERACIONES i ON e.ID=i.ID_ENTREGA JOIN TAREAS t ON i.ID=t.ID_ITERACION WHERE e.ID_PROYECTO = 1) AS NUMTAREAS,
+            (SELECT COUNT(t.ID) FROM ENTREGAS e JOIN ITERACIONES i ON e.ID=i.ID_ENTREGA JOIN TAREAS t ON i.ID=t.ID_ITERACION WHERE e.ID_PROYECTO = 1 AND t.ESTADO_DESARROLLO = "Cerrada") AS NUMTAREASCMP,
+            (SELECT COUNT(t.ID) FROM ENTREGAS e JOIN ITERACIONES i ON e.ID=i.ID_ENTREGA JOIN TAREAS t ON i.ID=t.ID_ITERACION WHERE e.ID_PROYECTO = 1 AND t.ESTADO_DESARROLLO = "En espera") AS NUMTAREASESP,
+            (SELECT COUNT(t.ID) FROM ENTREGAS e JOIN ITERACIONES i ON e.ID=i.ID_ENTREGA JOIN TAREAS t ON i.ID=t.ID_ITERACION WHERE e.ID_PROYECTO = 1 AND t.ESTADO_DESARROLLO = "En desarrollo") AS NUMTAREASDES,
+            (SELECT COUNT(t.ID) FROM ENTREGAS e JOIN ITERACIONES i ON e.ID=i.ID_ENTREGA JOIN TAREAS t ON i.ID=t.ID_ITERACION WHERE e.ID_PROYECTO = 1 AND t.ESTADO_DESARROLLO = "Por Revisar") AS NUMTAREASREV;`;
+        
+            connection.query(query, [ID_PROYECTO,ID_PROYECTO, ID_PROYECTO, ID_PROYECTO], async (err, results) => {
+                if(err){
+                    reject(err);
+                }else{
+                    if(results.length > 0){
+                        resolve(results);
+                    }else{
+                        resolve([]);
+                    }
+                }
+            });
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
 export function getParticipantsQuery(ID_PROYECTO) {
     return new Promise(async (resolve, reject) => {
         try {
@@ -679,10 +712,10 @@ export function CrearTarea(NOMBRE, DESCRIPCION, FECHA_INICIO, FECHA_MAX_TERMINO,
             if (ROLPARTICIPANTE === "Embajador") rol = 2;
             const connection = await getConnection();
             const ESTADO_DESARROLLO = "En espera";
-            const query = "INSERT INTO TAREAS(NOMBRE,DESCRIPCION,ESTADO_DESARROLLO,FECHA_INICIO,FECHA_MAX_TERMINO,ID_REQUERIMIENTO) VALUES (?,?,?,?,?,?,?);";
+            const query = "INSERT INTO TAREAS(NOMBRE,DESCRIPCION,ESTADO_DESARROLLO,FECHA_INICIO,FECHA_MAX_TERMINO,ID_REQUERIMIENTO, ID_ITERACION) VALUES (?,?,?,?,?,?,?);";
             const queryColab = "INSERT INTO COLABORACIONES (ID_USUARIO, ID_ITERACION, ID_TAREA_REALIZADA, ROL_REALIZADO) VALUES (?,?,?,?)";
             const queryDependencia = "INSERT INTO T_DEPENDE_T (ID_TAREA_DEPENDIENTE, ID_SUBTAREA) VALUES (?,?)"
-            connection.query(query, [NOMBRE, DESCRIPCION, ESTADO_DESARROLLO, FECHA_INICIO, FECHA_MAX_TERMINO, ID_REQUERIMIENTO], (err, results) => {
+            connection.query(query, [NOMBRE, DESCRIPCION, ESTADO_DESARROLLO, FECHA_INICIO, FECHA_MAX_TERMINO, ID_REQUERIMIENTO, ID_iteracion], (err, results) => {
                 if (err) {
                     reject(err)
                     console.log("mamw", err)
@@ -750,7 +783,7 @@ export function GetMessages(ID_iteracion) {
     return new Promise(async (resolve, reject) => {
         try {
             const connection = await getConnection();
-            const chatquery = 'SELECT c.*, u.NOMBRE_USUARIO FROM CHATS_ITERACIONES c JOIN  USUARIO u ON c.ID_USUARIO_ENVIA = u.ID WHERE ID_ITERACION = 1 ORDER BY c.HORA_ENVIO;';
+            const chatquery = 'SELECT c.*, u.NOMBRE_USUARIO FROM CHATS_ITERACIONES c JOIN  USUARIO u ON c.ID_USUARIO_ENVIA = u.ID WHERE ID_ITERACION = 1 ORDER BY c.FECHA_ENVIO, c.HORA_ENVIO;';
 
             connection.query(chatquery, [ID_iteracion], (error, results) => {
                 if (error) {

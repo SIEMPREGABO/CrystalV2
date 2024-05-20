@@ -30,6 +30,7 @@ function AsignarTarea() {
       ID_TAREA_DEPENDIENTE: values.ID_TAREA_DEPENDIENTE,
       iteracionactual: iteracionactual
     }
+    //console.log(data);
     createTask(data);
   });
 
@@ -186,9 +187,9 @@ function AsignarTarea() {
                     className="block w-full px-4 py-2 mt-2 text-indigo-400 bg-white border rounded-md focus:border-indigo-400 focus:ring-indigo-300 focus:outline-none focus:ring focus:ring-opacity-40"
                     {...register("ID_TAREA_DEPENDIENTE", { required: true, message: "campo requerido" })}
                   >
-                    <option value="">Selecciona una tarea dependiente</option>
+                    <option value="0">Selecciona una tarea dependiente</option>
                     {tareas.map((tarea) => (
-                      <option value={tarea.ID}>{tarea.NOMBRE}</option>
+                      <option value={tarea.ID} key={tarea.ID}>{tarea.NOMBRE}</option>
                     ))}
                   </select>
                 </div>

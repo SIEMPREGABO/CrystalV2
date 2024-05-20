@@ -51,9 +51,6 @@ export const taskSchema = z.object({
     FECHA_INICIO: z.string().nonempty({
         required_error: 'La fecha de inicio es requerida'
     }),
-    FECHA_TERMINO: z.string().nonempty({
-        required_error: 'La fecha de inicio es requerida'
-    }),
     FECHA_MAX_TERMINO:z.string().nonempty({
         required_error: 'La fecha de inicio es requerida'
     })

@@ -5,7 +5,7 @@ import { agregarUsuario, crearProyecto, projectsUsuario, verificarCodigo, verifi
 obtenerFechas, getParticipantsQuery, ActualizarEstado, obtenerFechasID, getRequerimientosEntrega, 
 AgregarRequerimiento, verificarUnionCorreo, verificarNumeroParticipantes, CrearTarea, getTareas, 
 obtenerFechasTareas, ActualizarEstadoTareas, AgregarMensaje, GetMessages, GetTareasxIteracion, GetTareasKanban,
-DeleteTask, UpdateTask} from '../querys/projectquerys.js';
+DeleteTask, UpdateTask, getProjectInfo} from '../querys/projectquerys.js';
 import jwt from 'jsonwebtoken'
 import { zonaHoraria } from '../config.js';
 import { createProjectToken } from '../libs/jwt.js';
@@ -143,7 +143,7 @@ export const getProject = async (req, res) => {
                 }
             })
         });
-
+        const projectInfo = await getProjectInfo(ID_PROYECTO);
         const requerimientos = await getRequerimientosEntrega(ENTREGA_ACTUAL.ID);
         const tasks = await getTareas(ITERACION_ACTUAL.ID);
         const tasksKanban = await GetTareasKanban(ITERACION_ACTUAL.ID);
@@ -158,6 +158,7 @@ export const getProject = async (req, res) => {
             requerimientos: requerimientos,
             tasks: tasks,
             tasksKanban: tasksKanban,
+            projectInfo: projectInfo,
         };
         //console.log(data.tasks);
         return res.json(data);
@@ -197,16 +198,18 @@ export const createTask = async (req, res) => {
 
         //ITERACION VERIFICAR
         if(FECHA_INICIO_COMPLETA.isBefore(FECHA_INICIO_ITERACION)) return res.status(400).json({ message: ["La fecha inicial debe correponder a la iteracion actual"] });
+        console.log("fecha inicio validada");
         if(FECHA_MAXIMA_COMPLETA.isAfter(FECHA_TERMINO_ITERACION)) return res.status(400).json({ message: ["La fecha max debe correponder a la iteracion actual"] });
-        
+        console.log("fecha maxima validada");
         //FECHAS VERIFICAR
-        if (FECHA_INICIO_COMPLETA.isBefore(FECHA_ACTUAL)) return res.status(400).json({ message: ["Fecha inicial incorrecta"] });
+        //if (FECHA_INICIO_COMPLETA.isBefore(FECHA_ACTUAL)) return res.status(400).json({ message: ["Fecha inicial incorrecta"] });
+        console.log("fecha inicio validada 2");
         //if (FECHA_ENTREGA_COMPLETA.isBefore(FECHA_INICIO_COMPLETA)) return res.status(400).json({ message: ["Fecha final incorrecta"] });
-        if (FECHA_MAXIMA_COMPLETA.isBefore(FECHA_ENTREGA_COMPLETA)) return res.status(400).json({ message: ["Fecha final maxima incorrecta"] });
+        //if (FECHA_MAXIMA_COMPLETA.isBefore(FECHA_ENTREGA_COMPLETA)) return res.status(400).json({ message: ["Fecha final maxima incorrecta"] });
+        console.log("fecha maxima validada 2");
         
-        
-        const MINUTOS_DIFERENCIA = FECHA_ENTREGA_COMPLETA.diff(FECHA_INICIO_COMPLETA, 'minutes');
-        if (MINUTOS_DIFERENCIA < 120) return res.status(400).json({ message: ["Diferencia minimo de 2 horas entre el inicio y la entrega"] });
+        //const MINUTOS_DIFERENCIA = FECHA_ENTREGA_COMPLETA.diff(FECHA_INICIO_COMPLETA, 'minutes');
+        //if (MINUTOS_DIFERENCIA < 120) return res.status(400).json({ message: ["Diferencia minimo de 2 horas entre el inicio y la entrega"] });
         //const MINUTOS_DIFERENCIA_MAX = FECHA_MAXIMA_COMPLETA.diff(FECHA_ENTREGA_COMPLETA, 'minutes');
         //if (MINUTOS_DIFERENCIA_MAX < 120) return res.status(400).json({ message: ["Diferencia minimo de 2 horas en la hora maxima"] });
         
@@ -217,10 +220,11 @@ export const createTask = async (req, res) => {
         console.log("Controller function createTask");
         
         const tareacreada = await CrearTarea(NOMBRE, DESCRIPCION, REGISTRO_INICIO, REGISTRO_MAX, iteracionactual.ID, ID_USUARIO, ID_REQUERIMIENTO, ROLPARTICIPANTE, ID_TAREA_DEPENDIENTE); 
-        if(!tareacreada.success) return res.status(400).json("Error al crear la tarea");
+        if(!tareacreada.success) return res.status(400).json({message: "Error al crear la tarea"});
         return res.status(200).json({message: ["Tarea creada con exito"]});
         
     } catch (error) {
+        console.log(error);
         res.status(500).json({ mensaje: ["Error inesperado, intentalo nuevamente"] });
     }
 }
@@ -341,7 +345,7 @@ export const agregarRequerimiento = async (req, res) =>{
         const agregar_requerimiento = await AgregarRequerimiento(OBJETIVO, DESCRIPCION, TIPO, ID_ENTREGA);
 
         if(!agregar_requerimiento.success) res.status(500).json({ mensaje: ["Error al agregar el requerimiento"] });
-        return res.status(200).json({ messsage: ["Requerimiento creado con éxito"] });
+        return res.status(200).json({ messsage: ["Requerimiento creado con éxito"], status: "OK" });
     }catch(error){
         res.status(500).json({ message: [error.message] });
     }
