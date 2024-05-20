@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs'
 import { createAccessToken, createPasswordToken } from '../libs/jwt.js';
 import jwt from 'jsonwebtoken';
 import { SECRET_TOKEN, SECRETPASS_TOKEN } from '../config.js';
-import { sendemailInvite, sendemailReset } from '../middlewares/send.mail.js';
+import { sendemailInvite, sendemailRegister, sendemailReset } from '../middlewares/send.mail.js';
 import { actualizarPass, correoUsuario, agregarUsuario, autenticarUsuario, extraerUsuario, verificarNombre, verificarUsuario, cambiarContrasenia, actualizarUsuario, actualizarUsuarioNombre } from '../querys/authquerys.js';
 import moment from 'moment-timezone';
 
@@ -25,6 +25,9 @@ export const register = async (req, res) => {
         //Agrega el usuario a la base
         const agregar = await agregarUsuario(CORREO, NOMBRE_USUARIO, passwordHash, NOMBRE_PILA, APELLIDO_PATERNO, APELLIDO_MATERNO, TELEFONO, NUMERO_BOLETA)
         if (!agregar) res.status(500).json({ message: ["Error del servidor, intentelo nuevamente"] });
+
+        const emailsendend = await sendemailRegister(CORREO,NOMBRE_USUARIO);
+
 
         res.json({
             message: ["Usuario registrado"]

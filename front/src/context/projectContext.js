@@ -3,7 +3,7 @@ import { createContext, useContext, useState } from "react";
 import { requestVerify } from "../requests/auth.js";
 import { requestCreate, requestJoin, requestProjects, requestPermissions, requestgetProject, 
   requestAddRequirement, requestCreateTask, requestAdd,requestDelete, 
-  requestAddMessage, requestMessages, 
+  requestAddMessage, requestMessages, requestDeleteTask, requestUpdateTask, requestUpdateTState,
   requestTasksProject,requestConfig} from "../requests/projectReq.js";
 import Cookies from "js-cookie";
 import { useAuth } from "./authContext.js";
@@ -36,7 +36,7 @@ export const ProjectProvider = ({ children }) => {
   const [tareas, setTareas] = useState([]);
   const [scheduleData, setScheduleData] = useState([]);
 
-
+  const [tareasKanban, setTareasKanban] = useState([]);
   const [entregaactual, setEntregaactual] = useState([]);
   const [iteracionactual, setiteracionactual] = useState([]);
   const [requerimientos, setRequerimientos] = useState([]);
@@ -107,6 +107,46 @@ export const ProjectProvider = ({ children }) => {
       if (error.response && error.response.data && error.response.data.message) {
         setProjecterrors(error.response.data.message);
         console.log(error.response.data.message);
+      } else {
+        setProjecterrors("Error del servidor");
+      }
+    }
+  }
+
+  const deleteTask = async (Task) => {
+    try{
+      console.log(Task);
+      const res = await requestDeleteTask(Task);
+      console.log(res.data.message);
+    }catch(error){
+      if (error.response && error.response.data && error.response.data.message) {
+        setProjecterrors(error.response.data.message);
+      } else {
+        setProjecterrors("Error del servidor");
+      }
+    }
+  }
+
+  const updateTaskState = async (Task) => {
+    try {
+      const res = await requestUpdateTState(Task);
+      console.log(res.data.message);
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.message) {
+        setProjecterrors(error.response.data.message);
+      } else {
+        setProjecterrors("Error del servidor");
+      }
+    }
+  }
+
+  const updateTask = async (Task) => {
+    try{
+      const res = await requestUpdateTask(Task);
+      console.log(res.data.message);
+    }catch(error){
+      if (error.response && error.response.data && error.response.data.message) {
+        setProjecterrors(error.response.data.message);
       } else {
         setProjecterrors("Error del servidor");
       }
@@ -249,6 +289,7 @@ export const ProjectProvider = ({ children }) => {
       
       setRequerimientos(res.data.requerimientos);
       setTareas(res.data.tasks)
+      setTareasKanban(res.data.tasksKanban)
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
         setProjecterrors(error.response.data.message);
@@ -334,6 +375,7 @@ export const ProjectProvider = ({ children }) => {
         
         participants,
         entregasproject,
+        tareasKanban,
         
         fechasproject,
         fechasentregas,
@@ -369,7 +411,11 @@ export const ProjectProvider = ({ children }) => {
         addParticipant,
         createMessages,
         getMessages,
-        getTasksProject
+        getTasksProject,
+        deleteTask,
+        updateTask,
+        setTareasKanban,
+        updateTaskState
       }}
     >
       {children}

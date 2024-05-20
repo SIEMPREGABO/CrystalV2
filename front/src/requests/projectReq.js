@@ -13,3 +13,6 @@ export const requestMessages = async iteracion => axios.post('/getMessages', ite
 export const requestDelete = async id => axios.post('/deleteParticipant', id);
 export const requestTasksProject = async project => axios.post('/getProjectTasks', project);
 export const requestConfig = async fechas => axios.post(`/configProject`,fechas);
+export const requestDeleteTask = async task => axios.post('/deleteTask', task);
+export const requestUpdateTask = async task => axios.post('/updateTask', task);
+export const requestUpdateTState = async task => axios.post('/updateState', task);

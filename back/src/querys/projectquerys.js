@@ -139,6 +139,26 @@ export function verificarUnionCorreo(ID_PROYECTO, CORREO) {
     });
 }
 
+export function getUser(ID_USUARIO){
+    return new Promise(async (resolve, reject) => {
+        try{
+            const connection = await getConnection();
+            const query = 'SELECT CORREO FROM USUARIO WHERE ID = ?';
+            connection.query(query, [ID_USUARIO], (err, results)=>{
+                if(err){
+                    reject(err)
+                }else{
+                    if(results.length > 0){
+                        resolve(results);
+                    }
+                }
+            })
+        }catch(error){
+            reject(error);
+        }
+    });
+}
+
 /*
 export function RegistarConfigQuery(PROYECTO, ENTREGAS, ITERACIONES) {
     return new Promise(async (resolve, reject) => {
@@ -544,61 +564,119 @@ WHERE ID_PROYECTO = ?;
         return new Promise(async (resolve, reject) => {
             try {
                 const connection = await getConnection();
-                const query = 'SELECT ID_ITERACION ,ID_USUARIO, ID_TAREA_REALIZADA, ROL_REALIZADO FROM COLABORACIONES WHERE ID_ITERACION = ?';
-                const querytask = `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO,CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, CONVERT_TZ(FECHA_MAX_TERMINO, '+00:00', '-06:00') AS FECHA_MAX_TERMINO,NOMBRE,DESCRIPCION,ESTADO_DESARROLLO,ID_REQUERIMIENTO,DESCRIPCION FROM TAREAS WHERE ID = ?`;
-                connection.query(query, [ID_ITERACION], async (err, results) => {
+                const query = 'SELECT MAX(c.ID_USUARIO) AS ID_USUARIO, c.ID_TAREA_REALIZADA,  MAX(c.ROL_REALIZADO) AS ROL_REALIZADO, MAX(t.ESTADO_DESARROLLO) AS ESTADO_DESARROLLO FROM COLABORACIONES c  JOIN TAREAS t ON c.ID_TAREA_REALIZADA = t.ID WHERE c.ID_ITERACION = 3 AND t.ESTADO_DESARROLLO NOT LIKE "cerrada" group by c.ID_TAREA_REALIZADA ;';
+                const querytask = `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO,CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, CONVERT_TZ(FECHA_MAX_TERMINO, '+00:00', '-06:00') AS FECHA_MAX_TERMINO,NOMBRE,DESCRIPCION,ESTADO_DESARROLLO,ID_REQUERIMIENTO,DESCRIPCION FROM TAREAS WHERE ID_ITERACION = ? AND ESTADO_DESARROLLO NOT LIKE "cerrada"`;
+                connection.query(querytask, [ID_ITERACION], async (err, results) => {
                     if (err) {
-                        reject(err);
+                        reject(err)
                     } else {
                         if (results.length > 0) {
-                            const taskspromises = results.map(async (result) => {
-                                const ID_TAREA = result.ID_TAREA_REALIZADA;
-                                const taskData = await new Promise((resolve, reject) => {
-                                    connection.query(querytask, [ID_TAREA], (err, taskResults) => {
-                                        if (err) {
-                                            reject(err);
-                                        } else {
-                                            resolve({
-                                                NOMBRE: taskResults[0].NOMBRE,
-                                                ID: taskResults[0].ID,
-                                                ESTADO_DESARROLLO: taskResults[0].ESTADO_DESARROLLO,
-                                                FECHA_INICIO: taskResults[0].FECHA_INICIO,
-                                                FECHA_TERMINO: taskResults[0].FECHA_TERMINO,
-                                                FECHA_MAX_TERMINO: taskResults[0].FECHA_MAX_TERMINO,
-                                                ID_REQUERIMIENTO: taskResults[0].ID_REQUERIMIENTO,
-                                                DESCRIPCION: taskResults[0].DESCRIPCION
-                                            });
-                                        }
-                                    });
-                                });
-                                return {
-                                    NOMBRE: taskData.NOMBRE,
-                                    ID: taskData.ID,
-                                    ESTADO_DESARROLLO: taskData.ESTADO_DESARROLLO,
-                                    FECHA_INICIO: taskData.FECHA_INICIO,
-                                    FECHA_TERMINO: taskData.FECHA_TERMINO,
-                                    FECHA_MAX_TERMINO: taskData.FECHA_MAX_TERMINO,
-                                    ID_REQUERIMIENTO: taskData.ID_REQUERIMIENTO,
-                                    DESCRIPCION: taskData.DESCRIPCION
-                                };
-                            })
-                            Promise.all(taskspromises)
-                                .then((task) => {
-                                    resolve(task);
-                                })
-                                .catch((err) => {
-                                    reject(err);
-                                });
+                            //console.log(results);
+                            resolve(results);
                         } else {
+                            //console.log("vacio");
                             resolve([]);
                         }
                     }
-                })
+                });
             } catch (error) {
                 reject(error);
             }
         })
     }
+
+    export function DeleteTask(ID_TAREA) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const connection = await getConnection();
+                console.log("El ID EN LA QUERY ES: " + ID_TAREA)
+                const dependenttaskquery = "SELECT * FROM T_DEPENDE_T WHERE ID_TAREA_DEPENDIENTE = ?"
+                const deletetQuery = "DELETE FROM TAREAS WHERE ID = ?;"
+                const deletecQuery = "DELETE FROM COLABORACIONES WHERE ID_TAREA_REALIZADA = ?;"
+                connection.query(dependenttaskquery, [ID_TAREA], async (err, results) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        if (results.length > 0) {
+                            console.log("si hay tareas dependientes");
+                            reject("Esta tarea Tiene tareas que dependen de ella");
+                        } else {
+                            console.log("no hay tareas dependientes");
+                            connection.query(deletecQuery, [ID_TAREA], async (errc, resultsc) => {
+                                if (errc) {
+                                    reject(errc);
+                                } else {
+                                    if (resultsc.affectedRows > 0) {
+                                        console.log("eliminando colaboraciones");
+                                        connection.query(deletetQuery, [ID_TAREA], async (errt, resultst) => {
+                                            if (errt) {
+                                                reject(errt);
+                                            } else {
+                                                console.log("eliminando tarea");
+                                                resolve("Tarea Eliminada Correctamente");
+                                            }
+                                        });
+                                    } else {
+                                        console.log("no hay resultados para esta tarea en colaboraciones")
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            } catch (error) {
+                reject(error);
+            }
+        })
+    }
+    
+    export function UpdateTask(ID, NOMBRE, DESCRIPCION, ESTADO_DESARROLLO, FECHA_INICIO, FECHA_MAX_TERMINO) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const connection = await getConnection();
+                const updatequery = "UPDATE TAREAS SET NOMBRE=?, DESCRIPCION=?, ESTADO_DESARROLLO=?, FECHA_INICIO=?, FECHA_MAX_TERMINO=? WHERE ID = ?";
+    
+                connection.query(updatequery, [NOMBRE, DESCRIPCION, ESTADO_DESARROLLO, FECHA_INICIO, FECHA_MAX_TERMINO, ID], async (err, results) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        if (results.affectedRows > 0) {
+                            resolve(true);
+                        } else {
+                            reject("Ha habido un problema al actualizar la tarea");
+                        }
+                    }
+                });
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    export function GetTareasKanban(ID_ITERACION) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const connection = await getConnection();
+    
+                const kanbanquery = 'select c.ID_TAREA_REALIZADA, u.NOMBRE_USUARIO as Desarrollador, t.*, r.OBJETIVO FROM COLABORACIONES c JOIN USUARIO u ON c.ID_USUARIO=U.ID JOIN TAREAS t ON c.ID_TAREA_REALIZADA = t.ID JOIN REQUERIMIENTOS r  ON t.ID_REQUERIMIENTO = r.ID WHERE t.ID_ITERACION = ? ;'
+    
+                connection.query(kanbanquery, [ID_ITERACION], async (err, results) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        if (results.length > 0) {
+                            resolve(results);
+                        } else {
+                            resolve([]);
+                        }
+                    }
+                });
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+    
 
     export function getParticipantsQuery(ID_PROYECTO) {
         return new Promise(async (resolve, reject) => {
@@ -680,19 +758,46 @@ WHERE ID_PROYECTO = ?;
         return new Promise(async (resolve, reject) => {
             try {
                 const connection = await getConnection();
-                const query = 'UPDATE TAREAS SET ESTADO_DESARROLLO = ? WHERE ID = ?';
-                connection.query(query, [ESTADO, ID], (err, results) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        if (results.affectedRows > 0) {
-                            resolve(true);
-                            console.log("Tarea id: ", ID, " se escuentra en: ", ESTADO);
+                let query = '';
+                if (ESTADO === "Cerrada") {
+                    const now = new Date();
+    
+                    const year = now.getFullYear();
+                    const month = String(now.getMonth() + 1).padStart(2, '0'); // Los meses comienzan desde 0
+                    const day = String(now.getDate()).padStart(2, '0');
+    
+                    const hours = String(now.getHours()).padStart(2, '0');
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    const seconds = String(now.getSeconds()).padStart(2, '0');
+                    const fecha_termino = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+                    query = 'UPDATE TAREAS SET ESTADO_DESARROLLO = ?, FECHA_TERMINO = ? WHERE ID = ?';
+                    connection.query(query, [ESTADO, fecha_termino, ID], (err, results) => {
+                        if (err) {
+                            reject(err);
                         } else {
-                            resolve(false);
+                            if (results.affectedRows > 0) {
+                                resolve(true);
+                                console.log("Tarea id: ", ID, " se escuentra en: ", ESTADO);
+                            } else {
+                                resolve(false);
+                            }
                         }
-                    }
-                })
+                    })
+                } else {
+                    query = 'UPDATE TAREAS SET ESTADO_DESARROLLO = ? WHERE ID = ?';
+                    connection.query(query, [ESTADO, ID], (err, results) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            if (results.affectedRows > 0) {
+                                resolve(true);
+                                console.log("Tarea id: ", ID, " se escuentra en: ", ESTADO);
+                            } else {
+                                resolve(false);
+                            }
+                        }
+                    })
+                }
             } catch (error) {
                 reject(error);
             }

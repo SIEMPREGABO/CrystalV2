@@ -31,7 +31,8 @@ export const FormProyect = () => {
             FECHA_INICIO: values.FECHA_INICIO,
             FECHA_TERMINO: values.FECHA_TERMINO,
             ENTREGAS: values.ENTREGAS,
-            ID: user.ID
+            ID: user.ID,
+            CORREO: user.CORREO
         }
         create(data);
     })

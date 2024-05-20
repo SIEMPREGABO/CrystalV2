@@ -3,6 +3,7 @@ import { useProject } from '../context/projectContext';
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { taskSchema } from '../schemas/project';
+import { useAuth } from '../context/authContext';
 
 function AsignarTarea() {
   const {
@@ -12,6 +13,8 @@ function AsignarTarea() {
   } = useForm({
     resolver: zodResolver(taskSchema)
   });
+
+  const {user} = useAuth();
   // la funcion creatTask
   //Agregar a la tarea la tarea dependiente y el requerimiento que cumple y rol, a quien se asigna
   const { fechasproject, message, setProjecterrors, setMessage, iteracionactual, createTask, participants, requerimientos, projecterrors, tareas } = useProject();
@@ -28,7 +31,8 @@ function AsignarTarea() {
       ROLPARTICIPANTE: values.ROLPARTICIPANTE,
       ID_USUARIO: values.ID_USUARIO,
       ID_TAREA_DEPENDIENTE: values.ID_TAREA_DEPENDIENTE,
-      iteracionactual: iteracionactual
+      iteracionactual: iteracionactual,
+      CORREO: user.CORREO
     }
     createTask(data);
   });

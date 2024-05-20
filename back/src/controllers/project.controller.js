@@ -7,19 +7,22 @@ import {
     AgregarRequerimiento, verificarUnionCorreo, verificarNumeroParticipantes, CrearTarea, getTareas,
     obtenerFechasTareas, ActualizarEstadoTareas, AgregarMensaje, GetMessages,
     eliminarParticipante,
-    GetTareasxIteracion,
+    GetTareasxIteracion, GetTareasKanban,
+    DeleteTask, UpdateTask,
     getTareaDependiente,
     obtenerTareasDep,
     obtenerFechasConfigID,
-    ActualizarFechasQuery
+    ActualizarFechasQuery,
+    getUser
 } from '../querys/projectquerys.js';
 import jwt from 'jsonwebtoken'
 import { zonaHoraria } from '../config.js';
 import { createProjectToken } from '../libs/jwt.js';
+import { sendemailAdd, sendemailJoin, sendemailProject, sendemailTask } from '../middlewares/send.mail.js';
 
 export const createProject = async (req, res) => {
     const FECHA_ACTUAL = moment().tz(zonaHoraria);
-    const { NOMBRE_PROYECTO, OBJETIVO, DESCRIPCION_GNRL, FECHA_INICIO, FECHA_TERMINO, ENTREGAS, ID } = req.body;
+    const { NOMBRE_PROYECTO, OBJETIVO, DESCRIPCION_GNRL, FECHA_INICIO, FECHA_TERMINO, ENTREGAS, ID, CORREO } = req.body;
     console.log(req.body);
     try {
         const FECHA_INICIAL = moment(FECHA_INICIO).tz(zonaHoraria).add(1, 'days');
@@ -44,6 +47,10 @@ export const createProject = async (req, res) => {
 
         const ARREGLOPROYECTO = generarEntregas(ENTREGAS, FECHA_INICIAL, FECHA_FINAL, generarProyecto.ID_P);
         if (!ARREGLOPROYECTO) return res.status(400).json({ message: ["Error al crear las entregas e iteraciones"] });
+
+        const emailsendend = await sendemailProject(CORREO, NOMBRE_PROYECTO, OBJETIVO, REGISTRO_INICIAL, REGISTRO_FINAL, CODIGO_UNICO);
+        if (!emailsendend) return res.status(400).json({ message: ["Error inesperado, intente nuevamente"] })
+
         return res.status(200).json({ message: ["Proyecto creado con exito"] });
     } catch (error) {
         res.status(500).json({ message: [error.message] });
@@ -95,6 +102,9 @@ export const joinProject = async (req, res) => {
         if (registrado.success) return res.status(400).json({ message: ["Ya estas participando en el proyecto"] })
         const union = await agregarUsuario(REGISTRO_ACTUAL, ES_CREADOR, proyecto.project[0].ID, ID_USUARIO);
         if (!union.success) return res.status(500).json({ message: ["Usuario agregado con exito"] });
+        const emailsendend = await sendemailJoin(CORREO, proyecto.project[0]);
+        if (!emailsendend) return res.status(400).json({ message: ["Error inesperado, intente nuevamente"] })
+
         return res.status(200).json({ message: ["Enlazado a proyecto correctamente"] });
     } catch (error) {
         return res.status(500).json({ message: ["Error inesperado, intentalo de nuevo"] });
@@ -153,6 +163,7 @@ export const getProject = async (req, res) => {
 
         const requerimientos = await getRequerimientosEntrega(ENTREGA_ACTUAL.ID);
         const tasks = await getTareas(ITERACION_ACTUAL.ID);
+        const tasksKanban = await GetTareasKanban(ITERACION_ACTUAL.ID);
 
         const data = {
             fechasProyecto: FECHAS_PROYECTO,
@@ -162,7 +173,8 @@ export const getProject = async (req, res) => {
             iteracionactual: ITERACION_ACTUAL,
             participants: participants,
             requerimientos: requerimientos,
-            tasks: tasks
+            tasks: tasks,
+            tasksKanban: tasksKanban,
         };
         return res.json(data);
     } catch (error) {
@@ -426,9 +438,27 @@ export const configurarProyecto = async (req, res) => {
     }
 }
 
+export const deleteTask = async (req, res) => {
+    const deleteTask = await DeleteTask(req.body.ID);
+    if(!deleteTask.success) return res.status(400).json("Error al crear la tarea");
+    return res.status(200).json("Tarea Eliminada Correctamente");
+    //res.json(taskFound)
+}
+
+export const updateTask = async (req, res) => {
+    const updTask = await UpdateTask(req.body.ID,req.body.NOMBRE, req.body.DESCRIPCION, req.body.ESTADO_DESARROLLO, req.body.FECHA_INICIO, req.body.FECHA_MAX_TERMINO);
+    if(!updTask.success) return res.status(400).json("Error al actualizar la tarea");
+    return res.status(200).json("Tarea Eliminada Correctamente");
+}
+
+export const updateTaskState = async (req, res) => {
+    const updTask = await ActualizarEstadoTareas(req.body.ESTADO_DESARROLLO, req.body.ID);
+    if(!updTask.success) return res.status(400).json("Error al actualizar la tarea");
+    return res.status(200).json("Tarea Eliminada Correctamente");
+}
 
 export const createTask = async (req, res) => {
-    const { NOMBRE, DESCRIPCION, FECHA_INICIO, HORAINICIO, HORAMAXIMA, FECHA_MAX_TERMINO, iteracionactual, ID_USUARIO, ID_REQUERIMIENTO, ROLPARTICIPANTE, ID_TAREA_DEPENDIENTE } = req.body
+    const { NOMBRE, DESCRIPCION, FECHA_INICIO, HORAINICIO, HORAMAXIMA, FECHA_MAX_TERMINO, iteracionactual, ID_USUARIO, ID_REQUERIMIENTO, ROLPARTICIPANTE, ID_TAREA_DEPENDIENTE, CORREO } = req.body
     //console.log(req.body);
     const FECHA_ACTUAL_SIS = moment().format('YYYY-MM-DD HH:mm:ss');
     const FECHA_ACTUAL = moment.utc(FECHA_ACTUAL_SIS);
@@ -472,6 +502,13 @@ export const createTask = async (req, res) => {
 
         const tareacreada = await CrearTarea(NOMBRE, DESCRIPCION, REGISTRO_INICIO, REGISTRO_MAX, iteracionactual.ID, ID_USUARIO, ID_REQUERIMIENTO, ROLPARTICIPANTE, ID_TAREA_DEPENDIENTE);
         if (!tareacreada.success) return res.status(400).json("Error al crear la tarea");
+        
+        const usuario = await getUser(ID_USUARIO);
+
+
+        const emailsendend = await sendemailTask(usuario[0].CORREO, NOMBRE, DESCRIPCION,REGISTRO_INICIO, REGISTRO_MAX,ROLPARTICIPANTE);
+        if (!emailsendend) return res.status(400).json({ message: ["Error inesperado, intente nuevamente"] })
+
         return res.status(200).json({ message: ["Tarea creada con exito"] });
 
     } catch (error) {
@@ -492,6 +529,11 @@ export const addParticipant = async (req, res) => {
         if (!numeroParticipantes.success) return res.status(400).json({ message: ["Numero maximo de participantes alcanzado"] });
         const union = await agregarUsuario(REGISTRO_ACTUAL, ES_CREADOR, ID_PROYECTO, registrado.ID_USUARIO);
         if (!union.success) return res.status(500).json({ message: ["Usuario no agregado con exito"] });
+        const FECHAS_PROYECTO = await obtenerFechasID("PROYECTOS", ID_PROYECTO);
+
+        const emailsendend = await sendemailAdd(CORREO, FECHAS_PROYECTO[0]);
+        if (!emailsendend) return res.status(400).json({ message: ["Error inesperado, intente nuevamente"] })
+
         return res.status(200).json({ message: ["Enlazado a proyecto correctamente"] });
     } catch (error) {
         res.status(500).json({ mensaje: ["Error inesperado, intentalo nuevamente"] });
