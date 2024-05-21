@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs'
 import { createAccessToken, createPasswordToken } from '../libs/jwt.js';
 import jwt from 'jsonwebtoken';
 import { SECRET_TOKEN, SECRETPASS_TOKEN } from '../config.js';
-import { sendemailInvite, sendemailRegister, sendemailReset } from '../middlewares/send.mail.js';
+import { sendemailRegister, sendemailReset } from '../middlewares/send.mail.js';
 import { actualizarPass, correoUsuario, agregarUsuario, autenticarUsuario, extraerUsuario, verificarNombre, verificarUsuario, cambiarContrasenia, actualizarUsuario, actualizarUsuarioNombre } from '../querys/authquerys.js';
 import moment from 'moment-timezone';
 

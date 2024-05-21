@@ -11,6 +11,7 @@ export const requestAddRequirement = async project => axios.post('/addRequiremen
 export const requestAddMessage = async message => axios.post('/addMessage', message);
 export const requestMessages = async iteracion => axios.post('/getMessages', iteracion);
 export const requestDelete = async id => axios.post('/deleteParticipant', id);
+export const requestDelegar = async id => axios.post('/delegarParticipant', id);
 export const requestTasksProject = async project => axios.post('/getProjectTasks', project);
 export const requestConfig = async fechas => axios.post(`/configProject`,fechas);
 export const requestDeleteTask = async task => axios.post('/deleteTask', task);

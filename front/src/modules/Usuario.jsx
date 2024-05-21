@@ -10,6 +10,7 @@ import { useProject } from '../context/projectContext';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { addSchema } from '../schemas/project';
+import { useAuth } from '../context/authContext';
 
 const employeesGrid = [
   { field: 'NOMBRE_USUARIO', headerText: 'Nombre de Usuario', width: '150', textAlign: 'Center' },
@@ -31,6 +32,7 @@ const employeesGrid = [
 const Usuario = () => {
 
   const { id } = useParams();
+  const {user} = useAuth();
 
   const {
     register,
@@ -40,7 +42,7 @@ const Usuario = () => {
     resolver: zodResolver(addSchema)
   });
 
-  const { projecterrors, message, fechasproject, addParticipant, participants, deleteParticipant } = useProject();
+  const { projecterrors, message, fechasproject, addParticipant, participants, deleteParticipant, delegarParticipant } = useProject();
 
   const onSubmit = handleSubmit(async (values) => {
     const data = {
@@ -70,6 +72,20 @@ const Usuario = () => {
 
   };
 
+  const handleDelegarClick = async (args) => {
+    const data = {
+      ID: args.ID_USUARIO,
+      ID_PROYECTO: id,
+      ID_admin: user.ID
+    }
+    delegarParticipant(data);
+
+    const timer = setTimeout(() => {
+      window.location.href = '/';
+    }, 5000);
+    return () => clearTimeout(timer);
+
+  };
 
 
   return (
@@ -94,7 +110,6 @@ const Usuario = () => {
           allowDeleting={true}
           toolbar={['Search']}
           width="auto"
-          deleteClick={handleDeleteClick}
         >
           <ColumnsDirective>
             {employeesGrid.map((item, index) => (
@@ -110,6 +125,21 @@ const Usuario = () => {
                   <button
                     className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-2 rounded-full"
                     onClick={() => handleDeleteClick(props)}>Eliminar
+                  </button>
+                )
+              )}
+            />
+
+            <ColumnDirective
+              headerText='Delegar'
+              field='Delegar'
+              width='120'
+              textAlign='Center'
+              template={(props) => (
+                props.ROLE === 0 && (
+                  <button
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-2 rounded-full"
+                    onClick={() => handleDelegarClick(props)}>Delegar
                   </button>
                 )
               )}

@@ -4,7 +4,8 @@ import { requestVerify } from "../requests/auth.js";
 import { requestCreate, requestJoin, requestProjects, requestPermissions, requestgetProject, 
   requestAddRequirement, requestCreateTask, requestAdd,requestDelete, 
   requestAddMessage, requestMessages, requestDeleteTask, requestUpdateTask, requestUpdateTState,
-  requestTasksProject,requestConfig} from "../requests/projectReq.js";
+  requestTasksProject,requestConfig,
+  requestDelegar} from "../requests/projectReq.js";
 import Cookies from "js-cookie";
 import { useAuth } from "./authContext.js";
 
@@ -312,6 +313,19 @@ export const ProjectProvider = ({ children }) => {
     }
   }
 
+  const delegarParticipant = async (id) => {
+    try {
+      const res = await requestDelegar(id);
+      setMessage(res.data.message);
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.message) {
+        setProjecterrors(error.response.data.message);
+      } else {
+        setProjecterrors("Error del servidor");
+      }
+    }
+  }
+
   const getPermissions = async (id) => {
     try {
       const nombreCookie = `Proyecto${id.ID}`;
@@ -409,6 +423,7 @@ export const ProjectProvider = ({ children }) => {
         createRequirements,
         createTask,
         addParticipant,
+        delegarParticipant,
         createMessages,
         getMessages,
         getTasksProject,
