@@ -141,6 +141,88 @@ export function delegarParticipante(ID_PROYECTO, ID_USUARIO, ID_admin) {
     })
 }
 
+export function eliminarProyecto(ID_PROYECTO) {
+    return new Promise(async (resolve, reject) => {
+        const conn = await getConnection();
+        try {
+            await conn.beginTransaction();
+            const deleteTareasDependenciasQuery = `
+                DELETE FROM T_DEPENDE_T WHERE ID_TAREA_DEPENDIENTE IN(
+                    SELECT ID FROM TAREAS WHERE ID_ITERACION IN(
+                        SELECT ID FROM ITERACIONES WHERE ID_ENTREGA IN (
+                            SELECT ID FROM ENTREGAS WHERE ID_PROYECTO = ?
+                        )
+                    )
+                )
+            `;
+            await conn.query(deleteTareasDependenciasQuery, [ID_PROYECTO]);
+
+            const deleteColaboracionesQuery = `
+                DELETE FROM COLABORACIONES WHERE ID_TAREA_REALIZADA IN(
+                    SELECT ID FROM TAREAS WHERE ID_ITERACION IN(
+                        SELECT ID FROM ITERACIONES WHERE ID_ENTREGA IN (
+                            SELECT ID FROM ENTREGAS WHERE ID_PROYECTO = ?
+                        )
+                    )
+                )
+            `;
+            await conn.query(deleteColaboracionesQuery, [ID_PROYECTO]);
+
+
+            const deleteChatsQuery = `
+            DELETE FROM CHATS_ITERACIONES WHERE ID_ITERACION IN (
+                SELECT ID FROM ITERACIONES WHERE ID_ENTREGA IN (
+                    SELECT ID FROM ENTREGAS WHERE ID_PROYECTO = ?
+                )
+            )
+        `;
+            await conn.query(deleteChatsQuery, [ID_PROYECTO]);
+
+            const deleteTareasQuery = `
+                DELETE FROM TAREAS WHERE ID_ITERACION IN (
+                    SELECT ID FROM ITERACIONES WHERE ID_ENTREGA IN (
+                        SELECT ID FROM ENTREGAS WHERE ID_PROYECTO = ?
+                    )
+                )
+            `;
+            await conn.query(deleteTareasQuery, [ID_PROYECTO]);
+
+            const deleteRequerimientosQuery = `
+                DELETE FROM REQUERIMIENTOS WHERE ID_ENTREGA IN (
+                    SELECT ID FROM ENTREGAS WHERE ID_PROYECTO = ?
+                )
+            `;
+            await conn.query(deleteRequerimientosQuery, [ID_PROYECTO]);
+
+            const deleteIteracionesQuery = `
+                DELETE FROM ITERACIONES WHERE ID_ENTREGA IN (
+                    SELECT ID FROM ENTREGAS WHERE ID_PROYECTO = ?
+                )
+            `;
+            await conn.query(deleteIteracionesQuery, [ID_PROYECTO]);
+
+            const deleteEntregasQuery = 'DELETE FROM ENTREGAS WHERE ID_PROYECTO = ?';
+            await conn.query(deleteEntregasQuery, [ID_PROYECTO]);
+
+            const deleteUsuariosQuery = 'DELETE FROM U_SeUne_P WHERE ID_PROYECTO = ?';
+            await conn.query(deleteUsuariosQuery, [ID_PROYECTO]);
+
+            const deleteProyectoQuery = 'DELETE FROM PROYECTOS WHERE ID = ?';
+            await conn.query(deleteProyectoQuery, [ID_PROYECTO]);
+
+            await conn.commit();
+            resolve({success: true});
+        } catch (error) {
+            await conn.rollback();
+            reject({success:false})
+        } finally {
+            // Cerrar la conexión
+            await conn.end();
+        }
+
+    })
+}
+
 export function verificarUnionCorreo(ID_PROYECTO, CORREO) {
     return new Promise(async (resolve, reject) => {
         const connection = await getConnection();
@@ -259,17 +341,17 @@ export function ActualizarFechasQuery(TABLA, OBJETIVO) {
                 query = `UPDATE ITERACIONES SET FECHA_INICIO = ?, FECHA_TERMINO = ? WHERE ID = ?`;
             }
             console.log(TABLA, OBJETIVO);
-            /*connection.query(query, [OBJETIVO.StartTime, OBJETIVO.EndTime, OBJETIVO.ID], (err, results) => {
+            connection.query(query, [OBJETIVO.StartTime, OBJETIVO.EndTime, OBJETIVO.ID], (err, results) => {
                 if (err) {
                     reject(err)
                 } else {
-                    if(results.affectedRows){
-                        success({success: true});
+                    if(results.affectedRows > 0){
+                        resolve({success: true});
                     }else{
                         reject({success: false});
                     }
                 }
-            });*/
+            });
         } catch (error) {
             reject(error);
         }

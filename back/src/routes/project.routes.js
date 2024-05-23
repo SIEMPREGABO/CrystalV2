@@ -5,7 +5,8 @@ import { getTasks, createTask, createProject, getProjects,
     addParticipant,
     deleteParticipant, getTareasxIteracion,
     configurarProyecto, deleteTask, updateTask, updateTaskState,
-    delegarParticipant} from "../controllers/project.controller.js";
+    delegarParticipant,
+    deleteProject} from "../controllers/project.controller.js";
 import { createSchema, joinSchema, taskSchema } from "../schemas/project.schema.js";
 import { validateSchema } from "../middlewares/validator.middleware.js";
 
@@ -29,5 +30,6 @@ router.post('/addMessage', agregarMensaje);
 router.post('/getMessages', getMessages);
 router.post('/getProjectTasks', getTareasxIteracion);
 router.post('/configProject', configurarProyecto);
+router.post('/deleteProject', deleteProject);
 
 export default router;

@@ -5,7 +5,8 @@ import { requestCreate, requestJoin, requestProjects, requestPermissions, reques
   requestAddRequirement, requestCreateTask, requestAdd,requestDelete, 
   requestAddMessage, requestMessages, requestDeleteTask, requestUpdateTask, requestUpdateTState,
   requestTasksProject,requestConfig,
-  requestDelegar} from "../requests/projectReq.js";
+  requestDelegar,
+  requestDeleteProject} from "../requests/projectReq.js";
 import Cookies from "js-cookie";
 import { useAuth } from "./authContext.js";
 
@@ -119,6 +120,20 @@ export const ProjectProvider = ({ children }) => {
       console.log(Task);
       const res = await requestDeleteTask(Task);
       console.log(res.data.message);
+    }catch(error){
+      if (error.response && error.response.data && error.response.data.message) {
+        setProjecterrors(error.response.data.message);
+      } else {
+        setProjecterrors("Error del servidor");
+      }
+    }
+  }
+
+  const deleteProjectFunction = async (id) => {
+    try{
+      console.log(id);
+      const res = await requestDeleteProject(id);
+      setMessage(res.data.message);
     }catch(error){
       if (error.response && error.response.data && error.response.data.message) {
         setProjecterrors(error.response.data.message);
@@ -430,7 +445,8 @@ export const ProjectProvider = ({ children }) => {
         deleteTask,
         updateTask,
         setTareasKanban,
-        updateTaskState
+        updateTaskState,
+        deleteProjectFunction
       }}
     >
       {children}

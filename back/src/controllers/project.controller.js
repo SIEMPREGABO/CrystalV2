@@ -14,7 +14,8 @@ import {
     obtenerFechasConfigID,
     ActualizarFechasQuery,
     getUser,
-    delegarParticipante
+    delegarParticipante,
+    eliminarProyecto
 } from '../querys/projectquerys.js';
 import jwt from 'jsonwebtoken'
 import { zonaHoraria } from '../config.js';
@@ -568,6 +569,20 @@ export const delegarParticipant = async (req, res) => {
         const namecookie = `Proyecto${ID_PRO}`;
         res.cookie(namecookie, projectToken);
         return res.status(200).json({ message: ["Usuario ascendido con exito"] });
+    } catch (error) {
+        res.status(500).json({ mensaje: ["Error inesperado, intentalo nuevamente"] });
+    }
+}
+
+export const deleteProject = async (req,res) => {
+    const {ID_PROYECTO} = req.body;
+    try {
+        const eliminado = await eliminarProyecto(ID_PROYECTO);
+        if(!eliminado.success) return res.status(500).json({ message: ["Error al eliminar proyecto"] });
+        const ID_PRO = Number(ID_PROYECTO);
+        const namecookie = `Proyecto${ID_PRO}`;
+        res.cookie(namecookie, "",{ expires: new Date(0) });
+        return res.status(200).json({ message: ["Proyecto eliminado, redirigiendo"] });
     } catch (error) {
         res.status(500).json({ mensaje: ["Error inesperado, intentalo nuevamente"] });
     }
