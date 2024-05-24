@@ -223,6 +223,29 @@ export function eliminarProyecto(ID_PROYECTO) {
     })
 }
 
+export function eliminarChats(ID_ITERACION) {
+    return new Promise(async (resolve, reject) => {
+        const conn = await getConnection();
+        try {
+            await conn.beginTransaction();
+
+            const deleteChatsQuery = `
+            DELETE FROM CHATS_ITERACIONES WHERE ID_ITERACION = ?`;
+            await conn.query(deleteChatsQuery, [ID_ITERACION]);
+
+            await conn.commit();
+            resolve({success: true});
+        } catch (error) {
+            await conn.rollback();
+            reject({success:false})
+        } finally {
+            // Cerrar la conexión
+            await conn.end();
+        }
+
+    })
+}
+
 export function verificarUnionCorreo(ID_PROYECTO, CORREO) {
     return new Promise(async (resolve, reject) => {
         const connection = await getConnection();
@@ -890,10 +913,10 @@ export function ActualizarEstadoTareas(ESTADO, ID) {
                         reject(err);
                     } else {
                         if (results.affectedRows > 0) {
-                            resolve(true);
+                            resolve({success: true});
                             console.log("Tarea id: ", ID, " se escuentra en: ", ESTADO);
                         } else {
-                            resolve(false);
+                            resolve({success: false});
                         }
                     }
                 })
@@ -904,10 +927,10 @@ export function ActualizarEstadoTareas(ESTADO, ID) {
                         reject(err);
                     } else {
                         if (results.affectedRows > 0) {
-                            resolve(true);
+                            resolve({success: true});
                             console.log("Tarea id: ", ID, " se escuentra en: ", ESTADO);
                         } else {
-                            resolve(false);
+                            resolve({success: false});
                         }
                     }
                 })

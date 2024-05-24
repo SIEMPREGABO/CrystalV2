@@ -15,7 +15,8 @@ import {
     ActualizarFechasQuery,
     getUser,
     delegarParticipante,
-    eliminarProyecto
+    eliminarProyecto,
+    eliminarChats
 } from '../querys/projectquerys.js';
 import jwt from 'jsonwebtoken'
 import { zonaHoraria } from '../config.js';
@@ -443,20 +444,20 @@ export const configurarProyecto = async (req, res) => {
 export const deleteTask = async (req, res) => {
     const deleteTask = await DeleteTask(req.body.ID);
     if(!deleteTask.success) return res.status(400).json("Error al crear la tarea");
-    return res.status(200).json("Tarea Eliminada Correctamente");
+    return res.status(200).json({message: "Tarea Eliminada Correctamente"});
     //res.json(taskFound)
 }
 
 export const updateTask = async (req, res) => {
     const updTask = await UpdateTask(req.body.ID,req.body.NOMBRE, req.body.DESCRIPCION, req.body.ESTADO_DESARROLLO, req.body.FECHA_INICIO, req.body.FECHA_MAX_TERMINO);
     if(!updTask.success) return res.status(400).json("Error al actualizar la tarea");
-    return res.status(200).json("Tarea Eliminada Correctamente");
+    return res.status(200).json({message: "Tarea Eliminada Correctamente"});
 }
 
 export const updateTaskState = async (req, res) => {
     const updTask = await ActualizarEstadoTareas(req.body.ESTADO_DESARROLLO, req.body.ID);
-    if(!updTask.success) return res.status(400).json("Error al actualizar la tarea");
-    return res.status(200).json("Tarea Eliminada Correctamente");
+    if(!updTask.success) return res.status(400).json("Error al actualizar el estado de la tarea");
+    return res.status(200).json({message: "Estado de la tarea actualizado correctamente"});
 }
 
 export const createTask = async (req, res) => {
@@ -632,6 +633,22 @@ export const activarTareasInactivas = async (req, res) => {
     await Promise.all(TAREAS_DEPENDIENTES.map(async (TAREAS) => {
         if (TAREAS.TAREA_DEP === "En revision" || TAREAS.TAREA_DEP === "Cerrada") {
             const actualizar = await ActualizarEstadoTareas(ESTADOTAREA[0], TAREAS.ID_TAREA_SUB);
+        }
+    }))
+
+    await Promise.all(FECHAS_PROYECTO.map(async (PROYECTO) => {
+        let fechaFinal = moment(PROYECTO.FECHA_TERMINO).tz(zonaHoraria);
+        const DIAS_PROYECTO = FECHA_ACTUAL.diff(fechaFinal, 'days') + 1;
+        if (PROYECTO.ESTADO === "Finalizado" && DIAS_PROYECTO >= 30) {
+            const actualizar = await eliminarProyecto(PROYECTO.ID);
+        }
+    }))
+
+    await Promise.all(FECHAS_ITERACIONES.map(async (ITERACION) => {
+        let fechaFinal = moment(ITERACION.FECHA_TERMINO).tz(zonaHoraria);
+        const DIAS_PROYECTO = FECHA_ACTUAL.diff(fechaFinal, 'days') + 1;
+        if (ITERACION.ESTADO === "Finalizado" && DIAS_PROYECTO >= 30) {
+            const actualizar = await eliminarChats(ITERACION.ID);
         }
     }))
 
