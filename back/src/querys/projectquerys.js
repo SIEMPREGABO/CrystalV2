@@ -637,7 +637,7 @@ export function ActualizarEstadoTareas(ESTADO, ID) {
                         reject(err);
                     } else {
                         if (results.affectedRows > 0) {
-                            resolve(true);
+                            resolve({succes: true});
                             console.log("Tarea id: ", ID, " se escuentra en: ", ESTADO);
                         } else {
                             resolve(false);
