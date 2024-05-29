@@ -15,7 +15,7 @@ import {
     ActualizarFechasQuery,
     getUser,
     delegarParticipante,
-    eliminarProyecto
+    eliminarProyecto,getProjectInfo
 } from '../querys/projectquerys.js';
 import jwt from 'jsonwebtoken'
 import { zonaHoraria } from '../config.js';
@@ -171,6 +171,7 @@ export const getProject = async (req, res) => {
         const requerimientos = await getRequerimientosEntrega(ENTREGA_ACTUAL.ID);
         const tasks = await getTareas(ITERACION_ACTUAL.ID);
         const tasksKanban = await GetTareasKanban(ITERACION_ACTUAL.ID);
+        const projectInfo = await getProjectInfo(ID_PROYECTO);
 
         const data = {
             fechasProyecto: FECHAS_PROYECTO,
@@ -182,6 +183,7 @@ export const getProject = async (req, res) => {
             requerimientos: requerimientos,
             tasks: tasks,
             tasksKanban: tasksKanban,
+            projectInfo: projectInfo,
         };
         return res.json(data);
     } catch (error) {
@@ -447,20 +449,20 @@ export const configurarProyecto = async (req, res) => {
 
 export const deleteTask = async (req, res) => {
     const deleteTask = await DeleteTask(req.body.ID);
-    if(!deleteTask.success) return res.status(400).json("Error al crear la tarea");
-    return res.status(200).json({message: "Tarea Eliminada Correctamente"});
+    if(!deleteTask.success) return res.status(400).json({message: ["Error al crear la tarea"]});
+    return res.status(200).json({message: ["Tarea Eliminada Correctamente"]});
     //res.json(taskFound)
 }
 
 export const updateTask = async (req, res) => {
     const updTask = await UpdateTask(req.body.ID,req.body.NOMBRE, req.body.DESCRIPCION, req.body.ESTADO_DESARROLLO, req.body.FECHA_INICIO, req.body.FECHA_MAX_TERMINO);
-    if(!updTask.success) return res.status(400).json("Error al actualizar la tarea");
-    return res.status(200).json({message: "Tarea Eliminada Correctamente"});
+    if(!updTask.success) return res.status(400).json({message: ["Error al actualizar la tarea"]});
+    return res.status(200).json({message: ["Tarea Eliminada Correctamente"]});
 }
 
 export const updateTaskState = async (req, res) => {
     const updTask = await ActualizarEstadoTareas(req.body.ESTADO_DESARROLLO, req.body.ID);
-    if(!updTask.success) return res.status(400).json("Error al actualizar el estado de la tarea");
+    if(!updTask.success) return res.status(400).json({message: ["Error al actualizar el estado de la tarea"]});
     return res.status(200).json({message: "Estado de la tarea actualizado correctamente"});
 }
 
@@ -489,7 +491,7 @@ export const createTask = async (req, res) => {
         if (FECHA_INICIO_COMPLETA.isBefore(FECHA_ACTUAL)) return res.status(400).json({ message: ["Fecha inicial incorrecta"] });
         if (FECHA_MAXIMA_COMPLETA.isBefore(FECHA_INICIO_COMPLETA)) return res.status(400).json({ message: ["Fecha final maxima incorrecta"] });
 
-        if (ID_TAREA_DEPENDIENTE !== '') {
+        if (ID_TAREA_DEPENDIENTE !== '0') {
             const tarea = await getTareaDependiente(ID_TAREA_DEPENDIENTE);
             if (!tarea.success) return res.status(500).json({ message: ["Error al extraer la tarea"] });
             const FECHA_INICIO_DEP = moment.utc(tarea.task[0].FECHA_INICIO);
@@ -508,7 +510,7 @@ export const createTask = async (req, res) => {
         console.log("Controller function createTask");
 
         const tareacreada = await CrearTarea(NOMBRE, DESCRIPCION, REGISTRO_INICIO, REGISTRO_MAX, iteracionactual.ID, ID_USUARIO, ID_REQUERIMIENTO, ROLPARTICIPANTE, ID_TAREA_DEPENDIENTE);
-        if (!tareacreada.success) return res.status(400).json("Error al crear la tarea");
+        if (!tareacreada.success) return res.status(400).json({message: ["Error al crear la tarea"]});
         
         const usuario = await getUser(ID_USUARIO);
 
@@ -670,7 +672,7 @@ export const agregarRequerimiento = async (req, res) => {
         const agregar_requerimiento = await AgregarRequerimiento(OBJETIVO, DESCRIPCION, TIPO, ID_ENTREGA);
 
         if (!agregar_requerimiento.success) res.status(500).json({ mensaje: ["Error al agregar el requerimiento"] });
-        return res.status(200).json({ message: ["Requerimiento creado con éxito"] });
+        return res.status(200).json({ messsage: ["Requerimiento creado con éxito"], status: "OK" });
     } catch (error) {
         res.status(500).json({ message: [error.message] });
     }

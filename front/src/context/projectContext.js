@@ -9,6 +9,7 @@ import { requestCreate, requestJoin, requestPermissions, requestgetProject,
   requestDeleteProject} from "../requests/projectReq.js";
 import Cookies from "js-cookie";
 import { useAuth } from "./authContext.js";
+import swal from 'sweetalert';
 
 const ProjectContext = createContext();
 
@@ -43,7 +44,7 @@ export const ProjectProvider = ({ children }) => {
   const [chaterrors, setChatErrors] = useState([]);
 
   const [entregasproject,  setEntregasProject] = useState([]);
-
+  const [projectInfo, setProjectInfo] = useState([]);
 
   useEffect(() => {
     if (message.length > 0) {
@@ -102,10 +103,18 @@ export const ProjectProvider = ({ children }) => {
     try {
       const res = await requestCreateTask(Task);
       setMessage(res.data.message);
+      swal({
+        title: 'Asignacion de tarea',
+        text: res.data.message,
+        icon: (res.status === 200 ? 'success' : (res.status === 400 ? 'warning' : 'error')),
+        button: 'Aceptar',
+      });
+      console.log(res);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
         setProjecterrors(error.response.data.message);
         console.log(error.response.data.message);
+        
       } else {
         setProjecterrors("Error del servidor");
       }
@@ -267,6 +276,12 @@ export const ProjectProvider = ({ children }) => {
     try {
       const res = await requestAddRequirement(project);
       console.log(res.data);
+      swal({
+        title: 'Requerimiento Agregado',
+        text: res.data.message,
+        icon: (res.data.status === "OK" ? 'success' : 'error'),
+        button: 'Aceptar',
+      });
       //setMessage(res.data.message);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
@@ -288,8 +303,9 @@ export const ProjectProvider = ({ children }) => {
       setiteracionactual(res.data.iteracionactual);
       
       setRequerimientos(res.data.requerimientos);
-      setTareas(res.data.tasks)
-      setTareasKanban(res.data.tasksKanban)
+      setTareas(res.data.tasks);
+      setTareasKanban(res.data.tasksKanban);
+      setProjectInfo(res.data.projectInfo);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
         setProjecterrors(error.response.data.message);
@@ -418,6 +434,7 @@ export const ProjectProvider = ({ children }) => {
         
         entregaactual,
         iteracionactual,
+        projectInfo,
         
         userRole,
         IsParticipant,
