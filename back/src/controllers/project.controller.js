@@ -15,8 +15,7 @@ import {
     ActualizarFechasQuery,
     getUser,
     delegarParticipante,
-    eliminarProyecto,
-    eliminarChats
+    eliminarProyecto
 } from '../querys/projectquerys.js';
 import jwt from 'jsonwebtoken'
 import { zonaHoraria } from '../config.js';
@@ -71,6 +70,7 @@ export const getProjects = async (req, res) => {
         if (projects.length > 0) {
             await Promise.all(projects.map(async (project) => {
                 let role = 'participant';
+                console.log(project.admin);
                 if (project.admin) {
                     role = 'admin'
                 }
@@ -79,10 +79,13 @@ export const getProjects = async (req, res) => {
                     ID_PROYECTO: project.ID,
                     role: role
                 };
+                console.log(payload)
                 const projectToken = await createProjectToken(payload);
                 projectCookies[`Proyecto${project.ID}`] = projectToken;
+                console.log(projectToken);
             }));
             Object.entries(projectCookies).forEach(([name, value]) => {
+                
                 res.cookie(name, value);
             });
         }
@@ -122,6 +125,7 @@ export const getPermissions = async (req, res) => {
         if (!cookieValue) return res.status(401).json({ message: ["No autorizado"] });
         jwt.verify(cookieValue, SECRET_TOKEN, async (err, user) => {
             if (err) return res.status(400).json({ message: ["Error inesperado, intentalo de nuevo"] });
+            console.log(user);
             return res.json({
                 ID: user.ID_PROYECTO,
                 role: user.role
@@ -639,19 +643,23 @@ export const activarTareasInactivas = async (req, res) => {
     await Promise.all(FECHAS_PROYECTO.map(async (PROYECTO) => {
         let fechaFinal = moment(PROYECTO.FECHA_TERMINO).tz(zonaHoraria);
         const DIAS_PROYECTO = FECHA_ACTUAL.diff(fechaFinal, 'days') + 1;
-        if (PROYECTO.ESTADO === "Finalizado" && DIAS_PROYECTO >= 30) {
-            const actualizar = await eliminarProyecto(PROYECTO.ID);
+        //console.log(DIAS_PROYECTO, fechaFinal);
+        if (PROYECTO.ESTADO === "Finalizado" && DIAS_PROYECTO >= 30) {    
+            //const actualizar = await eliminarProyecto(PROYECTO.ID);
         }
     }))
 
     await Promise.all(FECHAS_ITERACIONES.map(async (ITERACION) => {
         let fechaFinal = moment(ITERACION.FECHA_TERMINO).tz(zonaHoraria);
         const DIAS_PROYECTO = FECHA_ACTUAL.diff(fechaFinal, 'days') + 1;
+        //console.log(DIAS_PROYECTO, fechaFinal);
+
         if (ITERACION.ESTADO === "Finalizado" && DIAS_PROYECTO >= 30) {
-            const actualizar = await eliminarChats(ITERACION.ID);
+            console.log(DIAS_PROYECTO, fechaFinal, ITERACION.ID);
+            //const actualizar = await eliminarChats(ITERACION.ID);
         }
     }))
-
+    
     console.log("Im alive");
     setTimeout(activarTareasInactivas, 10 * 60 * 1000);
 }

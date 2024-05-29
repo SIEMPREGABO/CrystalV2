@@ -146,6 +146,17 @@ export function eliminarProyecto(ID_PROYECTO) {
         const conn = await getConnection();
         try {
             await conn.beginTransaction();
+
+            const selectTareasDependientesQuery = `
+                SELECT ID FROM T_DEPENDE_T WHERE ID_TAREA_DEPENDIENTE IN(
+                    SELECT ID FROM TAREAS WHERE ID_ITERACION IN(
+                        SELECT ID FROM ITERACIONES WHERE ID_ENTREGA IN (
+                            SELECT ID FROM ENTREGAS WHERE ID_PROYECTO = ?
+                        )
+                    )
+                )
+            `;
+
             const deleteTareasDependenciasQuery = `
                 DELETE FROM T_DEPENDE_T WHERE ID_TAREA_DEPENDIENTE IN(
                     SELECT ID FROM TAREAS WHERE ID_ITERACION IN(
@@ -155,7 +166,25 @@ export function eliminarProyecto(ID_PROYECTO) {
                     )
                 )
             `;
-            await conn.query(deleteTareasDependenciasQuery, [ID_PROYECTO]);
+
+            const dependientesResult = await conn.query(selectTareasDependientesQuery, [ID_PROYECTO]);
+
+            if (dependientesResult.length > 0) {
+                await conn.query(deleteTareasDependenciasQuery, [ID_PROYECTO]);
+                console.log("Se eliminaron las tareas dependientes.");
+            } else {
+                console.log("No hay tareas dependientes para eliminar.");
+            }
+
+            const selectColaboracionesQuery = `
+                SELECT ID FROM COLABORACIONES WHERE ID_TAREA_REALIZADA IN(
+                    SELECT ID FROM TAREAS WHERE ID_ITERACION IN(
+                        SELECT ID FROM ITERACIONES WHERE ID_ENTREGA IN (
+                            SELECT ID FROM ENTREGAS WHERE ID_PROYECTO = ?
+                        )
+                    )
+                )
+            `;
 
             const deleteColaboracionesQuery = `
                 DELETE FROM COLABORACIONES WHERE ID_TAREA_REALIZADA IN(
@@ -166,17 +195,49 @@ export function eliminarProyecto(ID_PROYECTO) {
                     )
                 )
             `;
-            await conn.query(deleteColaboracionesQuery, [ID_PROYECTO]);
 
+            const colaboracionesResult = await conn.query(selectColaboracionesQuery, [ID_PROYECTO]);
+
+            if (colaboracionesResult.length > 0) {
+                await conn.query(deleteColaboracionesQuery, [ID_PROYECTO]);
+                console.log("Se eliminaron las colaboraciones.");
+            } else {
+                console.log("No hay colaboraciones para eliminar.");
+            }
+
+
+            const selectChatsQuery = `
+                SELECT ID FROM CHATS_ITERACIONES WHERE ID_ITERACION IN (
+                    SELECT ID FROM ITERACIONES WHERE ID_ENTREGA IN (
+                        SELECT ID FROM ENTREGAS WHERE ID_PROYECTO = ?
+                    )
+                )
+            `;
 
             const deleteChatsQuery = `
-            DELETE FROM CHATS_ITERACIONES WHERE ID_ITERACION IN (
-                SELECT ID FROM ITERACIONES WHERE ID_ENTREGA IN (
-                    SELECT ID FROM ENTREGAS WHERE ID_PROYECTO = ?
+                DELETE FROM CHATS_ITERACIONES WHERE ID_ITERACION IN (
+                    SELECT ID FROM ITERACIONES WHERE ID_ENTREGA IN (
+                        SELECT ID FROM ENTREGAS WHERE ID_PROYECTO = ?
+                    )
                 )
-            )
-        `;
-            await conn.query(deleteChatsQuery, [ID_PROYECTO]);
+            `;
+
+            const chatsResult = await conn.query(selectChatsQuery, [ID_PROYECTO]);
+
+            if (chatsResult.length > 0) {
+                await conn.query(deleteChatsQuery, [ID_PROYECTO]);
+                console.log("Se eliminaron los chats.");
+            } else {
+                console.log("No hay chats para eliminar.");
+            }
+
+            const selectTareasQuery = `
+                SELECT ID FROM TAREAS WHERE ID_ITERACION IN (
+                    SELECT ID FROM ITERACIONES WHERE ID_ENTREGA IN (
+                        SELECT ID FROM ENTREGAS WHERE ID_PROYECTO = ?
+                    )
+                )
+            `;
 
             const deleteTareasQuery = `
                 DELETE FROM TAREAS WHERE ID_ITERACION IN (
@@ -185,14 +246,36 @@ export function eliminarProyecto(ID_PROYECTO) {
                     )
                 )
             `;
-            await conn.query(deleteTareasQuery, [ID_PROYECTO]);
+
+            const tareasResult = await conn.query(selectTareasQuery, [ID_PROYECTO]);
+
+            if (tareasResult.length > 0) {
+                await conn.query(deleteTareasQuery, [ID_PROYECTO]);
+                console.log("Se eliminaron las tareas.");
+            } else {
+                console.log("No hay tareas para eliminar.");
+            }
+            const selectRequerimientosQuery = `
+                SELECT ID FROM REQUERIMIENTOS WHERE ID_ENTREGA IN (
+                    SELECT ID FROM ENTREGAS WHERE ID_PROYECTO = ?
+                )
+            `;
 
             const deleteRequerimientosQuery = `
                 DELETE FROM REQUERIMIENTOS WHERE ID_ENTREGA IN (
                     SELECT ID FROM ENTREGAS WHERE ID_PROYECTO = ?
                 )
             `;
-            await conn.query(deleteRequerimientosQuery, [ID_PROYECTO]);
+
+
+            const requerimientosResult = await conn.query(selectRequerimientosQuery, [ID_PROYECTO]);
+
+            if (requerimientosResult.length > 0) {
+                await conn.query(deleteRequerimientosQuery, [ID_PROYECTO]);
+                console.log("Se eliminaron los requerimientos.");
+            } else {
+                console.log("No hay requerimientos para eliminar.");
+            }
 
             const deleteIteracionesQuery = `
                 DELETE FROM ITERACIONES WHERE ID_ENTREGA IN (
@@ -211,10 +294,10 @@ export function eliminarProyecto(ID_PROYECTO) {
             await conn.query(deleteProyectoQuery, [ID_PROYECTO]);
 
             await conn.commit();
-            resolve({success: true});
+            resolve({ success: true });
         } catch (error) {
             await conn.rollback();
-            reject({success:false})
+            reject({ success: false })
         } finally {
             // Cerrar la conexión
             await conn.end();
@@ -223,21 +306,22 @@ export function eliminarProyecto(ID_PROYECTO) {
     })
 }
 
+
+
 export function eliminarChats(ID_ITERACION) {
     return new Promise(async (resolve, reject) => {
         const conn = await getConnection();
         try {
             await conn.beginTransaction();
 
-            const deleteChatsQuery = `
-            DELETE FROM CHATS_ITERACIONES WHERE ID_ITERACION = ?`;
+            const deleteChatsQuery = `DELETE FROM CHATS_ITERACIONES WHERE ID_ITERACION = ?`;
             await conn.query(deleteChatsQuery, [ID_ITERACION]);
 
             await conn.commit();
-            resolve({success: true});
+            resolve({ success: true });
         } catch (error) {
             await conn.rollback();
-            reject({success:false})
+            reject({ success: false })
         } finally {
             // Cerrar la conexión
             await conn.end();
@@ -368,10 +452,10 @@ export function ActualizarFechasQuery(TABLA, OBJETIVO) {
                 if (err) {
                     reject(err)
                 } else {
-                    if(results.affectedRows > 0){
-                        resolve({success: true});
-                    }else{
-                        reject({success: false});
+                    if (results.affectedRows > 0) {
+                        resolve({ success: true });
+                    } else {
+                        reject({ success: false });
                     }
                 }
             });
@@ -913,10 +997,10 @@ export function ActualizarEstadoTareas(ESTADO, ID) {
                         reject(err);
                     } else {
                         if (results.affectedRows > 0) {
-                            resolve({success: true});
+                            resolve({ success: true });
                             console.log("Tarea id: ", ID, " se escuentra en: ", ESTADO);
                         } else {
-                            resolve({success: false});
+                            resolve({ success: false });
                         }
                     }
                 })
@@ -927,10 +1011,10 @@ export function ActualizarEstadoTareas(ESTADO, ID) {
                         reject(err);
                     } else {
                         if (results.affectedRows > 0) {
-                            resolve({success: true});
+                            resolve({ success: true });
                             console.log("Tarea id: ", ID, " se escuentra en: ", ESTADO);
                         } else {
-                            resolve({success: false});
+                            resolve({ success: false });
                         }
                     }
                 })

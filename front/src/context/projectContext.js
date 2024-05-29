@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { createContext, useContext, useState } from "react";
 import { requestVerify } from "../requests/auth.js";
-import { requestCreate, requestJoin, requestProjects, requestPermissions, requestgetProject, 
+import { requestCreate, requestJoin, requestPermissions, requestgetProject, 
   requestAddRequirement, requestCreateTask, requestAdd,requestDelete, 
   requestAddMessage, requestMessages, requestDeleteTask, requestUpdateTask, requestUpdateTState,
   requestTasksProject,requestConfig,
@@ -14,21 +14,18 @@ const ProjectContext = createContext();
 
 export const useProject = () => {
   const context = useContext(ProjectContext);
-  if (!context) throw new Error("useAuth must be used within a AuthProvider");
+  if (!context) throw new Error("useAuth must be used with in a ProjectProvider");
   return context;
 };
 
 export const ProjectProvider = ({ children }) => {
-  const {setUser, setIsAuthenticated ,setLoading} = useAuth();
+  const {setUser, setIsAuthenticated ,setLoading, logout} = useAuth();
 
   const [IsParticipant, setIsParticipant] = useState(true);
   const [userRole, setUserRole] = useState(false);
 
   const [message, setMessage] = useState([]);
   const [projecterrors, setProjecterrors] = useState([]);
-
-
-  const [projects, setProjects] = useState([]);
 
   const [participants, setParticipants] = useState([]);
   const [fechasproject, setFechasproject] = useState([]);
@@ -210,19 +207,6 @@ export const ProjectProvider = ({ children }) => {
     }
   };
 
-  const getProjects = async () => {
-    try {
-      const res = await requestProjects();
-      setProjects(res.data);
-    } catch (error) {
-      if (error.response && error.response.data && error.response.data.message) {
-        setProjecterrors(error.response.data.message);
-      } else {
-        setProjecterrors("Error del servidor");
-      }
-    }
-  };
-
   const createMessages = async (message) => {
     try{
       const res = await requestAddMessage(message);
@@ -351,12 +335,15 @@ export const ProjectProvider = ({ children }) => {
       }
       const Permission = await requestPermissions(id);
       if (!Permission.data) setIsParticipant(false);
+
       else {
         setIsParticipant(true);
+        //setUserRole(false);
         if (Permission.data.role === "admin") {
           setUserRole(true);
         }
         await getProject(id);
+
       }
     } catch (error) {
       if (error.response && error.response.status === 401) {
@@ -369,6 +356,26 @@ export const ProjectProvider = ({ children }) => {
           setProjecterrors("Error del servidor");
         }
       }
+    }
+  }
+
+   const vaciarProject = async () =>{
+    try {
+      setIsParticipant(true)
+        setUserRole(false)
+        setFechasproject([])
+        setFechasentregas([])
+        setFechasiteraciones([])
+        setTareas([])
+        setScheduleData([])
+        setTareasKanban([])
+        setEntregaactual([])
+        setiteracionactual([])
+        setRequerimientos([])
+        setMessagesChat([])
+        setEntregasProject([])
+    } catch (error) {
+      setProjecterrors("Error del servidor");
     }
   }
 
@@ -397,9 +404,7 @@ export const ProjectProvider = ({ children }) => {
 
   return (
     <ProjectContext.Provider
-      value={{
-        projects,
-        
+      value={{        
         message,projecterrors,
         
         participants,
@@ -422,16 +427,12 @@ export const ProjectProvider = ({ children }) => {
         chaterrors,
         messagesChat,
 
-
         setProjecterrors,
-        setIsParticipant,
-        setMessage,
-        setScheduleData,
+        setMessage,setIsParticipant, setScheduleData,
 
         create,
         configProyect,
         deleteParticipant,
-        getProjects,
         joinProject,
         getProject,
         getPermissions,
@@ -442,11 +443,12 @@ export const ProjectProvider = ({ children }) => {
         createMessages,
         getMessages,
         getTasksProject,
+        setTareasKanban,
         deleteTask,
         updateTask,
-        setTareasKanban,
         updateTaskState,
-        deleteProjectFunction
+        deleteProjectFunction,
+        vaciarProject
       }}
     >
       {children}

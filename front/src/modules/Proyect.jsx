@@ -28,11 +28,13 @@ export const Proyecto = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+
         const data = {
             ID: idint
         }
         getPermissions(data);
-    }, []);
+        console.log(userRole);
+    }, [userRole]);
 
     return (
         <div className={currentMode === 'Dark' ? 'dark' : ''}>

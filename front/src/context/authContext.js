@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import { createContext, useContext, useState } from "react";
 import { requestLogin, requestRegister, requestLogout, requestVerify, requestReset, requestPass, requestUpdate } from "../requests/auth.js";
 import Cookies from "js-cookie";
+import { useProject } from "./projectContext.js";
+import {requestProjects} from "../requests/projectReq.js";
 
 const AuthContext = createContext();
 
@@ -13,6 +15,10 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+ 
+
+  const [projects, setProjects] = useState([]);
+
   const [IsAuthenticated, setIsAuthenticated] = useState(false);
 
   const [autherrors, setAutherrors] = useState([]);
@@ -34,10 +40,20 @@ export const AuthProvider = ({ children }) => {
       }, 5000);
       return () => clearTimeout(timer);
     }
-  }, [autherrors,message]);
+  }, [autherrors, message]);
 
-
-
+  const getProjects = async () => {
+    try {
+      const res = await requestProjects();
+      setProjects(res.data);
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.message) {
+        setAutherrors(error.response.data.message);
+      } else {
+        setAutherrors("Error del servidor");
+      }
+    }
+  };
 
   const signin = async (user) => {
     try {
@@ -94,9 +110,11 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await requestLogout();      
+      await requestLogout();
       setIsAuthenticated(false);
       setUser(null);
+      setProjects([]);
+
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
         setAutherrors(error.response.data.message);
@@ -147,20 +165,20 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider
       value={{
-        user,
-        
-        autherrors,message,
+        user,projects,
 
-        IsAuthenticated,isLoading,
+        autherrors, message,
 
-        setAutherrors,setMessage, setUser,setIsAuthenticated, setLoading,
+        IsAuthenticated, isLoading,
+
+        setAutherrors, setMessage, setUser, setIsAuthenticated, setLoading,setProjects,
 
         signin,
         signup,
         resetToken,
         resetPass,
         updateUser,
-        logout
+        logout,getProjects
       }}
     >
       {children}
