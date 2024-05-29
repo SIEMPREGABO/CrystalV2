@@ -996,9 +996,9 @@ export function ActualizarEstado(ESTADO, TABLA, ID) {
                     reject(err);
                 } else {
                     if (results.affectedRows > 0) {
-                        resolve(true);
+                        resolve({success: true});
                     } else {
-                        resolve(false);
+                        resolve({success: false});
                     }
                 }
             })

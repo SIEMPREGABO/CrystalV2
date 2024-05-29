@@ -159,6 +159,10 @@ const Kanban = () => {
 
   }
 
+  const onBeforeOpen = (args) => {
+    args.maxHeight = '800px';
+  }
+
   const handleSave = () => {
     // Lógica para guardar cambios
     //console.log(idTarea);
@@ -218,12 +222,14 @@ const Kanban = () => {
       <DialogComponent
         id="kanban_dialog"
         header='Detalles de Tarea'
-        width='500px'
+        width='800px'
+        height='500px'
         target='#kanban'
         showCloseIcon={true}
         close={handleCloseDialog}
         closeOnEscape={true}
         visible={dialogVisible}
+        beforeOpen={onBeforeOpen}
       >
         <form>
           <input type="text" id="ID" name="ID" className='hidden' defaultValue={idTarea} />
