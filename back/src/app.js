@@ -50,11 +50,13 @@ console.log('Configuración de socket.io:', io.opts);
 io.on("connection", socket => {
     //console.log("Cliente conectado");
     //console.log(socket.id);
-    socket.join(`S1`);
+    const sala = socket.handshake.auth.sala;
+    //console.log("Sala: " + socket.handshake.auth.sala);
+    socket.join(`S${sala}`);
     //console.log(`S1`);
     socket.on('message', (data) => {
         //console.log(data);
-        socket.to(`S1`).emit('message', {
+        socket.to(`S${sala}`).emit('message', {
             data,
             from: data.from,
         });

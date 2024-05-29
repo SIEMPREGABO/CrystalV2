@@ -365,7 +365,7 @@ export const agregarMensaje = async (req, res) => {
 
 export const getMessages = async (req, res) => {
     const {ID_ITERACION} = req.body;
-    //console.log(req.body);
+    console.log(req.body);
     try{
         const messages = await GetMessages(ID_ITERACION);
 

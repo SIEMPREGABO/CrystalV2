@@ -79,7 +79,7 @@ export const ChatIteracion = () => {
 
   useEffect(() => {
     const iteracion = {
-      ID_ITERACION: 1,
+      ID_ITERACION: 2,
       //ID_ITERACION: iteracionactual
     }
     getMessages(iteracion);

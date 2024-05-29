@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 import Participantes from "./Usuario";
-import ChatIteracion from "./ChatIteracion";
+import ChatIteracion from "./ChatIteracion.jsx";
 import Configuracion from "./Config.js"
 import Calendario from "./Calendario.jsx";
 import AsignarTarea from "./AsignarTarea.jsx";
