@@ -14,9 +14,9 @@ import {
 import { Header } from './Header';
 
 export const Panel = () => {
-    const { user } = useAuth();
+    const { user ,getProjects,projects,autherrors} = useAuth();
     const fecha = moment.utc(user.FECHA_CREACION).format('DD-MM-YYYY');
-    const { getProjects, projects, joinerrors, joinProject, message } = useProject();
+    const {  projecterrors, joinProject, message } = useProject();
     const {
         register,
         handleSubmit,
@@ -53,8 +53,18 @@ export const Panel = () => {
         <div>
             <Header />
             <div className="container-fluid position-relative p-4">
-                {joinerrors && <div className=" bg-danger mt-2 me-2 text-white shadow">{joinerrors}</div>}
-                {message && <div className=" bg-success mt-2 me-2 text-white shadow">{message}</div>}
+                {message && <div class=" items-center bg-green-100 border-l-4 border-green-500 text-green-700  rounded-lg m-2 shadow-md" style={{ maxWidth: '600px' }}>
+                    <p class="text-lg font-semibold m-2">{message}</p>
+                </div>
+                }
+                {projecterrors && <div class=" items-center bg-red-100 border-l-4 border-red-500 text-red-700  rounded-lg m-2 shadow-md" style={{ maxWidth: '600px' }}>
+                    <p class="text-lg font-semibold m-2">{projecterrors}</p>
+                </div>
+                }            
+                {autherrors && <div class=" items-center bg-red-100 border-l-4 border-red-500 text-red-700  rounded-lg m-2 shadow-md" style={{ maxWidth: '600px' }}>
+                    <p class="text-lg font-semibold m-2">{autherrors}</p>
+                </div>
+                }          
                 <div className="container-sm">
                     <div className="row justify-content-evenly d-md-flex flex-md-equal w-100 my-md-3 p-md-3 mx-auto">
                         <div className="text-bg-dark overflow-hidden col">
@@ -99,11 +109,11 @@ export const Panel = () => {
                                         }} />
                                         <ColumnDirective field='ESTADO' headerText='Estatus del proyecto' width='150' textAlign='Center' />
                                         <ColumnDirective headerText='Proyecto' field='UNIRSE' width='120' textAlign='Center' template={(props) => (
-                                            <Link 
-                                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-2 rounded-full" 
-                                            to={`/Proyecto/${(props.ID).toString().padStart(5, '0')}`}>
-                                                Ir al proyecto </Link>)} 
-                                            />
+                                            <Link
+                                                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-2 rounded-full"
+                                                to={`/Proyecto/${(props.ID).toString().padStart(5, '0')}`}>
+                                                Ir al proyecto </Link>)}
+                                        />
                                     </ColumnsDirective>
 
                                     <Inject services={[Resize, Sort, ContextMenu, Filter, Page, ExcelExport, Edit, PdfExport]} />
@@ -126,9 +136,11 @@ export const Panel = () => {
                                         <div className="col">
                                             <input className=" text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-3 py-2.5 me-2 mb-0" type="submit" value="Unirse a proyecto" />
                                         </div>
+                                        <div className="col">
+                                            {errors.CODIGO_UNIRSE && <div class="flex items-center  p-1 mb-1  text-red-800 rounded-lg bg-red-100 dark:bg-gray-800 dark:text-red-600 " role="alert">{errors.CODIGO_UNIRSE.message}</div>}
+                                        </div>
                                     </div>
                                 </form>
-                                {errors.CODIGO_UNIRSE && <div class="flex items-center  p-1 mb-1  text-red-800 rounded-lg bg-red-100 dark:bg-gray-800 dark:text-red-600 " role="alert">{errors.CODIGO_UNIRSE.message}</div>}
                             </div>
 
                         </div>

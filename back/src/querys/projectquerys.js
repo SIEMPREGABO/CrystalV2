@@ -92,11 +92,249 @@ export function verificarUnion(ID_PROYECTO, ID_USUARIO) {
     });
 }
 
+export function eliminarParticipante(ID_PROYECTO, ID_USUARIO) {
+    return new Promise(async (resolve, reject) => {
+        const connection = await getConnection();
+        const query = 'DELETE FROM U_SEUNE_P WHERE ID_PROYECTO = ? AND ID_USUARIO = ?;';
+        connection.query(query, [ID_PROYECTO, ID_USUARIO], (err, results) => {
+            if (err) {
+                reject(err);
+            } else {
+                if (results.affectedRows > 0) {
+                    resolve({ success: true });
+                } else {
+                    resolve({ success: false });
+                }
+            }
+        })
+    })
+}
+
+export function delegarParticipante(ID_PROYECTO, ID_USUARIO, ID_admin) {
+    return new Promise(async (resolve, reject) => {
+        const connection = await getConnection();
+        const query = 'UPDATE U_SEUNE_P SET ES_CREADOR = 1 WHERE ID_PROYECTO = ? AND ID_USUARIO = ?;';
+        const queryAdmin = 'UPDATE U_SEUNE_P SET ES_CREADOR = 0 WHERE ID_PROYECTO = ? AND ID_USUARIO = ?;';
+
+        connection.query(query, [ID_PROYECTO, ID_USUARIO], (err, results) => {
+            if (err) {
+                reject(err);
+            } else {
+                if (results.affectedRows > 0) {
+                    connection.query(queryAdmin, [ID_PROYECTO, ID_admin], (err, results) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            if (results.affectedRows > 0) {
+                                resolve({ success: true });
+                            } else {
+                                resolve({ success: false });
+                            }
+                        }
+                    })
+
+                } else {
+                    resolve({ success: false });
+                }
+            }
+        })
+    })
+}
+
+export function eliminarProyecto(ID_PROYECTO) {
+    return new Promise(async (resolve, reject) => {
+        const conn = await getConnection();
+        try {
+            await conn.beginTransaction();
+
+            const selectTareasDependientesQuery = `
+                SELECT ID FROM T_DEPENDE_T WHERE ID_TAREA_DEPENDIENTE IN(
+                    SELECT ID FROM TAREAS WHERE ID_ITERACION IN(
+                        SELECT ID FROM ITERACIONES WHERE ID_ENTREGA IN (
+                            SELECT ID FROM ENTREGAS WHERE ID_PROYECTO = ?
+                        )
+                    )
+                )
+            `;
+
+            const deleteTareasDependenciasQuery = `
+                DELETE FROM T_DEPENDE_T WHERE ID_TAREA_DEPENDIENTE IN(
+                    SELECT ID FROM TAREAS WHERE ID_ITERACION IN(
+                        SELECT ID FROM ITERACIONES WHERE ID_ENTREGA IN (
+                            SELECT ID FROM ENTREGAS WHERE ID_PROYECTO = ?
+                        )
+                    )
+                )
+            `;
+
+            const dependientesResult = await conn.query(selectTareasDependientesQuery, [ID_PROYECTO]);
+
+            if (dependientesResult.length > 0) {
+                await conn.query(deleteTareasDependenciasQuery, [ID_PROYECTO]);
+                console.log("Se eliminaron las tareas dependientes.");
+            } else {
+                console.log("No hay tareas dependientes para eliminar.");
+            }
+
+            const selectColaboracionesQuery = `
+                SELECT ID FROM COLABORACIONES WHERE ID_TAREA_REALIZADA IN(
+                    SELECT ID FROM TAREAS WHERE ID_ITERACION IN(
+                        SELECT ID FROM ITERACIONES WHERE ID_ENTREGA IN (
+                            SELECT ID FROM ENTREGAS WHERE ID_PROYECTO = ?
+                        )
+                    )
+                )
+            `;
+
+            const deleteColaboracionesQuery = `
+                DELETE FROM COLABORACIONES WHERE ID_TAREA_REALIZADA IN(
+                    SELECT ID FROM TAREAS WHERE ID_ITERACION IN(
+                        SELECT ID FROM ITERACIONES WHERE ID_ENTREGA IN (
+                            SELECT ID FROM ENTREGAS WHERE ID_PROYECTO = ?
+                        )
+                    )
+                )
+            `;
+
+            const colaboracionesResult = await conn.query(selectColaboracionesQuery, [ID_PROYECTO]);
+
+            if (colaboracionesResult.length > 0) {
+                await conn.query(deleteColaboracionesQuery, [ID_PROYECTO]);
+                console.log("Se eliminaron las colaboraciones.");
+            } else {
+                console.log("No hay colaboraciones para eliminar.");
+            }
+
+
+            const selectChatsQuery = `
+                SELECT ID FROM CHATS_ITERACIONES WHERE ID_ITERACION IN (
+                    SELECT ID FROM ITERACIONES WHERE ID_ENTREGA IN (
+                        SELECT ID FROM ENTREGAS WHERE ID_PROYECTO = ?
+                    )
+                )
+            `;
+
+            const deleteChatsQuery = `
+                DELETE FROM CHATS_ITERACIONES WHERE ID_ITERACION IN (
+                    SELECT ID FROM ITERACIONES WHERE ID_ENTREGA IN (
+                        SELECT ID FROM ENTREGAS WHERE ID_PROYECTO = ?
+                    )
+                )
+            `;
+
+            const chatsResult = await conn.query(selectChatsQuery, [ID_PROYECTO]);
+
+            if (chatsResult.length > 0) {
+                await conn.query(deleteChatsQuery, [ID_PROYECTO]);
+                console.log("Se eliminaron los chats.");
+            } else {
+                console.log("No hay chats para eliminar.");
+            }
+
+            const selectTareasQuery = `
+                SELECT ID FROM TAREAS WHERE ID_ITERACION IN (
+                    SELECT ID FROM ITERACIONES WHERE ID_ENTREGA IN (
+                        SELECT ID FROM ENTREGAS WHERE ID_PROYECTO = ?
+                    )
+                )
+            `;
+
+            const deleteTareasQuery = `
+                DELETE FROM TAREAS WHERE ID_ITERACION IN (
+                    SELECT ID FROM ITERACIONES WHERE ID_ENTREGA IN (
+                        SELECT ID FROM ENTREGAS WHERE ID_PROYECTO = ?
+                    )
+                )
+            `;
+
+            const tareasResult = await conn.query(selectTareasQuery, [ID_PROYECTO]);
+
+            if (tareasResult.length > 0) {
+                await conn.query(deleteTareasQuery, [ID_PROYECTO]);
+                console.log("Se eliminaron las tareas.");
+            } else {
+                console.log("No hay tareas para eliminar.");
+            }
+            const selectRequerimientosQuery = `
+                SELECT ID FROM REQUERIMIENTOS WHERE ID_ENTREGA IN (
+                    SELECT ID FROM ENTREGAS WHERE ID_PROYECTO = ?
+                )
+            `;
+
+            const deleteRequerimientosQuery = `
+                DELETE FROM REQUERIMIENTOS WHERE ID_ENTREGA IN (
+                    SELECT ID FROM ENTREGAS WHERE ID_PROYECTO = ?
+                )
+            `;
+
+
+            const requerimientosResult = await conn.query(selectRequerimientosQuery, [ID_PROYECTO]);
+
+            if (requerimientosResult.length > 0) {
+                await conn.query(deleteRequerimientosQuery, [ID_PROYECTO]);
+                console.log("Se eliminaron los requerimientos.");
+            } else {
+                console.log("No hay requerimientos para eliminar.");
+            }
+
+            const deleteIteracionesQuery = `
+                DELETE FROM ITERACIONES WHERE ID_ENTREGA IN (
+                    SELECT ID FROM ENTREGAS WHERE ID_PROYECTO = ?
+                )
+            `;
+            await conn.query(deleteIteracionesQuery, [ID_PROYECTO]);
+
+            const deleteEntregasQuery = 'DELETE FROM ENTREGAS WHERE ID_PROYECTO = ?';
+            await conn.query(deleteEntregasQuery, [ID_PROYECTO]);
+
+            const deleteUsuariosQuery = 'DELETE FROM U_SeUne_P WHERE ID_PROYECTO = ?';
+            await conn.query(deleteUsuariosQuery, [ID_PROYECTO]);
+
+            const deleteProyectoQuery = 'DELETE FROM PROYECTOS WHERE ID = ?';
+            await conn.query(deleteProyectoQuery, [ID_PROYECTO]);
+
+            await conn.commit();
+            resolve({ success: true });
+        } catch (error) {
+            await conn.rollback();
+            reject({ success: false })
+        } finally {
+            // Cerrar la conexión
+            await conn.end();
+        }
+
+    })
+}
+
+
+
+export function eliminarChats(ID_ITERACION) {
+    return new Promise(async (resolve, reject) => {
+        const conn = await getConnection();
+        try {
+            await conn.beginTransaction();
+
+            const deleteChatsQuery = `DELETE FROM CHATS_ITERACIONES WHERE ID_ITERACION = ?`;
+            await conn.query(deleteChatsQuery, [ID_ITERACION]);
+
+            await conn.commit();
+            resolve({ success: true });
+        } catch (error) {
+            await conn.rollback();
+            reject({ success: false })
+        } finally {
+            // Cerrar la conexión
+            await conn.end();
+        }
+
+    })
+}
+
 export function verificarUnionCorreo(ID_PROYECTO, CORREO) {
     return new Promise(async (resolve, reject) => {
         const connection = await getConnection();
-        const query = 'SELECT * FROM U_SEUNE_P WHERE ID_PROYECTO = ? AND ID_USUARIO = ? ';
         const queryUser = 'SELECT ID FROM USUARIO WHERE CORREO = ?';
+        const query = 'SELECT * FROM U_SEUNE_P WHERE ID_PROYECTO = ? AND ID_USUARIO = ? ';
         connection.query(queryUser, [CORREO], (err, results) => {
             if (err) {
                 reject(err);
@@ -108,18 +346,123 @@ export function verificarUnionCorreo(ID_PROYECTO, CORREO) {
                             reject(err);
                         } else {
                             if (results.length > 0) {
-                                resolve({ success: true });
+                                resolve({ success: true, isRegister: true });
                             } else {
-                                resolve({ success: false, ID_USUARIO: ID_USUARIO });
+                                resolve({ success: false, isRegister: true, ID_USUARIO: ID_USUARIO });
                             }
                         }
                     })
                 } else {
-                    resolve({ success: false });
+                    resolve({ isRegister: false });
                 }
             }
         });
     });
+}
+
+export function getUser(ID_USUARIO) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const connection = await getConnection();
+            const query = 'SELECT CORREO FROM USUARIO WHERE ID = ?';
+            connection.query(query, [ID_USUARIO], (err, results) => {
+                if (err) {
+                    reject(err)
+                } else {
+                    if (results.length > 0) {
+                        resolve(results);
+                    }
+                }
+            })
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
+/*
+export function RegistarConfigQuery(PROYECTO, ENTREGAS, ITERACIONES) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const connection = await getConnection();
+            const query = `UPDATE PROYECTOS SET FECHA_INICIO = ?, FECHA_TERMINO = ? WHERE ID = ?`;
+            connection.query(query, [PROYECTO.StartTime, PROYECTO.EndTime, PROYECTO.ID], (err, results) => {
+                if (err) {
+                    reject(err)
+                } else {
+                    const entregasPromises = ENTREGAS.map(async (ENTREGA) => {
+                        const queryEntrega = `UPDATE ENTREGAS SET FECHA_INICIO = ?, FECHA_TERMINO = ? WHERE ID = ?`;
+                        const EntregaData = await new Promise((resolve, reject) => {
+                            connection.query(queryEntrega, [ENTREGA.StartTime, ENTREGA.EndTime, ENTREGA.Id_entrega], (err, results) => {
+                                if (err) {
+                                    reject(err)
+                                } else {
+                                    const iteracionesPromises = ITERACIONES.map((ITERACION) => {
+                                        const queryIteracion = `UPDATE ITERACIONES SET FECHA_INICIO = ?, FECHA_TERMINO = ? WHERE ID = ?`;
+                                        const EntregaData = await new Promise((resolve, reject) => {
+                                            connection.query(queryIteracion, [ITERACION.StartTime, ITERACION.EndTime, ITERACION.ID_iteracion], (err, results) => {
+                                                if (err) {
+                                                    reject(err)
+                                                } else {
+                                                    resolve({ success: true });
+                                                }
+                                            });
+                                        });
+                                        return ({ success: EntregaData.success });
+                                    });
+                                    Promise.all(iteracionesPromises)
+                                        .then((iteraciones) => {
+                                            resolve({ success: true });
+                                        })
+                                        .catch((err) => {
+                                            reject(err);
+                                        });
+                                }
+                            });
+                            return ();
+                        });
+                    });
+
+                    resolve
+                }
+            });
+        } catch (error) {
+            reject(error);
+        }
+    })
+}*/
+
+export function ActualizarFechasQuery(TABLA, OBJETIVO) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const connection = await getConnection();
+            let query;
+
+            if (TABLA === 'proyectos') {
+                query = `UPDATE PROYECTOS SET FECHA_INICIO = ?, FECHA_TERMINO = ? WHERE ID = ?`;
+            }
+            if (TABLA === 'entregas') {
+                query = `UPDATE ENTREGAS SET FECHA_INICIO = ?, FECHA_TERMINO = ? WHERE ID = ?`;
+            }
+            if (TABLA === 'iteraciones') {
+                query = `UPDATE ITERACIONES SET FECHA_INICIO = ?, FECHA_TERMINO = ? WHERE ID = ?`;
+            }
+            console.log(TABLA, OBJETIVO);
+            connection.query(query, [OBJETIVO.StartTime, OBJETIVO.EndTime, OBJETIVO.ID], (err, results) => {
+                if (err) {
+                    reject(err)
+                } else {
+                    if (results.affectedRows > 0) {
+                        resolve({ success: true });
+                    } else {
+                        reject({ success: false });
+                    }
+                }
+            });
+        } catch (error) {
+            reject(error);
+        }
+    })
 }
 
 export function verificarNumeroParticipantes(ID_PROYECTO) {
@@ -254,18 +597,79 @@ export function obtenerFechasTareas(tabla) {
     });
 }
 
+export function obtenerTareasDep() {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const connection = await getConnection();
+            const query = "SELECT * FROM T_DEPENDE_T";
+            const queryDep = "SELECT ESTADO_DESARROLLO FROM TAREAS WHERE ID = ?";
+            connection.query(query, (err, results) => {
+                if (err) {
+                    reject(err)
+                } else {
+                    if (results.length > 0) {
+                        const TasksPromises = results.map(async (result) => {
+                            const ID_TAREA_DEP = result.ID_TAREA_DEPENDIENTE;
+                            const ID_TAREA_SUB = result.ID_SUBTAREA;
+                            const TasksData = await new Promise((resolve, reject) => {
+                                connection.query(queryDep, [ID_TAREA_DEP], (err, resultsDep) => {
+                                    if (err) {
+                                        reject(err)
+                                    } else {
+                                        connection.query(queryDep, [ID_TAREA_SUB], (err, resultsSub) => {
+                                            if (err) {
+                                                reject(err)
+                                            } else {
+                                                resolve({ TAREA_DEP: resultsDep[0].ESTADO_DESARROLLO, TAREA_SUB: resultsSub[0].ESTADO_DESARROLLO })
+                                            }
+                                        })
+                                    }
+                                })
+                            });
+                            return { ID_TAREA_DEP: ID_TAREA_DEP, TAREA_DEP: TasksData.TAREA_DEP, ID_TAREA_SUB: ID_TAREA_SUB, TAREA_SUB: TasksData.TAREA_SUB };
+                        })
 
+                        Promise.all(TasksPromises)
+                            .then((Tasks) => {
+                                resolve(Tasks);
+                            })
+                            .catch((err) => {
+                                reject(err);
+                            });
+
+                    } else {
+                        resolve([])
+                    }
+                }
+            })
+        } catch (error) {
+            reject(error)
+        }
+    })
+}
+/*
+export const autorizarFechasProject(ID){
+    return new Promise(async(resolve, reject)=>{
+        try {
+            const connection = await getConnection();
+            const query = "SELECT "
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+*/
 export function obtenerFechasID(tabla, ID) {
     return new Promise(async (resolve, reject) => {
         try {
             let query = ""
             const connection = await getConnection();
             if (tabla === "PROYECTOS") {
-                query = `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO, CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, ESTADO, NOMBRE,OBJETIVO,DESCRIPCION_GNRL,CODIGO_UNIRSE, FECHA_CREACION,ID_CATEGORIA_CRYSTAL  FROM ${tabla} WHERE ID = ?`
+                query = `SELECT ID, FECHA_INICIO,  FECHA_TERMINO, ESTADO, NOMBRE,OBJETIVO,DESCRIPCION_GNRL,CODIGO_UNIRSE, FECHA_CREACION,ID_CATEGORIA_CRYSTAL  FROM ${tabla} WHERE ID = ?`
             } else if (tabla === "ENTREGAS") {
-                query = `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO, CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, ESTADO FROM ${tabla} WHERE ID_PROYECTO = ?`
+                query = `SELECT ID,  FECHA_INICIO,  FECHA_TERMINO, ESTADO, ID_PROYECTO FROM ${tabla} WHERE ID_PROYECTO = ?`
             } else if (tabla === "ITERACIONES") {
-                query = `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO, CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, ESTADO, ID_ENTREGA FROM ${tabla} WHERE ID_ENTREGA = ?`
+                query = `SELECT ID,   FECHA_INICIO,  FECHA_TERMINO, ESTADO, ID_ENTREGA FROM ${tabla} WHERE ID_ENTREGA = ?`
             }
             //const query = `SELECT ID, FECHA_INICIO, FECHA_TERMINO, ESTADO FROM ${tabla} WHERE ID = ?`;
             connection.query(query, [ID], (err, results) => {
@@ -281,111 +685,24 @@ export function obtenerFechasID(tabla, ID) {
     });
 }
 
-export function getRequerimientosEntrega(ID_ENTREGA) {
+export function obtenerFechasConfigID(tabla, ID) {
     return new Promise(async (resolve, reject) => {
         try {
+            let query = ""
             const connection = await getConnection();
-            const query = 'SELECT ID, OBJETIVO, DESCRIPCION, ID_TIPO_REQUERIMIENTO, ID_ENTREGA FROM REQUERIMIENTOS WHERE ID_ENTREGA = ?';
-            connection.query(query, [ID_ENTREGA], async (err, results) => {
+            if (tabla === "PROYECTOS") {
+                query = `SELECT ID, FECHA_INICIO,  FECHA_TERMINO, ESTADO, NOMBRE,OBJETIVO,DESCRIPCION_GNRL,CODIGO_UNIRSE, FECHA_CREACION,ID_CATEGORIA_CRYSTAL  FROM ${tabla} WHERE ID = ?`
+            } else if (tabla === "ENTREGAS") {
+                query = `SELECT ID,  FECHA_INICIO,  FECHA_TERMINO, ESTADO, ID_PROYECTO FROM ${tabla} WHERE ID = ?`
+            } else if (tabla === "ITERACIONES") {
+                query = `SELECT ID,   FECHA_INICIO,  FECHA_TERMINO, ESTADO, ID_ENTREGA FROM ${tabla} WHERE ID = ?`
+            }
+            //const query = `SELECT ID, FECHA_INICIO, FECHA_TERMINO, ESTADO FROM ${tabla} WHERE ID = ?`;
+            connection.query(query, [ID], (err, results) => {
                 if (err) {
                     reject(err);
                 } else {
                     resolve(results);
-                }
-            })
-        } catch (error) {
-            reject(error);
-        }
-    })
-}
-
-export function getTareas(ID_ITERACION) {
-    return new Promise(async (resolve, reject) => {
-        try {
-            const connection = await getConnection();
-            const query = 'SELECT MAX(c.ID_USUARIO) AS ID_USUARIO, c.ID_TAREA_REALIZADA,  MAX(c.ROL_REALIZADO) AS ROL_REALIZADO, MAX(t.ESTADO_DESARROLLO) AS ESTADO_DESARROLLO FROM COLABORACIONES c  JOIN TAREAS t ON c.ID_TAREA_REALIZADA = t.ID WHERE c.ID_ITERACION = 3 AND t.ESTADO_DESARROLLO NOT LIKE "cerrada" group by c.ID_TAREA_REALIZADA ;';
-            const querytask = `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO,CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, CONVERT_TZ(FECHA_MAX_TERMINO, '+00:00', '-06:00') AS FECHA_MAX_TERMINO,NOMBRE,DESCRIPCION,ESTADO_DESARROLLO,ID_REQUERIMIENTO,DESCRIPCION FROM TAREAS WHERE ID_ITERACION = ? AND ESTADO_DESARROLLO NOT LIKE "cerrada"`;
-            connection.query(querytask, [ID_ITERACION], async (err, results) => {
-                if (err) {
-                    reject(err)
-                } else {
-                    if (results.length > 0) {
-                        //console.log(results);
-                        resolve(results);
-                    } else {
-                        //console.log("vacio");
-                        resolve([]);
-                    }
-                }
-            });
-            /*connection.query(query, [ID_ITERACION], async (err, results) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    if (results.length > 0) {
-                        const taskspromises = results.map(async (result) => {
-                            const ID_TAREA = result.ID_TAREA_REALIZADA;
-                            const taskData = await new Promise((resolve, reject) => {
-                                connection.query(querytask, [ID_TAREA], (err, taskResults) => {
-                                    if (err) {
-                                        reject(err);
-                                    } else {
-                                        resolve({ NOMBRE: taskResults[0].NOMBRE, 
-                                            ID: taskResults[0].ID, 
-                                            ESTADO_DESARROLLO: taskResults[0].ESTADO_DESARROLLO, 
-                                            FECHA_INICIO: taskResults[0].FECHA_INICIO, 
-                                            FECHA_TERMINO: taskResults[0].FECHA_TERMINO, 
-                                            FECHA_MAX_TERMINO: taskResults[0].FECHA_MAX_TERMINO, 
-                                            ID_REQUERIMIENTO: taskResults[0].ID_REQUERIMIENTO,
-                                            DESCRIPCION: taskResults[0].DESCRIPCION });
-                                    }
-                                });
-                            });
-                            return {
-                                NOMBRE: taskData.NOMBRE,
-                                ID: taskData.ID,
-                                ESTADO_DESARROLLO: taskData.ESTADO_DESARROLLO,
-                                FECHA_INICIO: taskData.FECHA_INICIO,
-                                FECHA_TERMINO: taskData.FECHA_TERMINO,
-                                FECHA_MAX_TERMINO: taskData.FECHA_MAX_TERMINO,
-                                ID_REQUERIMIENTO: taskData.ID_REQUERIMIENTO,
-                                DESCRIPCION: taskData.DESCRIPCION
-                            };
-                        })
-                        Promise.all(taskspromises)
-                            .then((task) => {
-                                resolve(task);
-                            })
-                            .catch((err) => {
-                                reject(err);
-                            });
-                    } else {
-                        resolve([]);
-                    }
-                }
-            })*/
-        } catch (error) {
-            reject(error);
-        }
-    })
-}
-
-export function GetTareasKanban(ID_ITERACION) {
-    return new Promise(async (resolve, reject) => {
-        try {
-            const connection = await getConnection();
-
-            const kanbanquery = 'select c.ID_TAREA_REALIZADA, u.NOMBRE_USUARIO as Desarrollador, t.*, r.OBJETIVO FROM COLABORACIONES c JOIN USUARIO u ON c.ID_USUARIO=U.ID JOIN TAREAS t ON c.ID_TAREA_REALIZADA = t.ID JOIN REQUERIMIENTOS r  ON t.ID_REQUERIMIENTO = r.ID WHERE t.ID_ITERACION = ? ;'
-
-            connection.query(kanbanquery, [ID_ITERACION], async (err, results) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    if (results.length > 0) {
-                        resolve(results);
-                    } else {
-                        resolve([]);
-                    }
                 }
             });
         } catch (error) {
@@ -426,8 +743,8 @@ WHERE ID_PROYECTO = ?;
 `;
 
             //const entregasquery = "SELECT e.ID, (SELECT JSON_ARRAYAGG(JSON_OBJECT('id', i.ID, 'tareas', (SELECT JSON_ARRAYAGG(JSON_OBJECT('nombre', nombre, 'est_desarr', estado_desarrollo)) FROM TAREAS WHERE ID_ITERACION = i.ID))) FROM iteraciones i WHERE ID_ENTREGA = e.ID) AS ITERACIONES FROM entregas e WHERE ID_PROYECTO = ?;";
-            const iteracionesquery = "SELECT ID FROM ITERACIONES WHERE ID_ENTREGA = ?";
-            const tareasquery = "SELECT NOMBRE, ESTADO_DESARROLLO FROM TAREAS WHERE ID_ITERACION = ?";
+            //const iteracionesquery = "SELECT ID FROM ITERACIONES WHERE ID_ENTREGA = ?";
+            //const tareasquery = "SELECT NOMBRE, ESTADO_DESARROLLO FROM TAREAS WHERE ID_ITERACION = ?";
 
             connection.query(entregasquery, [ID_PROYECTO], async (err, results) => {
                 if (err) {
@@ -444,6 +761,50 @@ WHERE ID_PROYECTO = ?;
             reject(error);
         }
     });
+}
+
+export function getRequerimientosEntrega(ID_ENTREGA) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const connection = await getConnection();
+            const query = 'SELECT ID, OBJETIVO, DESCRIPCION, ID_TIPO_REQUERIMIENTO, ID_ENTREGA FROM REQUERIMIENTOS WHERE ID_ENTREGA = ?';
+            connection.query(query, [ID_ENTREGA], async (err, results) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(results);
+                }
+            })
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+
+export function getTareas(ID_ITERACION) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const connection = await getConnection();
+            const query = 'SELECT MAX(c.ID_USUARIO) AS ID_USUARIO, c.ID_TAREA_REALIZADA,  MAX(c.ROL_REALIZADO) AS ROL_REALIZADO, MAX(t.ESTADO_DESARROLLO) AS ESTADO_DESARROLLO FROM COLABORACIONES c  JOIN TAREAS t ON c.ID_TAREA_REALIZADA = t.ID WHERE c.ID_ITERACION = 3 AND t.ESTADO_DESARROLLO NOT LIKE "cerrada" group by c.ID_TAREA_REALIZADA ;';
+            const querytask = `SELECT ID, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO,CONVERT_TZ(FECHA_TERMINO, '+00:00', '-06:00') AS FECHA_TERMINO, CONVERT_TZ(FECHA_MAX_TERMINO, '+00:00', '-06:00') AS FECHA_MAX_TERMINO,NOMBRE,DESCRIPCION,ESTADO_DESARROLLO,ID_REQUERIMIENTO,DESCRIPCION FROM TAREAS WHERE ID_ITERACION = ? AND ESTADO_DESARROLLO NOT LIKE "cerrada"`;
+            connection.query(querytask, [ID_ITERACION], async (err, results) => {
+                if (err) {
+                    reject(err)
+                } else {
+                    if (results.length > 0) {
+                        //console.log(results);
+                        resolve(results);
+                    } else {
+                        //console.log("vacio");
+                        resolve([]);
+                    }
+                }
+            });
+        } catch (error) {
+            reject(error);
+        }
+    })
 }
 
 export function DeleteTask(ID_TAREA) {
@@ -514,6 +875,30 @@ export function UpdateTask(ID, NOMBRE, DESCRIPCION, ESTADO_DESARROLLO, FECHA_INI
     });
 }
 
+export function GetTareasKanban(ID_ITERACION) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const connection = await getConnection();
+
+            const kanbanquery = 'select c.ID_TAREA_REALIZADA, u.NOMBRE_USUARIO as Desarrollador, t.*, r.OBJETIVO FROM COLABORACIONES c JOIN USUARIO u ON c.ID_USUARIO=U.ID JOIN TAREAS t ON c.ID_TAREA_REALIZADA = t.ID JOIN REQUERIMIENTOS r  ON t.ID_REQUERIMIENTO = r.ID WHERE t.ID_ITERACION = ? ;'
+
+            connection.query(kanbanquery, [ID_ITERACION], async (err, results) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    if (results.length > 0) {
+                        resolve(results);
+                    } else {
+                        resolve([]);
+                    }
+                }
+            });
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
 export function getProjectInfo(ID_PROYECTO) {
     return new Promise(async (resolve, reject) => {
         try {
@@ -529,7 +914,7 @@ export function getProjectInfo(ID_PROYECTO) {
             (SELECT COUNT(t.ID) FROM ENTREGAS e JOIN ITERACIONES i ON e.ID=i.ID_ENTREGA JOIN TAREAS t ON i.ID=t.ID_ITERACION WHERE e.ID_PROYECTO = 1 AND t.ESTADO_DESARROLLO = "En espera") AS NUMTAREASESP,
             (SELECT COUNT(t.ID) FROM ENTREGAS e JOIN ITERACIONES i ON e.ID=i.ID_ENTREGA JOIN TAREAS t ON i.ID=t.ID_ITERACION WHERE e.ID_PROYECTO = 1 AND t.ESTADO_DESARROLLO = "En desarrollo") AS NUMTAREASDES,
             (SELECT COUNT(t.ID) FROM ENTREGAS e JOIN ITERACIONES i ON e.ID=i.ID_ENTREGA JOIN TAREAS t ON i.ID=t.ID_ITERACION WHERE e.ID_PROYECTO = 1 AND t.ESTADO_DESARROLLO = "Por Revisar") AS NUMTAREASREV;`;
-        
+
             connection.query(query, [ID_PROYECTO,ID_PROYECTO, ID_PROYECTO, ID_PROYECTO], async (err, results) => {
                 if(err){
                     reject(err);
@@ -551,13 +936,15 @@ export function getParticipantsQuery(ID_PROYECTO) {
     return new Promise(async (resolve, reject) => {
         try {
             const connection = await getConnection();
-            const query = 'SELECT ID_USUARIO, FECHA_UNION FROM U_SEUNE_P WHERE ID_PROYECTO = ?';
+            const query = 'SELECT ID_USUARIO, FECHA_UNION, ES_CREADOR FROM U_SEUNE_P WHERE ID_PROYECTO = ?';
             const queryusers = "SELECT NOMBRE_USUARIO, NUMERO_BOLETA  FROM USUARIO WHERE ID = ?"
             connection.query(query, [ID_PROYECTO], async (err, results) => {
                 if (err) {
                     reject(err);
                 } else {
+
                     const promises = results.map(async (result) => {
+                        const role = result.ES_CREADOR;
                         const Userdata = await new Promise((resolve, reject) => {
                             connection.query(queryusers, [result.ID_USUARIO], (err, Users) => {
                                 if (err) {
@@ -567,7 +954,13 @@ export function getParticipantsQuery(ID_PROYECTO) {
                                 }
                             })
                         })
-                        return { NOMBRE_USUARIO: Userdata.NOMBRE_USUARIO, ID_USUARIO: result.ID_USUARIO, FECHA_UNION: moment(result.FECHA_UNION).tz(zonaHoraria).format("YYYY-MM-DD"), NUMERO_BOLETA: Userdata.NUMERO_BOLETA };
+                        return {
+                            NOMBRE_USUARIO: Userdata.NOMBRE_USUARIO,
+                            ROLE: role,
+                            ID_USUARIO: result.ID_USUARIO,
+                            FECHA_UNION: moment(result.FECHA_UNION).tz(zonaHoraria).format("YYYY-MM-DD"),
+                            NUMERO_BOLETA: Userdata.NUMERO_BOLETA
+                        };
                     })
                     const users = await Promise.all(promises);
                     resolve(users);
@@ -603,9 +996,9 @@ export function ActualizarEstado(ESTADO, TABLA, ID) {
                     reject(err);
                 } else {
                     if (results.affectedRows > 0) {
-                        resolve(true);
+                        resolve({success: true});
                     } else {
-                        resolve(false);
+                        resolve({success: false});
                     }
                 }
             })
@@ -637,10 +1030,10 @@ export function ActualizarEstadoTareas(ESTADO, ID) {
                         reject(err);
                     } else {
                         if (results.affectedRows > 0) {
-                            resolve({succes: true});
+                            resolve({ success: true });
                             console.log("Tarea id: ", ID, " se escuentra en: ", ESTADO);
                         } else {
-                            resolve(false);
+                            resolve({ success: false });
                         }
                     }
                 })
@@ -651,10 +1044,10 @@ export function ActualizarEstadoTareas(ESTADO, ID) {
                         reject(err);
                     } else {
                         if (results.affectedRows > 0) {
-                            resolve(true);
+                            resolve({ success: true });
                             console.log("Tarea id: ", ID, " se escuentra en: ", ESTADO);
                         } else {
-                            resolve(false);
+                            resolve({ success: false });
                         }
                     }
                 })
@@ -703,22 +1096,51 @@ export function AgregarRequerimiento(OBJETIVO, REQUERIMIENTO, ID_TIPO_REQUERIMIE
     })
 }
 
+export function getTareaDependiente(ID_TAREA_DEPENDIENTE) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const connection = await getConnection();
+            const query = "SELECT  NOMBRE,DESCRIPCION,ESTADO_DESARROLLO, CONVERT_TZ(FECHA_INICIO, '+00:00', '-06:00') AS FECHA_INICIO,FECHA_TERMINO ,CONVERT_TZ(FECHA_MAX_TERMINO, '+00:00', '-06:00') AS FECHA_MAX_TERMINO,ID_REQUERIMIENTO,ID_ITERACION FROM TAREAS WHERE ID = ?;"
+            connection.query(query, [ID_TAREA_DEPENDIENTE], (err, results) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    if (results.length > 0) {
+                        resolve({ success: true, task: results })
+                    } else {
+                        resolve({ success: false });
+                    }
+
+                }
+            })
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
 export function CrearTarea(NOMBRE, DESCRIPCION, FECHA_INICIO, FECHA_MAX_TERMINO, ID_iteracion, ID_USUARIO, ID_REQUERIMIENTO, ROLPARTICIPANTE, ID_TAREA_DEPENDIENTE) {
     return new Promise(async (resolve, reject) => {
         try {
             let rol;
+            let ESTADO_DESARROLLO;
             if (ROLPARTICIPANTE === "Diseñador Principal") rol = 1;
             if (ROLPARTICIPANTE === "Diseñador") rol = 3;
             if (ROLPARTICIPANTE === "Embajador") rol = 2;
             const connection = await getConnection();
-            const ESTADO_DESARROLLO = "En espera";
+            if (ID_TAREA_DEPENDIENTE !== '0') {
+                ESTADO_DESARROLLO = "Bloqueada"
+            } else {
+                ESTADO_DESARROLLO = "En espera"
+            }
+
             const query = "INSERT INTO TAREAS(NOMBRE,DESCRIPCION,ESTADO_DESARROLLO,FECHA_INICIO,FECHA_MAX_TERMINO,ID_REQUERIMIENTO, ID_ITERACION) VALUES (?,?,?,?,?,?,?);";
             const queryColab = "INSERT INTO COLABORACIONES (ID_USUARIO, ID_ITERACION, ID_TAREA_REALIZADA, ROL_REALIZADO) VALUES (?,?,?,?)";
             const queryDependencia = "INSERT INTO T_DEPENDE_T (ID_TAREA_DEPENDIENTE, ID_SUBTAREA) VALUES (?,?)"
             connection.query(query, [NOMBRE, DESCRIPCION, ESTADO_DESARROLLO, FECHA_INICIO, FECHA_MAX_TERMINO, ID_REQUERIMIENTO, ID_iteracion], (err, results) => {
                 if (err) {
                     reject(err)
-                    console.log("mamw", err)
+                    //console.log("mamw", err)
                 } else {
                     if (results.affectedRows > 0) {
                         const id_tarea_creada = results.insertId;
@@ -728,7 +1150,7 @@ export function CrearTarea(NOMBRE, DESCRIPCION, FECHA_INICIO, FECHA_MAX_TERMINO,
                                 console.log(err);
                             } else {
                                 if (results.affectedRows > 0) {
-                                    if (ID_TAREA_DEPENDIENTE != "0") {
+                                    if (ID_TAREA_DEPENDIENTE !== '') {
                                         connection.query(queryDependencia, [ID_TAREA_DEPENDIENTE, id_tarea_creada], (err, results) => {
                                             if (err) {
                                                 reject(err);
@@ -760,6 +1182,7 @@ export function CrearTarea(NOMBRE, DESCRIPCION, FECHA_INICIO, FECHA_MAX_TERMINO,
     })
 }
 
+
 export function AgregarMensaje(CONTENIDO, FECHA, HORA, USUARIO, ITERACION) {
     return new Promise(async (resolve, reject) => {
         const connection = await getConnection();
@@ -783,8 +1206,7 @@ export function GetMessages(ID_iteracion) {
     return new Promise(async (resolve, reject) => {
         try {
             const connection = await getConnection();
-            const chatquery = 'SELECT c.*, u.NOMBRE_USUARIO FROM CHATS_ITERACIONES c JOIN  USUARIO u ON c.ID_USUARIO_ENVIA = u.ID WHERE ID_ITERACION = ? ORDER BY c.FECHA_ENVIO, c.HORA_ENVIO;';
-
+            const chatquery = 'SELECT c.*, u.NOMBRE_USUARIO FROM CHATS_ITERACIONES c JOIN  USUARIO u ON c.ID_USUARIO_ENVIA = u.ID WHERE ID_ITERACION = ? ORDER BY c.FECHA_ENVIO, c.HORA_ENVIO;';            
             connection.query(chatquery, [ID_iteracion], (error, results) => {
                 if (error) {
                     reject(error);

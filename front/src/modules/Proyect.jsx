@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 import Participantes from "./Usuario.jsx";
 import ChatIteracion from "./ChatIteracion.jsx";
-import Configuracion from "./Config.js"
+import Configuracion from "./Config.jsx"
 import Calendario from "./Calendario.jsx";
 import AsignarTarea from "./AsignarTarea.jsx";
 import Dashboard from "./Inicio.jsx";
@@ -28,11 +28,13 @@ export const Proyecto = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+
         const data = {
             ID: idint
         }
         getPermissions(data);
-    }, []);
+        console.log(userRole);
+    }, [userRole]);
 
     return (
         <div className={currentMode === 'Dark' ? 'dark' : ''}>

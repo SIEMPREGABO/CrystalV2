@@ -34,19 +34,21 @@ export const Register = () => {
     return (
         <div>
             <Header />
+            {message && <div class=" items-center bg-green-100 border-l-4 border-green-500 text-green-700  rounded-lg m-2 shadow-md" style={{ maxWidth: '600px' }}>
+                <p class="text-lg font-semibold m-2">{message}</p>
+            </div>
+            }
+            {autherrors && <div class=" items-center bg-red-100 border-l-4 border-red-500 text-red-700  rounded-lg m-2 shadow-md" style={{ maxWidth: '600px' }}>
+                <p class="text-lg font-semibold m-2">{autherrors}</p>
+            </div>
+            }
+            {errors.refine && <div class=" items-center bg-red-100 border-l-4 border-red-500 text-red-700  rounded-lg m-2 shadow-md" style={{ maxWidth: '600px' }}>
+                {errors.refine.message}
+            </div>
+            }
 
             <div className={styles.register}>
-
                 <div className={styles.containerr} id='main'>
-                    {message && <div class=" items-center bg-green-100 border-l-4 border-green-500 text-green-700  rounded-lg m-2 md:m-10 p-2 md:p-10 shadow-md" style={{ maxWidth: '600px' }}>
-                        <p class="text-lg font-semibold">{message}</p>
-                    </div>
-                    }
-                    {autherrors && <div class=" items-center bg-red-100 border-l-4 border-red-500 text-red-700  rounded-lg m-2 md:m-10 p-2 md:p-10 shadow-md" style={{ maxWidth: '600px' }}>
-                        {autherrors}
-                    </div>
-                    }
-                    {errors.refine && <div className=" bg-danger mt-2 me-2 text-white shadow">{errors.refine.message}</div>}
                     <div className={styles['overlay-containerr']}>
                         <div className={styles.overlayr}>
                             <div className={styles['overlay-rightr']}>
@@ -67,9 +69,12 @@ export const Register = () => {
                                     placeholder="Nombre(s)"
                                     {...register("NOMBRE_PILA", { required: true })} />
                                 {errors.NOMBRE_PILA &&
-                                    <div className=" col-5 ps-3">
-                                        <div className=" bg-danger mt-2  text-white shadow fs-6">{errors.NOMBRE_PILA.message}</div>
-                                    </div>}
+                                    <div className=" pe-2 m-1">
+                                        <div className=" flex items-center  p-1 mb-1  text-red-800 rounded-lg bg-red-100 dark:bg-gray-800 dark:text-red-600 " role="alert">
+                                            {errors.NOMBRE_PILA.message}
+                                        </div>
+                                    </div>
+                                }
                             </div>
                             <div>
                                 <input className={styles.inputr}
@@ -78,9 +83,12 @@ export const Register = () => {
                                     placeholder="Apellido Paterno"
                                     {...register("APELLIDO_PATERNO", { required: true })} />
                                 {errors.APELLIDO_PATERNO &&
-                                    <div className=" col-5 pe-3">
-                                        <div className=" bg-danger mt-2 text-white shadow ">{errors.APELLIDO_PATERNO.message}</div>
-                                    </div>}
+                                    <div className=" pe-2 m-1">
+                                    <div className=" flex items-center  p-1 mb-1  text-red-800 rounded-lg bg-red-100 dark:bg-gray-800 dark:text-red-600 " role="alert">
+                                        {errors.APELLIDO_PATERNO.message}
+                                    </div>
+                                </div>
+                                }
                             </div>
                             <div><input className={styles.inputr}
                                 type="text"
@@ -88,9 +96,12 @@ export const Register = () => {
                                 placeholder="Apellido Materno"
                                 {...register("APELLIDO_MATERNO", { required: true })} />
                                 {errors.APELLIDO_MATERNO &&
-                                    <div className=" col-5 ps-3">
-                                        <div className=" bg-danger mt-2  text-white shadow fs-6">{errors.APELLIDO_MATERNO.message}</div>
-                                    </div>}
+                                    <div className=" pe-2 m-1">
+                                        <div className=" flex items-center  p-1 mb-1  text-red-800 rounded-lg bg-red-100 dark:bg-gray-800 dark:text-red-600 " role="alert">
+                                            {errors.APELLIDO_MATERNO.message}
+                                        </div>
+                                    </div>
+                                }
                             </div>
                             <div><input className={styles.inputr}
                                 type="text"
@@ -98,9 +109,12 @@ export const Register = () => {
                                 placeholder="Número de Boleta "
                                 {...register("NUMERO_BOLETA", { required: true })} />
                                 {errors.NUMERO_BOLETA &&
-                                    <div className=" col-5 pe-3">
-                                        <div className=" bg-danger mt-2 text-white shadow ">{errors.NUMERO_BOLETA.message}</div>
-                                    </div>}
+                                    <div className=" pe-2 m-1">
+                                        <div className=" flex items-center  p-1 mb-1  text-red-800 rounded-lg bg-red-100 dark:bg-gray-800 dark:text-red-600 " role="alert">
+                                            {errors.NUMERO_BOLETA.message}
+                                        </div>
+                                    </div>
+                                }
                             </div>
                             <div><input className={styles.inputr}
                                 type="text"
@@ -108,9 +122,12 @@ export const Register = () => {
                                 placeholder="Nombre de Usuario"
                                 {...register("NOMBRE_USUARIO", { required: true })} />
                                 {errors.NOMBRE_USUARIO &&
-                                    <div className=" col-5 ps-3">
-                                        <div className=" bg-danger mt-2  text-white shadow fs-6">{errors.NOMBRE_USUARIO.message}</div>
-                                    </div>}
+                                    <div className=" pe-2 m-1">
+                                        <div className=" flex items-center  p-1 mb-1  text-red-800 rounded-lg bg-red-100 dark:bg-gray-800 dark:text-red-600 " role="alert">
+                                            {errors.NOMBRE_USUARIO.message}
+                                        </div>
+                                    </div>
+                                }
                             </div>
                             <div><input className={styles.inputr}
                                 type="text"
@@ -119,9 +136,12 @@ export const Register = () => {
                                 maxLength="12"
                                 {...register("TELEFONO", { required: true })} />
                                 {errors.TELEFONO &&
-                                    <div className=" col-5 pe-3">
-                                        <div className=" bg-danger mt-2 text-white shadow ">{errors.TELEFONO.message}</div>
-                                    </div>}
+                                    <div className=" pe-2 m-1">
+                                        <div className=" flex items-center  p-1 mb-1  text-red-800 rounded-lg bg-red-100 dark:bg-gray-800 dark:text-red-600 " role="alert">
+                                            {errors.TELEFONO.message}
+                                        </div>
+                                    </div>
+                                }
                             </div>
                             <div><input className={styles.inputr}
                                 type="email"
@@ -129,9 +149,12 @@ export const Register = () => {
                                 placeholder="Correo Electrónico"
                                 {...register("CORREO", { required: true })} />
                                 {errors.CORREO &&
-                                    <div className=" col-5 ps-3">
-                                        <div className=" bg-danger mt-2  text-white shadow fs-6">{errors.CORREO.message}</div>
-                                    </div>}
+                                    <div className=" pe-2 m-1">
+                                        <div className=" flex items-center  p-1 mb-1  text-red-800 rounded-lg bg-red-100 dark:bg-gray-800 dark:text-red-600 " role="alert">
+                                            {errors.CORREO.message}
+                                        </div>
+                                    </div>
+                                }
                             </div>
                             <div><input className={styles.inputr}
                                 type="email"
@@ -139,9 +162,12 @@ export const Register = () => {
                                 placeholder="Confirmar Correo Electrónico"
                                 {...register("repeatCORREO", { required: true })} />
                                 {errors.repeatCORREO &&
-                                    <div className=" col-5 ps-3">
-                                        <div className=" bg-danger mt-2  text-white shadow fs-6">{errors.repeatCORREO.message}</div>
-                                    </div>}
+                                    <div className=" pe-2 m-1">
+                                        <div className=" flex items-center  p-1 mb-1  text-red-800 rounded-lg bg-red-100 dark:bg-gray-800 dark:text-red-600 " role="alert">
+                                            {errors.repeatCORREO.message}
+                                        </div>
+                                    </div>
+                                }
                             </div>
                             <div><input className={styles.inputr}
                                 type="password"
@@ -149,9 +175,12 @@ export const Register = () => {
                                 placeholder="Contraseña"
                                 {...register("CONTRASENIA", { required: true })} />
                                 {errors.CONTRASENIA &&
-                                    <div className=" col-5 ps-3">
-                                        <div className=" bg-danger mt-2  text-white shadow fs-6">{errors.CONTRASENIA?.message}</div>
-                                    </div>}
+                                    <div className=" pe-2 m-1">
+                                        <div className=" flex items-center  p-1 mb-1  text-red-800 rounded-lg bg-red-100 dark:bg-gray-800 dark:text-red-600 " role="alert">
+                                            {errors.CONTRASENIA.message}
+                                        </div>
+                                    </div>
+                                }
                             </div>
                             <div><input className={styles.inputr}
                                 type="password"
@@ -159,9 +188,12 @@ export const Register = () => {
                                 placeholder="Confirmar Contraseña"
                                 {...register("repeatCONTRASENIA", { required: true })} />
                                 {errors.repeatCONTRASENIA &&
-                                    <div className=" col-5 ps-3">
-                                        <div className=" bg-danger mt-2  text-white shadow fs-6">{errors.repeatCONTRASENIA?.message}</div>
-                                    </div>}
+                                    <div className=" pe-2 m-1">
+                                        <div className=" flex items-center  p-1 mb-1  text-red-800 rounded-lg bg-red-100 dark:bg-gray-800 dark:text-red-600 " role="alert">
+                                            {errors.repeatCONTRASENIA.message}
+                                        </div>
+                                    </div>
+                                }
                             </div>
                             <button className={styles.buttonr} type="submit">Registrarse!</button>
                         </form>

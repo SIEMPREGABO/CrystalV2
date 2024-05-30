@@ -12,19 +12,19 @@ export const Home = () => {
     const { message, autherrors, setMessage, setAutherrors } = useAuth();
 
     useEffect(() => {
-        setAutherrors([]);
         setMessage([]);
+        setAutherrors([]);
     }, [])
     return (
         <div>
             <Header />
             <main>
-                {message && <div class=" items-center bg-green-100 border-l-4 border-green-500 text-green-700  rounded-lg m-2 md:m-10 p-2 md:p-10 shadow-md" style={{ maxWidth: '600px' }}>
-                    <p class="text-lg font-semibold">{message}</p>
+                {message && <div class=" items-center bg-green-100 border-l-4 border-green-500 text-green-700  rounded-lg m-2 shadow-md" style={{ maxWidth: '600px' }}>
+                    <p class="text-lg font-semibold m-2">{message}</p>
                 </div>
                 }
-                {autherrors && <div class=" items-center bg-red-100 border-l-4 border-red-500 text-red-700  rounded-lg m-2 md:m-10 p-2 md:p-10 shadow-md" style={{ maxWidth: '600px' }}>
-                    {autherrors}
+                {autherrors && <div class=" items-center bg-red-100 border-l-4 border-red-500 text-red-700  rounded-lg m-2 shadow-md" style={{ maxWidth: '600px' }}>
+                    <p class="text-lg font-semibold m-2">{autherrors}</p>
                 </div>
                 }
 

@@ -36,17 +36,19 @@ export const Login = () => {
     return (
         <div>
             <Header />
+            {message && <div class=" items-center bg-green-100 border-l-4 border-green-500 text-green-700  rounded-lg m-2 shadow-md" style={{ maxWidth: '600px' }}>
+                <p class="text-lg font-semibold m-2">{message}</p>
+            </div>
+            }
+            {autherrors && <div class=" items-center bg-red-100 border-l-4 border-red-500 text-red-700  rounded-lg m-2 shadow-md" style={{ maxWidth: '600px' }}>
+                <p class="text-lg font-semibold m-2">{autherrors}</p>
+            </div>
+            }
             <div className={styles.login}>
 
                 <div className={styles.container} id='main'>
-                    {message && <div class=" items-center bg-green-100 border-l-4 border-green-500 text-green-700  rounded-lg m-2 md:m-10 p-2 md:p-10 shadow-md" style={{ maxWidth: '600px' }}>
-                        <p class="text-lg font-semibold">{message}</p>
-                    </div>
-                    }
-                    {autherrors && <div class=" items-center bg-red-100 border-l-4 border-red-500 text-red-700  rounded-lg m-2 md:m-10 p-2 md:p-10 shadow-md" style={{ maxWidth: '600px' }}>
-                        {autherrors}
-                    </div>
-                    }
+
+
                     <div className={styles['sign-in']}>
                         <form onSubmit={handleSubmit(onSubmit)} className={styles.forml}>
                             <h1 className={styles.h1l}>Ingresar</h1>
@@ -57,14 +59,29 @@ export const Login = () => {
                                 placeholder="E-Mail"
                                 {...register("CORREO", { required: true, message: "campo requerido" })} />
 
-                            {errors.CORREO && <div className=" bg-danger mt-2 me-2 text-white shadow">{errors.CORREO.message}</div>}
+                            {errors.CORREO &&
+                                <div className=" pe-2 m-1">
+                                    <div className=" flex items-center  p-1 mb-1  text-red-800 rounded-lg bg-red-100 dark:bg-gray-800 dark:text-red-600 " role="alert">
+                                        {errors.CORREO.message}
+                                    </div>
+                                </div>
+                            }
+
+
                             <input className={styles.inputl}
                                 type="password"
                                 name="CONTRASENIA"
                                 placeholder="Contraseña"
                                 {...register("CONTRASENIA", { required: true, message: "campo requerido" })} />
 
-                            {errors.CONTRASENIA && <div className=" bg-danger mt-2 me-2 text-white shadow">{errors.CONTRASENIA.message}</div>}
+                            {errors.CONTRASENIA &&
+
+                                <div className=" pe-2 m-1">
+                                    <div className=" flex items-center  p-1 mb-1  text-red-800 rounded-lg bg-red-100 dark:bg-gray-800 dark:text-red-600 " role="alert">
+                                        {errors.CONTRASENIA.message}
+                                    </div>
+                                </div>
+                            }
                             <Link to="/reset"><a href="#">Olvidaste tu contraseña?</a></Link>
                             <button type='submit' className={styles.buttonl}>Iniciar Sesión!</button>
                         </form>
