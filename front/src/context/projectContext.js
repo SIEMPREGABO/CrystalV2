@@ -232,7 +232,8 @@ export const ProjectProvider = ({ children }) => {
   const getMessages = async (iteracion) => {
     try {
       //const cookies = Cookies.get();
-      console.log('iteracion pcontext: ' + iteracion.ID_ITERACION);
+      //console.log('iteracion pcontext: ' + iteracion.ID_ITERACION);
+      console.log(iteracion);
       const res = await requestMessages(iteracion);
       console.log('pcontext: ' + res);
       setMessagesChat(res.data);

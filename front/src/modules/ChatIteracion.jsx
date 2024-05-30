@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 
 export const ChatIteracion = () => {
   const messageInputRef = useRef(null);
-  const socket = io('http://localhost:4001');
+  //const socket = io('http://localhost:4001');
   const { user } = useAuth();
   const { createMessages, iteracionactual, messagesChat, getMessages } = useProject();
 
@@ -54,7 +54,7 @@ export const ChatIteracion = () => {
       FECHA: fechaFormateada,
       HORA: horaFormateada,
       USUARIO: user.ID,
-      ITERACION: 1
+      ITERACION: iteracionactual.ID
       //ITERACION: iteracionactual,
     };
 
@@ -79,11 +79,15 @@ export const ChatIteracion = () => {
 
   useEffect(() => {
     const iteracion = {
-      ID_ITERACION: 1
+      ID_ITERACION: iteracionactual.ID
     }
     getMessages(iteracion);
   
-    const socket = io('http://localhost:4001');
+    const socket = io('http://localhost:4001', {
+      auth: {
+        sala: "3",
+      }
+    });
     setConnectedSocket(socket);
   
     socket.on("connect_error", (err) => {

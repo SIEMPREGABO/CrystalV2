@@ -1206,7 +1206,7 @@ export function GetMessages(ID_iteracion) {
     return new Promise(async (resolve, reject) => {
         try {
             const connection = await getConnection();
-            const chatquery = 'SELECT c.*, u.NOMBRE_USUARIO FROM CHATS_ITERACIONES c JOIN  USUARIO u ON c.ID_USUARIO_ENVIA = u.ID WHERE ID_ITERACION = 1 ORDER BY c.FECHA_ENVIO, c.HORA_ENVIO;';
+            const chatquery = 'SELECT c.*, u.NOMBRE_USUARIO FROM CHATS_ITERACIONES c JOIN  USUARIO u ON c.ID_USUARIO_ENVIA = u.ID WHERE ID_ITERACION = ? ORDER BY c.FECHA_ENVIO, c.HORA_ENVIO;';            
             connection.query(chatquery, [ID_iteracion], (error, results) => {
                 if (error) {
                     reject(error);
