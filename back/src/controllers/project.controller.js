@@ -15,7 +15,8 @@ import {
     ActualizarFechasQuery,
     getUser,
     delegarParticipante,
-    eliminarProyecto,getProjectInfo
+    eliminarProyecto,getProjectInfo,
+    getTareasGantt
 } from '../querys/projectquerys.js';
 import jwt from 'jsonwebtoken'
 import { zonaHoraria } from '../config.js';
@@ -171,8 +172,8 @@ export const getProject = async (req, res) => {
         const requerimientos = await getRequerimientosEntrega(ENTREGA_ACTUAL.ID);
         const tasks = await getTareas(ITERACION_ACTUAL.ID);
         const tasksKanban = await GetTareasKanban(ITERACION_ACTUAL.ID);
-        const projectInfo = await getProjectInfo(ID_PROYECTO);
-
+        //const projectInfo = await getProjectInfo(ID_PROYECTO);
+        const tareasGantt = await getTareasGantt(ID_PROYECTO);
         const data = {
             fechasProyecto: FECHAS_PROYECTO,
             fechasEntregas: FECHAS_ENTREGAS,
@@ -184,6 +185,7 @@ export const getProject = async (req, res) => {
             tasks: tasks,
             tasksKanban: tasksKanban,
             projectInfo: projectInfo,
+            tareasGantt: tareasGantt
         };
         //console.log(data.tasks);
         return res.json(data);

@@ -37,6 +37,7 @@ export const ProjectProvider = ({ children }) => {
   const [scheduleData, setScheduleData] = useState([]);
 
   const [tareasKanban, setTareasKanban] = useState([]);
+  const [tareasGantt, setTareasGantt] = useState([]);
   const [entregaactual, setEntregaactual] = useState([]);
   const [iteracionactual, setiteracionactual] = useState([]);
   const [requerimientos, setRequerimientos] = useState([]);
@@ -104,12 +105,6 @@ export const ProjectProvider = ({ children }) => {
       console.log(Task);
       const res = await requestCreateTask(Task);
       setMessage(res.data.message);
-      swal({
-        title: 'Asignacion de tarea',
-        text: res.data.message,
-        icon: (res.status === 200 ? 'success' : (res.status === 400 ? 'warning' : 'error')),
-        button: 'Aceptar',
-      });
       console.log(res);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
@@ -191,7 +186,7 @@ export const ProjectProvider = ({ children }) => {
   }
 
 
-  const getTasksProject = async (project) => {
+  /*const getTasksProject = async (project) => {
     try{
       const res = await requestTasksProject(project);
       setEntregasProject(res.data);
@@ -202,7 +197,7 @@ export const ProjectProvider = ({ children }) => {
         setProjecterrors("Error del servidor");
       }
     }
-  }
+  }*/
 
   const create = async (project) => {
     try {
@@ -319,6 +314,7 @@ export const ProjectProvider = ({ children }) => {
       setRequerimientos(res.data.requerimientos);
       setTareas(res.data.tasks);
       setTareasKanban(res.data.tasksKanban);
+      setTareasGantt(res.data.tareasGantt);
       setProjectInfo(res.data.projectInfo);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
@@ -440,7 +436,7 @@ export const ProjectProvider = ({ children }) => {
         participants,
         entregasproject,
         tareasKanban,
-        
+        tareasGantt,
         fechasproject,
         fechasentregas,
         fechasiteraciones,

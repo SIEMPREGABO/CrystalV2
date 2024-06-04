@@ -763,6 +763,28 @@ WHERE ID_PROYECTO = ?;
     });
 }
 
+export function getTareasGantt(ID_PROYECTO){
+    return new Promise (async (resolve, reject) => {
+        try{
+            const connection = await getConnection();
+        const query = "SELECT T1.NOMBRE,T1.ID,T1.FECHA_INICIO,T1.FECHA_MAX_TERMINO,ITERACIONES.ID_ENTREGA AS ENTREGA,T1.ESTADO_DESARROLLO,GROUP_CONCAT(T2.NOMBRE) AS DEPENDENCIAS FROM TAREAS T1 JOIN ITERACIONES ON T1.ID_ITERACION = ITERACIONES.ID JOIN ENTREGAS ON ENTREGAS.ID = ITERACIONES.ID_ENTREGA  LEFT JOIN T_DEPENDE_T ON T1.ID = T_DEPENDE_T.ID_TAREA_DEPENDIENTE LEFT JOIN TAREAS T2 ON T_DEPENDE_T.ID_SUBTAREA = T2.ID WHERE ENTREGAS.ID_PROYECTO = 1 GROUP BY T1.ID ORDER BY ENTREGA;";
+        connection.query(query, [ID_PROYECTO], async (err, results) => {
+            if(err){
+                reject(err);
+            }else {
+                if(results.length > 0){
+                    resolve(results);
+                }else{
+                    resolve([]);
+                }
+            }
+        });
+        }catch(error){
+            reject(error);
+        }
+    })
+}
+
 export function getRequerimientosEntrega(ID_ENTREGA) {
     return new Promise(async (resolve, reject) => {
         try {
@@ -873,14 +895,14 @@ export function UpdateTask(ID, NOMBRE, DESCRIPCION, ESTADO_DESARROLLO, FECHA_INI
             reject(error);
         }
     });
-}
+} 
 
 export function GetTareasKanban(ID_ITERACION) {
     return new Promise(async (resolve, reject) => {
         try {
             const connection = await getConnection();
 
-            const kanbanquery = 'select c.ID_TAREA_REALIZADA, u.NOMBRE_USUARIO as Desarrollador, t.*, r.OBJETIVO FROM COLABORACIONES c JOIN USUARIO u ON c.ID_USUARIO=U.ID JOIN TAREAS t ON c.ID_TAREA_REALIZADA = t.ID JOIN REQUERIMIENTOS r  ON t.ID_REQUERIMIENTO = r.ID WHERE t.ID_ITERACION = ? ;'
+            const kanbanquery = 'select c.ID_TAREA_REALIZADA, u.NOMBRE_USUARIO as Desarrollador, u.ID as IDDESARROLLADOR, t.*, r.OBJETIVO FROM COLABORACIONES c JOIN USUARIO u ON c.ID_USUARIO=U.ID JOIN TAREAS t ON c.ID_TAREA_REALIZADA = t.ID JOIN REQUERIMIENTOS r  ON t.ID_REQUERIMIENTO = r.ID WHERE t.ID_ITERACION = ? ;'
 
             connection.query(kanbanquery, [ID_ITERACION], async (err, results) => {
                 if (err) {
